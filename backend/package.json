@@ -1,0 +1,19 @@
+{
+  "name": "project-sdn-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Express and MongoDB backend for ProjectSDN",
+  "main": "src/server.js",
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.10.1"
+  }
+}
