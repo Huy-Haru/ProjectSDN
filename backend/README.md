@@ -25,7 +25,7 @@ npm start
 npm test
 ```
 
-`npm start` chạy bình thường; `npm run dev` tự khởi động lại khi sửa source.
+`npm start` chạy bình thường; `npm run dev` dùng nodemon, tự khởi động lại khi sửa file JS/JSON trong `src` hoặc file `.env`.
 Kiểm thử tự động không yêu cầu MongoDB và dùng cổng HTTP tạm thời.
 
 ## API nền
