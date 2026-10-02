@@ -10,7 +10,7 @@ const { errorHandler } = require('../src/middlewares/errorHandler');
 const asyncHandler = require('../src/utils/asyncHandler');
 const AppError = require('../src/utils/AppError');
 
-const corsOrigin = 'http://localhost:5173';
+const corsOrigin = 'http://localhost:3000';
 
 async function withServer(app, run) {
   const server = app.listen(0, '127.0.0.1');
@@ -27,8 +27,8 @@ async function withServer(app, run) {
 
 test('environment rejects missing database, bad ports and invalid origins', () => {
   const base = { MONGO_URI: 'mongodb://127.0.0.1:27017/test', CORS_ORIGIN: corsOrigin };
-  assert.equal(readEnvironment(base).port, 9999);
-  assert.equal(readEnvironment({ ...base, PORT: '5000' }).port, 5000);
+  assert.equal(readEnvironment(base).port, 5000);
+  assert.equal(readEnvironment({ ...base, PORT: '6000' }).port, 6000);
   assert.throws(() => readEnvironment({ CORS_ORIGIN: corsOrigin }), /MONGO_URI/);
   assert.throws(() => readEnvironment({ ...base, MONGO_URI: 'https://example.com' }), /MONGO_URI/);
   for (const PORT of ['0', '-1', '65536', 'abc', '1.5']) {
@@ -122,7 +122,7 @@ test('server exits instead of opening HTTP when MongoDB is unreachable', { timeo
     env: {
       ...process.env,
       MONGO_URI: 'mongodb://127.0.0.1:1/unreachable',
-      PORT: '9999',
+      PORT: '5000',
       CORS_ORIGIN: corsOrigin,
     },
     stdio: ['ignore', 'pipe', 'pipe'],

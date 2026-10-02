@@ -16,7 +16,7 @@ npm run dev
 
 Điền `MONGO_URI`, `PORT` và `CORS_ORIGIN` trong `backend/.env`.
 Server chỉ mở cổng sau khi kết nối MongoDB thành công.
-Theo `.env.example`, backend chạy tại `http://localhost:9999`.
+Theo `.env.example`, backend chạy tại `http://localhost:5000`.
 
 - `GET /`: thông báo chào.
 - `GET /api/health`: trạng thái và ping MongoDB.
@@ -36,9 +36,9 @@ npm install
 npm run dev
 ```
 
-Frontend mặc định chạy tại `http://localhost:5173`.
+Frontend chạy tại `http://localhost:3000`; Vite báo lỗi nếu cổng này đang được sử dụng.
 `npm run build` tạo bản build; `npm run lint` kiểm tra code.
-Khi thêm API service, cấu hình `VITE_API_URL=http://localhost:9999/api` trong `frontend/.env`.
+Khi thêm API service, cấu hình `VITE_API_URL=http://localhost:5000/api` trong `frontend/.env`.
 Frontend hiện chưa có luồng API nghiệp vụ.
 
 ## Cấu trúc

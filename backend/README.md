@@ -17,8 +17,8 @@ npm run dev
 Sửa `.env` trước khi chạy nếu MongoDB hoặc frontend dùng địa chỉ khác.
 Backend đọc `.env` từ thư mục `backend`, kết nối MongoDB thành công rồi mới mở HTTP server.
 Giữ tên biến `MONGO_URI` từ ZIP tham khảo. Không commit `.env`.
-`CORS_ORIGIN` là origin của frontend, mặc định trong mẫu là `http://localhost:5173`.
-Sau này frontend có thể dùng `VITE_API_URL=http://localhost:9999/api` trong `.env` riêng.
+`CORS_ORIGIN` là origin của frontend, mặc định trong mẫu là `http://localhost:3000`.
+Sau này frontend có thể dùng `VITE_API_URL=http://localhost:5000/api` trong `.env` riêng.
 
 ```powershell
 npm start
