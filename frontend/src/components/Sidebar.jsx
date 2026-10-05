@@ -11,8 +11,8 @@ import {
   FaStar,
   FaUserShield,
   FaUsers,
-  FaExchangeAlt,
-  FaChalkboardTeacher
+  FaChalkboardTeacher,
+  FaDollarSign
 } from 'react-icons/fa';
 
 const Sidebar = ({ user, activeMenu, setActiveMenu }) => {
@@ -32,16 +32,18 @@ const Sidebar = ({ user, activeMenu, setActiveMenu }) => {
 
   const trainerMenus = [
     { id: 'trainer-dashboard', label: 'Tổng quan HLV', icon: <FaChalkboardTeacher /> },
-    { id: 'trainer-schedule', label: 'Lịch dạy HLV', icon: <FaCalendarCheck /> },
-    { id: 'trainer-students', label: 'Học viên phụ trách', icon: <FaUserFriends /> },
+    { id: 'trainer-schedule', label: 'Quản lý lịch tập', icon: <FaCalendarCheck /> },
+    { id: 'trainer-students', label: 'Học viên & Tiến độ', icon: <FaUserFriends /> },
     { id: 'trainer-reviews', label: 'Đánh giá từ Học viên', icon: <FaStar /> },
   ];
 
   const adminMenus = [
     { id: 'admin-dashboard', label: 'Thống kê Quản trị', icon: <FaUserShield /> },
-    { id: 'admin-users', label: 'Quản lý Người dùng', icon: <FaUsers /> },
     { id: 'admin-packages', label: 'Quản lý Gói tập', icon: <FaCreditCard /> },
-    { id: 'admin-trainers', label: 'Quản lý HLV', icon: <FaUserFriends /> },
+    { id: 'admin-trainers', label: 'Quản lý PT', icon: <FaUserFriends /> },
+    { id: 'admin-students', label: 'Quản lý Học viên', icon: <FaUsers /> },
+    { id: 'admin-schedules', label: 'Quản lý Lịch tập', icon: <FaCalendarCheck /> },
+    { id: 'admin-revenue', label: 'Thống kê Doanh thu', icon: <FaDollarSign /> },
   ];
 
   let currentMenuList = studentMenus;

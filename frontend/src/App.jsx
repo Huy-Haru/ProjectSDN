@@ -11,17 +11,28 @@ import LoginModal from './components/LoginModal';
 import RegisterModal from './components/RegisterModal';
 import RateTrainerModal from './components/RateTrainerModal';
 
-// Pages
+// Pages - Student
 import PackagesPage from './pages/PackagesPage';
 import StudentDashboardPage from './pages/StudentDashboardPage';
-import TrainerDashboardPage from './pages/TrainerDashboardPage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
 import TrainersPage from './pages/TrainersPage';
 import BookingPage from './pages/BookingPage';
 import SchedulePage from './pages/SchedulePage';
 import ProgressPage from './pages/ProgressPage';
 import ReviewsPage from './pages/ReviewsPage';
 import MyPackagePage from './pages/MyPackagePage';
+
+// Pages - Trainer
+import TrainerDashboardPage from './pages/TrainerDashboardPage';
+import TrainerSchedulePage from './pages/TrainerSchedulePage';
+import TrainerStudentsPage from './pages/TrainerStudentsPage';
+
+// Pages - Admin
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminPackagesPage from './pages/AdminPackagesPage';
+import AdminTrainersPage from './pages/AdminTrainersPage';
+import AdminStudentsPage from './pages/AdminStudentsPage';
+import AdminSchedulesPage from './pages/AdminSchedulesPage';
+import AdminRevenuePage from './pages/AdminRevenuePage';
 
 import { initialReviews, myPackageInfo } from './data/mockData';
 
@@ -81,9 +92,16 @@ function App() {
     // Admin Role Pages
     if (role === 'ADMIN') {
       switch (activeMenu) {
-        case 'admin-users':
         case 'admin-packages':
+          return <AdminPackagesPage />;
         case 'admin-trainers':
+          return <AdminTrainersPage />;
+        case 'admin-students':
+          return <AdminStudentsPage />;
+        case 'admin-schedules':
+          return <AdminSchedulesPage />;
+        case 'admin-revenue':
+          return <AdminRevenuePage />;
         case 'admin-dashboard':
         default:
           return <AdminDashboardPage user={user} />;
@@ -94,8 +112,11 @@ function App() {
     if (role === 'TRAINER') {
       switch (activeMenu) {
         case 'trainer-schedule':
+          return <TrainerSchedulePage user={user} />;
         case 'trainer-students':
+          return <TrainerStudentsPage user={user} />;
         case 'trainer-reviews':
+          return <ReviewsPage reviews={reviews} onOpenReviewModal={handleOpenReviewModal} />;
         case 'trainer-dashboard':
         default:
           return <TrainerDashboardPage user={user} />;

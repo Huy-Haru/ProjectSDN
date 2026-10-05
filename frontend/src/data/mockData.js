@@ -46,6 +46,7 @@ export const packagesData = [
     badge: null,
     isPopular: false,
     activeMembers: 420,
+    status: 'Hoạt động',
     features: [
       'Tập luyện không giới hạn thời gian trong giờ tiêu chuẩn (06:00 - 16:00)',
       '01 buổi đo phân tích chỉ số cơ thể InBody định kỳ / quý',
@@ -68,6 +69,7 @@ export const packagesData = [
     badge: 'KHUYÊN DÙNG - PHỔ BIẾN NHẤT',
     isPopular: true,
     activeMembers: 680,
+    status: 'Hoạt động',
     features: [
       'Toàn quyền truy cập 24/7 toàn hệ thống phòng tập',
       '02 buổi tập cùng 1:1 với PT chuyên nghiệp / tháng',
@@ -90,6 +92,7 @@ export const packagesData = [
     badge: null,
     isPopular: false,
     activeMembers: 140,
+    status: 'Hoạt động',
     features: [
       'Check-in VIP không giới hạn tất cả các phòng tập mở rộng',
       '12 buổi tập PT 1:1 chuyên sâu / tháng (hỗ trợ chuyển đổi)',
@@ -113,8 +116,10 @@ export const trainersData = [
     avatar: 'https://images.unsplash.com/photo-1567013127542-490d757e51fc?auto=format&fit=crop&q=80&w=300',
     specialties: ['Tăng cơ', 'Giảm mỡ', 'Tập tạ nặng'],
     bio: 'Chuyên gia huấn luyện thể hình chuyên nghiệp với chứng chỉ NASM. Đã giúp hơn 300+ học viên thay đổi vóc dáng thành công.',
-    status: 'Sẵn sàng xếp lịch',
-    assignedStudentsCount: 18
+    status: 'Hoạt động',
+    assignedStudentsCount: 18,
+    phone: '0912345678',
+    email: 'minhduc.pt@fitmanager.vn'
   },
   {
     id: 'pt2',
@@ -126,8 +131,10 @@ export const trainersData = [
     avatar: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=300',
     specialties: ['Pilates', 'Cột sống & Posture', 'Dẻo dai'],
     bio: 'Chuyên viên Pilates quốc tế Stott Pilates. Tập trung cải thiện vóc dáng, chỉnh tư thế vai xô và cột sống cho dân văn phòng.',
-    status: 'Sẵn sàng xếp lịch',
-    assignedStudentsCount: 14
+    status: 'Hoạt động',
+    assignedStudentsCount: 14,
+    phone: '0933445566',
+    email: 'thutrang.pt@fitmanager.vn'
   },
   {
     id: 'pt3',
@@ -139,8 +146,10 @@ export const trainersData = [
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
     specialties: ['Phục hồi', 'Functional Training', 'Cardio HIIT'],
     bio: 'Cựu vận động viên điền kinh, chuyên sâu phục hồi chấn thương nhẹ và tối ưu sức bền toàn thân.',
-    status: 'Lịch bận buổi tối',
-    assignedStudentsCount: 12
+    status: 'Hoạt động',
+    assignedStudentsCount: 12,
+    phone: '0977112233',
+    email: 'hoangnam.pt@fitmanager.vn'
   },
   {
     id: 'pt4',
@@ -152,8 +161,58 @@ export const trainersData = [
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=300',
     specialties: ['Dinh dưỡng', 'Giảm cân siêu tốc', 'Boxing'],
     bio: 'Tư vấn phác đồ ăn uống khoa học không ép kiêng khắt khe. Kết hợp Boxing và Cardio giảm mỡ tức thì.',
-    status: 'Sẵn sàng xếp lịch',
-    assignedStudentsCount: 16
+    status: 'Hoạt động',
+    assignedStudentsCount: 16,
+    phone: '0988556677',
+    email: 'ngocanh.pt@fitmanager.vn'
+  }
+];
+
+export const assignedStudentsData = [
+  {
+    id: 'u1',
+    name: 'Nguyễn Văn An',
+    phone: '0987654321',
+    email: 'nguyenvanan@gmail.com',
+    packageName: 'Gói Cao Cấp (Premium Plus)',
+    currentWeight: 68.5,
+    targetWeight: 65.0,
+    bodyFat: 18.2,
+    completedSessions: 24,
+    totalSessions: 36,
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+    currentPlan: 'Lộ Trình Giảm Cân & Siêu Tăng Cơ 12 Tuần',
+    status: 'Đang duy trì'
+  },
+  {
+    id: 'u2',
+    name: 'Lê Thu Thảo',
+    phone: '0911223344',
+    email: 'lethuthao@gmail.com',
+    packageName: 'Gói VIP Thượng Đỉnh',
+    currentWeight: 52.0,
+    targetWeight: 50.0,
+    bodyFat: 21.5,
+    completedSessions: 18,
+    totalSessions: 24,
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=250',
+    currentPlan: 'Pilates Chỉnh Cột Sống & Siêu Săn Chắc Core',
+    status: 'Đang duy trì'
+  },
+  {
+    id: 'u3',
+    name: 'Vũ Quốc Anh',
+    phone: '0977889900',
+    email: 'quocanh@gmail.com',
+    packageName: 'Gói Cơ Bản (Basic Fit)',
+    currentWeight: 78.0,
+    targetWeight: 72.0,
+    bodyFat: 24.0,
+    completedSessions: 6,
+    totalSessions: 12,
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250',
+    currentPlan: 'Khởi Động Thể Lực & Tăng Sức Bền',
+    status: 'Mới đăng ký'
   }
 ];
 
@@ -202,6 +261,21 @@ export const initialSchedules = [
     location: 'Phòng Studio Pilates VIP',
     status: 'Sắp diễn ra',
     note: 'Mang thảm cá nhân hoặc nhận khăn kháng khuẩn VIP'
+  },
+  {
+    id: 'sch_4',
+    studentId: 'u3',
+    studentName: 'Vũ Quốc Anh',
+    studentPhone: '0977889900',
+    trainerId: 'pt3',
+    trainerName: 'HLV. Lê Hoàng Nam',
+    trainerAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+    date: '2026-10-09',
+    time: '18:00 - 19:00',
+    workoutType: 'Functional Training & Thể Lực',
+    location: 'Khu Functional Zone',
+    status: 'Đã xác nhận',
+    note: 'Hướng dẫn tập tạ đơn và giãn cơ'
   }
 ];
 
@@ -213,6 +287,24 @@ export const initialUsersList = [
   { id: 'pt2', name: 'Nguyễn Thu Trang', email: 'thutrang.pt@fitmanager.vn', phone: '0933445566', role: 'TRAINER', package: 'Pilates PT', status: 'Hoạt động', joinDate: '15/03/2024' },
   { id: 'a1', name: 'Phạm Hoàng Nam', email: 'admin@fitmanager.vn', phone: '0999999999', role: 'ADMIN', package: 'System Admin', status: 'Hoạt động', joinDate: '01/01/2023' }
 ];
+
+export const revenueReportData = {
+  totalRevenue: '458.500.000 đ',
+  monthlyTarget: '500.000.000 đ',
+  growthPercent: '+18.4%',
+  breakdown: [
+    { name: 'Gói Premium Plus', amount: '298.000.000 đ', percent: '65%' },
+    { name: 'Gói VIP Elite', amount: '110.500.000 đ', percent: '24%' },
+    { name: 'Gói Basic Fit', amount: '50.000.000 đ', percent: '11%' }
+  ],
+  monthlyTrends: [
+    { month: 'Tháng 5', revenue: 320000000 },
+    { month: 'Tháng 6', revenue: 380000000 },
+    { month: 'Tháng 7', revenue: 410000000 },
+    { month: 'Tháng 8', revenue: 435000000 },
+    { month: 'Tháng 9', revenue: 458500000 }
+  ]
+};
 
 export const adminSummary = {
   totalRevenue: '458.500.000 đ',
