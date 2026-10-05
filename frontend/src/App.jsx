@@ -1,122 +1,209 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+// Hooks
+import { useAuth } from './hooks/useAuth';
+import { useSchedule } from './hooks/useSchedule';
+import { useProgress } from './hooks/useProgress';
+
+// Components
+import Sidebar from './components/Sidebar';
+import Header from './components/Header';
+import LoginModal from './components/LoginModal';
+import RegisterModal from './components/RegisterModal';
+import RateTrainerModal from './components/RateTrainerModal';
+
+// Pages
+import PackagesPage from './pages/PackagesPage';
+import StudentDashboardPage from './pages/StudentDashboardPage';
+import TrainerDashboardPage from './pages/TrainerDashboardPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import TrainersPage from './pages/TrainersPage';
+import BookingPage from './pages/BookingPage';
+import SchedulePage from './pages/SchedulePage';
+import ProgressPage from './pages/ProgressPage';
+import ReviewsPage from './pages/ReviewsPage';
+import MyPackagePage from './pages/MyPackagePage';
+
+import { initialReviews, myPackageInfo } from './data/mockData';
 
 function App() {
-  const [count, setCount] = useState(0)
+  // Custom Hooks
+  const { user, login, role } = useAuth();
+  const { schedules, addSchedule, cancelSchedule, completeSchedule } = useSchedule();
+  const { progress } = useProgress();
+
+  // App Level State
+  const [activeMenu, setActiveMenu] = useState('packages');
+  const [reviews, setReviews] = useState(initialReviews);
+  const [myPackage, setMyPackage] = useState(myPackageInfo);
+
+  // Modals & Navigation State
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState(null);
+  const [preSelectedTrainer, setPreSelectedTrainer] = useState(null);
+  const [trainerToReview, setTrainerToReview] = useState(null);
+
+  // Login & Auto-Redirect to Role Dashboard
+  const handleLoginSuccess = (account) => {
+    login(account);
+    if (account.role === 'ADMIN') {
+      setActiveMenu('admin-dashboard');
+    } else if (account.role === 'TRAINER') {
+      setActiveMenu('trainer-dashboard');
+    } else {
+      setActiveMenu('dashboard');
+    }
+  };
+
+  // Handlers
+  const handleSelectPackage = (pkg) => {
+    setSelectedPackage(pkg);
+    setShowRegisterModal(true);
+  };
+
+  const handleSelectPtForBooking = (pt) => {
+    setPreSelectedTrainer(pt);
+    setActiveMenu('booking');
+  };
+
+  const handleOpenReviewModal = (pt) => {
+    setTrainerToReview(pt);
+    setShowReviewModal(true);
+  };
+
+  const handleSubmitReview = (newReview) => {
+    setReviews([newReview, ...reviews]);
+  };
+
+  // Render Current Page Based on Role and activeMenu
+  const renderCurrentPage = () => {
+    // Admin Role Pages
+    if (role === 'ADMIN') {
+      switch (activeMenu) {
+        case 'admin-users':
+        case 'admin-packages':
+        case 'admin-trainers':
+        case 'admin-dashboard':
+        default:
+          return <AdminDashboardPage user={user} />;
+      }
+    }
+
+    // Trainer Role Pages
+    if (role === 'TRAINER') {
+      switch (activeMenu) {
+        case 'trainer-schedule':
+        case 'trainer-students':
+        case 'trainer-reviews':
+        case 'trainer-dashboard':
+        default:
+          return <TrainerDashboardPage user={user} />;
+      }
+    }
+
+    // Student / User Role Pages
+    switch (activeMenu) {
+      case 'dashboard':
+        return (
+          <StudentDashboardPage
+            user={user}
+            schedules={schedules}
+            progress={progress}
+            myPackage={myPackage}
+            onNavigate={(menuId) => setActiveMenu(menuId)}
+          />
+        );
+
+      case 'trainers':
+        return (
+          <TrainersPage
+            onSelectPtForBooking={handleSelectPtForBooking}
+            onOpenReviewModal={handleOpenReviewModal}
+          />
+        );
+
+      case 'booking':
+        return (
+          <BookingPage
+            preSelectedTrainer={preSelectedTrainer}
+            onAddScheduleSuccess={addSchedule}
+          />
+        );
+
+      case 'schedule':
+        return (
+          <SchedulePage
+            schedules={schedules}
+            onCancelSchedule={cancelSchedule}
+            onCompleteSchedule={completeSchedule}
+          />
+        );
+
+      case 'progress':
+        return <ProgressPage />;
+
+      case 'reviews':
+        return (
+          <ReviewsPage
+            reviews={reviews}
+            onOpenReviewModal={handleOpenReviewModal}
+          />
+        );
+
+      case 'my-packages':
+        return (
+          <MyPackagePage
+            onNavigateToPackages={() => setActiveMenu('packages')}
+          />
+        );
+
+      case 'packages':
+      default:
+        return (
+          <PackagesPage onSelectPackage={handleSelectPackage} />
+        );
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app-container">
+      {/* Sidebar Navigation */}
+      <Sidebar user={user} activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
 
-      <div className="ticks"></div>
+      {/* Main Content Dashboard */}
+      <div className="main-content">
+        {/* Header Bar */}
+        <Header user={user} onOpenLogin={() => setShowLoginModal(true)} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {/* Main Body Page */}
+        <main className="page-body">
+          {renderCurrentPage()}
+        </main>
+      </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* Modals */}
+      <LoginModal
+        show={showLoginModal}
+        onHide={() => setShowLoginModal(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
+
+      <RegisterModal
+        show={showRegisterModal}
+        onHide={() => setShowRegisterModal(false)}
+        selectedPackage={selectedPackage}
+        isYearly={true}
+      />
+
+      <RateTrainerModal
+        show={showReviewModal}
+        onHide={() => setShowReviewModal(false)}
+        trainerToReview={trainerToReview}
+        onSubmitReview={handleSubmitReview}
+      />
+    </div>
+  );
 }
 
-export default App
+export default App;
