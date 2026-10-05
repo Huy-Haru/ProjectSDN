@@ -1,13 +1,26 @@
 const mongoose = require('mongoose');
 
-mongoose.set('bufferCommands', false);
+async function connectDB(uri) {
+  try {
+    // Lắng nghe sự kiện
+    mongoose.connection.on('disconnected', () => {
+      console.warn('MongoDB disconnected!');
+    });
 
-async function connectDatabase(uri) {
-  await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
+    mongoose.connection.on('error', (err) => {
+      console.error('MongoDB connection error:', err);
+    });
+
+    await mongoose.connect(uri);
+    console.log('MongoDB connected');
+  } catch (error) {
+    console.error('Lỗi kết nối MongoDB:', error);
+    process.exit(1);
+  }
 }
 
-async function disconnectDatabase() {
+async function disconnectDB() {
   await mongoose.disconnect();
 }
 
-module.exports = { connectDatabase, disconnectDatabase };
+module.exports = { connectDB, disconnectDB };

@@ -1,17 +1,15 @@
 const { once } = require('node:events');
-const { loadEnvironment, readEnvironment } = require('./config/environment');
-const { connectDatabase, disconnectDatabase } = require('./config/database');
+const env = require('./config/environment');
+const { connectDB, disconnectDB } = require('./config/database');
 const createApp = require('./app');
 
 async function startServer() {
-  loadEnvironment();
-  const config = readEnvironment();
-  await connectDatabase(config.mongoUri);
+  await connectDB(env.MONGODB_URI);
 
-  const app = createApp(config);
-  const server = app.listen(config.port);
+  const app = createApp({ corsOrigin: env.CORS_ORIGIN });
+  const server = app.listen(env.PORT);
   await once(server, 'listening');
-  console.log(`Backend listening on port ${config.port}; MongoDB connected.`);
+  console.log(`Backend listening on port ${env.PORT}`);
 
   let shuttingDown = false;
   const shutdown = () => {
@@ -21,7 +19,7 @@ async function startServer() {
     timeout.unref();
     server.close(async () => {
       try {
-        await disconnectDatabase();
+        await disconnectDB();
         clearTimeout(timeout);
       } catch {
         process.exitCode = 1;
@@ -38,7 +36,7 @@ async function startServer() {
 if (require.main === module) {
   startServer().catch(async () => {
     console.error('Backend startup failed. Check .env, MongoDB availability and whether PORT is in use.');
-    await disconnectDatabase().catch(() => {});
+    await disconnectDB().catch(() => {});
     process.exitCode = 1;
   });
 }
