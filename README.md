@@ -1,64 +1,41 @@
-# ProjectSDN
+# FitManager — ProjectSDN
 
-Frontend React + Vite và backend Node.js + Express + Mongoose.
-Hiện có giao diện mẫu Vite và backend nền; các Schema/API nghiệp vụ sẽ được bổ sung sau.
+Website quản lý phòng tập và huấn luyện viên. Frontend React + Vite; backend Node.js + Express + Mongoose; MongoDB local database fitmanager.
 
-## Backend
+## Tài liệu
 
-Yêu cầu Node.js 22.12+ và MongoDB local hoặc một MongoDB URI hợp lệ.
+Xem [hồ sơ dự án](docs/README.md): báo cáo, SRS, thiết kế hệ thống, thiết kế database, hướng dẫn kiểm thử và tối ưu MongoDB. [Sơ đồ draw.io](docs/diagram/README.md) gồm context, use case cho các role, workflow, ERD và database diagram.
+
+## Chạy local
+
+Yêu cầu Node.js >= 22.12.0 và MongoDB server tại 127.0.0.1:27017.
+
+Terminal backend:
 
 ```powershell
 cd backend
 npm install
+# Khi chưa có .env:
 Copy-Item .env.example .env
 npm run dev
 ```
 
-Điền `MONGO_URI`, `PORT` và `CORS_ORIGIN` trong `backend/.env`.
-Server chỉ mở cổng sau khi kết nối MongoDB thành công.
-Theo `.env.example`, backend chạy tại `http://localhost:5000`.
-
-- `GET /`: thông báo chào.
-- `GET /api/health`: trạng thái và ping MongoDB.
-- `npm test`: kiểm tra cấu hình, middleware, HTTP và lỗi khởi động.
-- `npm start`: chạy server không có chế độ watch.
-
-Xem [hướng dẫn backend](backend/README.md) để biết cấu trúc và cách thêm module.
-Không commit `.env`; không dùng các giá trị secret từ tài liệu tham khảo trong source code.
-
-## Frontend
-
-Mở terminal khác:
+Terminal frontend:
 
 ```powershell
 cd frontend
 npm install
+# Khi chưa có .env:
+Copy-Item .env.example .env
 npm run dev
 ```
 
-Frontend chạy tại `http://localhost:3000`; Vite báo lỗi nếu cổng này đang được sử dụng.
-`npm run build` tạo bản build; `npm run lint` kiểm tra code.
-Khi thêm API service, cấu hình `VITE_API_URL=http://localhost:5000/api` trong `frontend/.env`.
-Frontend hiện chưa có luồng API nghiệp vụ.
+Backend: http://localhost:5000. Frontend: http://localhost:3000. Database: mongodb://127.0.0.1:27017/fitmanager. Backend dùng MONGODB_URI (hỗ trợ MONGO_URI cũ), CORS_ORIGIN=http://localhost:3000. Frontend dùng VITE_API_URL=http://localhost:5000/api. Không commit .env.
 
-## Cấu trúc
+## Hiện trạng
 
-```text
-backend/
-  src/
-    config/ controllers/ services/ routes/ middlewares/ utils/
-    models/ validators/ constants/
-    app.js
-    server.js
-  test/
-  .env.example
-  package.json
-frontend/
-  public/
-  src/
-    assets/ components/ pages/ layouts/ routes/ services/
-    hooks/ context/ utils/ constants/
-    App.jsx
-    main.jsx
-  package.json
-```
+Có giao diện ba vai trò Member/PT/Admin và 8 Mongoose model. React kiểm tra kết nối qua GET /api/health. Các màn hình nghiệp vụ vẫn dùng dữ liệu mẫu; API auth/CRUD/phân quyền chưa có. Role lưu trong database: member/trainer/admin; trainer là PT.
+
+## Kiểm tra
+
+Backend: npm test; node scripts/verify-database.js (database tạm); node scripts/optimize-indexes.js (áp dụng index có phạm vi). Frontend: npm run build, npm run lint. Xem [biên bản xác minh](docs/verification.md) để biết kết quả thực tế và giới hạn.
