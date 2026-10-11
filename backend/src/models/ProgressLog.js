@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { integer } = require('../utils/schemaRules');
 
 const progressLogSchema = new mongoose.Schema({
   member: {
@@ -35,12 +36,16 @@ const progressLogSchema = new mongoose.Schema({
   attendedSessions: {
     type: Number,
     default: 0,
+    validate: integer,
     min: [0, 'Số buổi tập đã tham gia không hợp lệ']
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  optimisticConcurrency: true
 });
 
+progressLogSchema.index({ member: 1, date: -1 });
+progressLogSchema.index({ trainer: 1, member: 1, date: -1 });
 const ProgressLog = mongoose.model('ProgressLog', progressLogSchema);
 
 module.exports = ProgressLog;

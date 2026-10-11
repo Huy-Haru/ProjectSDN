@@ -1,15 +1,17 @@
 const { once } = require('node:events');
-const env = require('./config/environment');
+const { loadEnvironment, readEnvironment } = require('./config/environment');
 const { connectDB, disconnectDB } = require('./config/database');
 const createApp = require('./app');
 
 async function startServer() {
-  await connectDB(env.MONGODB_URI);
+  loadEnvironment();
+  const env = readEnvironment();
+  await connectDB(env.mongoUri);
 
-  const app = createApp({ corsOrigin: env.CORS_ORIGIN });
-  const server = app.listen(env.PORT);
+  const app = createApp({ corsOrigin: env.corsOrigin });
+  const server = app.listen(env.port);
   await once(server, 'listening');
-  console.log(`Backend listening on port ${env.PORT}`);
+  console.log(`Backend listening on port ${env.port}`);
 
   let shuttingDown = false;
   const shutdown = () => {

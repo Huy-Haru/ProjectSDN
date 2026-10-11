@@ -1,19 +1,14 @@
+const path = require('node:path');
 const dotenv = require('dotenv');
-
-// Đọc file .env
-dotenv.config();
-
-const { PORT, MONGODB_URI, NODE_ENV, CORS_ORIGIN } = process.env;
-
-// Báo lỗi nếu thiếu MONGODB_URI
-if (!MONGODB_URI) {
-  console.error('Lỗi: Thiếu MONGODB_URI trong file .env');
-  process.exit(1);
+function loadEnvironment() { dotenv.config({ path: path.resolve(__dirname, '../../.env') }); }
+function readEnvironment(env = process.env) {
+  const mongoUri = env.MONGODB_URI || env.MONGO_URI;
+  if (!mongoUri || !/^mongodb(?:\+srv)?:\/\//.test(mongoUri)) throw new Error('MONGODB_URI (legacy MONGO_URI) must be a MongoDB connection string.');
+  const port = Number(env.PORT || 5000);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('PORT must be an integer between 1 and 65535.');
+  if (!env.CORS_ORIGIN) throw new Error('CORS_ORIGIN is required.');
+  const origin = new URL(env.CORS_ORIGIN);
+  if (!['http:', 'https:'].includes(origin.protocol) || origin.origin !== env.CORS_ORIGIN) throw new Error('CORS_ORIGIN must be an HTTP(S) origin without a trailing slash.');
+  return { port, mongoUri, corsOrigin: env.CORS_ORIGIN };
 }
-
-module.exports = {
-  PORT: PORT || 5000,
-  MONGODB_URI,
-  NODE_ENV: NODE_ENV || 'development',
-  CORS_ORIGIN: CORS_ORIGIN || '*'
-};
+module.exports = { loadEnvironment, readEnvironment };

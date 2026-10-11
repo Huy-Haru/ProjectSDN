@@ -29,6 +29,7 @@ test('environment rejects missing database, bad ports and invalid origins', () =
   const base = { MONGO_URI: 'mongodb://127.0.0.1:27017/test', CORS_ORIGIN: corsOrigin };
   assert.equal(readEnvironment(base).port, 5000);
   assert.equal(readEnvironment({ ...base, PORT: '6000' }).port, 6000);
+  assert.equal(readEnvironment({ ...base, MONGODB_URI: 'mongodb://127.0.0.1:27017/fitmanager' }).mongoUri, 'mongodb://127.0.0.1:27017/fitmanager');
   assert.throws(() => readEnvironment({ CORS_ORIGIN: corsOrigin }), /MONGO_URI/);
   assert.throws(() => readEnvironment({ ...base, MONGO_URI: 'https://example.com' }), /MONGO_URI/);
   for (const PORT of ['0', '-1', '65536', 'abc', '1.5']) {
@@ -122,6 +123,7 @@ test('server exits instead of opening HTTP when MongoDB is unreachable', { timeo
     env: {
       ...process.env,
       MONGO_URI: 'mongodb://127.0.0.1:1/unreachable',
+      MONGODB_URI: 'mongodb://127.0.0.1:1/unreachable',
       PORT: '5000',
       CORS_ORIGIN: corsOrigin,
     },
