@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import ConnectionStatus from './components/ConnectionStatus';
 // Hooks
 import { useAuth } from './hooks/useAuth';
 import { useSchedule } from './hooks/useSchedule';
@@ -45,7 +46,7 @@ function App() {
   // App Level State
   const [activeMenu, setActiveMenu] = useState('packages');
   const [reviews, setReviews] = useState(initialReviews);
-  const [myPackage, setMyPackage] = useState(myPackageInfo);
+  const [myPackage] = useState(myPackageInfo);
 
   // Modals & Navigation State
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -196,6 +197,7 @@ function App() {
       <div className="main-content">
         {/* Header Bar */}
         <Header user={user} onOpenLogin={() => setShowLoginModal(true)} />
+        <ConnectionStatus />
 
         {/* Main Body Page */}
         <main className="page-body">
