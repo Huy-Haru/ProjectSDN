@@ -8,6 +8,7 @@ import { useProgress } from './hooks/useProgress';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import LoginModal from './components/LoginModal';
+import SignUpModal from './components/SignUpModal';
 import RegisterModal from './components/RegisterModal';
 import RateTrainerModal from './components/RateTrainerModal';
 
@@ -37,8 +38,8 @@ import AdminRevenuePage from './pages/AdminRevenuePage';
 import { initialReviews, myPackageInfo } from './data/mockData';
 
 function App() {
-  // Custom Hooks
-  const { user, login, role } = useAuth();
+  // Custom Hooks — auth thật từ server
+  const { user, loading: authLoading, login, logout, register, role } = useAuth();
   const { schedules, addSchedule, cancelSchedule, completeSchedule } = useSchedule();
   const { progress } = useProgress();
 
@@ -49,22 +50,38 @@ function App() {
 
   // Modals & Navigation State
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [preSelectedTrainer, setPreSelectedTrainer] = useState(null);
   const [trainerToReview, setTrainerToReview] = useState(null);
 
-  // Login & Auto-Redirect to Role Dashboard
-  const handleLoginSuccess = (account) => {
-    login(account);
-    if (account.role === 'ADMIN') {
-      setActiveMenu('admin-dashboard');
-    } else if (account.role === 'TRAINER') {
-      setActiveMenu('trainer-dashboard');
-    } else {
-      setActiveMenu('dashboard');
-    }
+  // Tự redirect theo role server sau khi đăng nhập/phục hồi phiên
+  const redirectByRole = (userRole) => {
+    if (userRole === 'admin') setActiveMenu('admin-dashboard');
+    else if (userRole === 'trainer') setActiveMenu('trainer-dashboard');
+    else setActiveMenu('dashboard');
+  };
+
+  // Login thật qua API — gọi useAuth.login
+  const handleLoginSuccess = async (email, password) => {
+    const serverUser = await login(email, password);
+    redirectByRole(serverUser.role);
+    return serverUser;
+  };
+
+  // Register thật qua API
+  const handleRegisterSuccess = async (payload) => {
+    const serverUser = await register(payload);
+    redirectByRole(serverUser.role);
+    return serverUser;
+  };
+
+  // Logout thật
+  const handleLogout = async () => {
+    await logout();
+    setActiveMenu('packages');
   };
 
   // Handlers
@@ -89,8 +106,8 @@ function App() {
 
   // Render Current Page Based on Role and activeMenu
   const renderCurrentPage = () => {
-    // Admin Role Pages
-    if (role === 'ADMIN') {
+    // Admin Role Pages — role từ server là lowercase
+    if (role === 'admin') {
       switch (activeMenu) {
         case 'admin-packages':
           return <AdminPackagesPage />;
@@ -109,7 +126,7 @@ function App() {
     }
 
     // Trainer Role Pages
-    if (role === 'TRAINER') {
+    if (role === 'trainer') {
       switch (activeMenu) {
         case 'trainer-schedule':
           return <TrainerSchedulePage user={user} />;
@@ -187,6 +204,22 @@ function App() {
     }
   };
 
+  // Nếu đang phục hồi phiên, hiện loading toàn màn hình
+  if (authLoading) {
+    return (
+      <div
+        style={{
+          height: '100vh', display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          background: '#0A0F1E', color: '#00E676', gap: '16px'
+        }}
+      >
+        <div className="spinner-border" style={{ color: '#00E676', width: '2.5rem', height: '2.5rem' }} role="status" />
+        <span style={{ fontSize: '0.9rem', color: '#64748B' }}>Đang khởi động FitManager...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="app-container">
       {/* Sidebar Navigation */}
@@ -195,7 +228,12 @@ function App() {
       {/* Main Content Dashboard */}
       <div className="main-content">
         {/* Header Bar */}
-        <Header user={user} onOpenLogin={() => setShowLoginModal(true)} />
+        <Header
+          user={user}
+          onOpenLogin={() => setShowLoginModal(true)}
+          onOpenSignUp={() => setShowSignUpModal(true)}
+          onLogout={handleLogout}
+        />
 
         {/* Main Body Page */}
         <main className="page-body">
@@ -208,6 +246,12 @@ function App() {
         show={showLoginModal}
         onHide={() => setShowLoginModal(false)}
         onLoginSuccess={handleLoginSuccess}
+      />
+
+      <SignUpModal
+        show={showSignUpModal}
+        onHide={() => setShowSignUpModal(false)}
+        onRegisterSuccess={handleRegisterSuccess}
       />
 
       <RegisterModal
