@@ -1,25 +1,49 @@
-import React, { useState } from 'react';
-import { FaCalendarCheck, FaClock, FaCheckCircle, FaCommentMedical, FaSearch } from 'react-icons/fa';
-import { initialSchedules } from '../data/mockData';
+import React, { useState, useEffect, useCallback } from 'react';
+import { FaCalendarCheck, FaCheckCircle, FaSearch, FaFilter, FaExclamationCircle, FaSyncAlt } from 'react-icons/fa';
+import { trainerApi } from '../api/apiClient';
 
+const STATUS_MAP = {
+  booked: { label: 'Chờ dạy', badge: 'bg-warning text-dark' },
+  completed: { label: 'Đã dạy xong', badge: 'bg-success' },
+  cancelled: { label: 'Đã hủy', badge: 'bg-secondary' },
+  no_show: { label: 'Học viên vắng', badge: 'bg-danger' }
+};
+
+/**
+ * A2.2 — TrainerSchedulePage: PT chỉ thấy lịch liên quan đến mình, dùng API thật.
+ */
 const TrainerSchedulePage = ({ user }) => {
-  const [schedules, setSchedules] = useState(initialSchedules);
-  const [filterStatus, setFilterStatus] = useState('Tất cả');
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterDate, setFilterDate] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const handleComplete = (id) => {
-    setSchedules(prev => prev.map(s => s.id === id ? { ...s, status: 'Đã dạy xong' } : s));
-  };
+  const fetchSchedule = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const params = {};
+      if (filterStatus) params.status = filterStatus;
+      if (filterDate) params.date = filterDate;
+      const res = await trainerApi.getSchedule(params);
+      setBookings(res.data.bookings || []);
+    } catch (err) {
+      setError(err.message || 'Không thể tải lịch dạy.');
+    } finally {
+      setLoading(false);
+    }
+  }, [filterStatus, filterDate]);
 
-  const handleApprove = (id) => {
-    setSchedules(prev => prev.map(s => s.id === id ? { ...s, status: 'Đã xác nhận' } : s));
-  };
+  useEffect(() => {
+    fetchSchedule();
+  }, [fetchSchedule]);
 
-  const filteredSchedules = schedules.filter(sch => {
-    const matchesStatus = filterStatus === 'Tất cả' || sch.status === filterStatus;
-    const matchesSearch = sch.studentName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          sch.workoutType.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesStatus && matchesSearch;
+  const filtered = bookings.filter(b => {
+    if (!searchTerm) return true;
+    const name = b.member?.fullName?.toLowerCase() || '';
+    return name.includes(searchTerm.toLowerCase());
   });
 
   return (
@@ -27,100 +51,137 @@ const TrainerSchedulePage = ({ user }) => {
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
           <span className="section-tag">QUẢN LÝ LỊCH DẠY PT</span>
-          <h2 className="section-header-title">Danh Sách Ca Dạy 1:1 Với Học Viên</h2>
-          <p className="text-muted mb-0">Theo dõi, duyệt ca dạy và ghi chú tiến độ bài tập cho từng học viên.</p>
+          <h2 className="section-header-title">Lịch Dạy Của Tôi</h2>
+          <p className="text-muted mb-0">Chỉ hiển thị các buổi tập được đặt với bạn từ MongoDB.</p>
         </div>
-
-        <div className="billing-toggle-container m-0">
-          {['Tất cả', 'Sắp diễn ra', 'Đã xác nhận', 'Đã dạy xong'].map(st => (
-            <button
-              key={st}
-              className={`toggle-btn ${filterStatus === st ? 'active' : ''}`}
-              onClick={() => setFilterStatus(st)}
-            >
-              {st}
-            </button>
-          ))}
-        </div>
+        <button
+          className="btn-card-action px-3 py-2 d-flex align-items-center gap-2"
+          style={{ width: 'auto', background: '#1E293B', fontSize: '0.82rem' }}
+          onClick={fetchSchedule}
+        >
+          <FaSyncAlt /> Làm mới
+        </button>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="p-3 mb-4 rounded-3 d-flex justify-content-between align-items-center flex-wrap gap-3" style={{ background: '#0F172A', border: '1px solid #1E293B' }}>
-        <div className="search-box position-relative" style={{ width: '320px' }}>
+      {/* Filter Bar */}
+      <div className="p-3 mb-4 rounded-3 d-flex flex-wrap gap-3 align-items-center" style={{ background: '#0F172A', border: '1px solid #1E293B' }}>
+        {/* Search */}
+        <div className="search-box position-relative" style={{ width: '240px' }}>
           <FaSearch className="search-icon" />
-          <input 
-            type="text" 
-            className="search-input" 
-            placeholder="Tìm theo tên học viên hoặc bài tập..." 
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Tìm tên học viên..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="text-muted small">
-          Tổng số ca dạy: <strong className="text-white">{filteredSchedules.length} ca</strong>
+
+        {/* Filter status */}
+        <div className="d-flex align-items-center gap-2">
+          <FaFilter style={{ color: '#64748B', fontSize: '0.8rem' }} />
+          <select
+            className="form-control form-control-dark"
+            style={{ width: 170, fontSize: '0.82rem', padding: '6px 10px' }}
+            value={filterStatus}
+            onChange={e => setFilterStatus(e.target.value)}
+          >
+            <option value="">Tất cả trạng thái</option>
+            {Object.entries(STATUS_MAP).map(([val, { label }]) => (
+              <option key={val} value={val}>{label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Filter date */}
+        <input
+          type="date"
+          className="form-control form-control-dark"
+          style={{ width: 160, fontSize: '0.82rem', padding: '6px 10px' }}
+          value={filterDate}
+          onChange={e => setFilterDate(e.target.value)}
+          title="Lọc theo ngày"
+        />
+
+        <div className="text-muted small ms-auto">
+          Hiển thị: <strong className="text-white">{filtered.length}</strong> buổi
         </div>
       </div>
 
-      {/* Schedules Table */}
-      <div className="p-4 rounded-4" style={{ background: '#0F172A', border: '1px solid #1E293B' }}>
-        <div className="table-responsive">
-          <table className="table-custom">
-            <thead>
-              <tr>
-                <th>HỌC VIÊN</th>
-                <th>SỐ ĐIỆN THOẠI</th>
-                <th>NGÀY & KHUNG GIỜ DẠY</th>
-                <th>NỘI DUNG BÀI TẬP</th>
-                <th>ĐỊA ĐIỂM</th>
-                <th>TRẠNG THÁI</th>
-                <th>THAO TÁC HLV</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredSchedules.map((sch) => (
-                <tr key={sch.id}>
-                  <td className="fw-bold text-white">{sch.studentName}</td>
-                  <td>{sch.studentPhone || '0987654321'}</td>
-                  <td>
-                    <span style={{ color: '#00E676', fontWeight: 600 }}>{sch.date}</span> ({sch.time})
-                  </td>
-                  <td>{sch.workoutType}</td>
-                  <td>{sch.location}</td>
-                  <td>
-                    <span className={`badge px-2.5 py-1 ${
-                      sch.status === 'Đã dạy xong' ? 'bg-success' : 
-                      sch.status === 'Đã xác nhận' ? 'bg-primary' : 'bg-warning text-dark'
-                    }`}>
-                      {sch.status}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="d-flex gap-2 justify-content-center">
-                      {sch.status === 'Sắp diễn ra' && (
-                        <button 
-                          className="btn-card-action px-2 py-1" 
-                          style={{ fontSize: '0.75rem', width: 'auto', background: '#1E293B' }}
-                          onClick={() => handleApprove(sch.id)}
-                        >
-                          Xác nhận
-                        </button>
-                      )}
-                      {sch.status !== 'Đã dạy xong' && (
-                        <button 
-                          className="btn-card-action btn-green px-2 py-1" 
-                          style={{ fontSize: '0.75rem', width: 'auto' }}
-                          onClick={() => handleComplete(sch.id)}
-                        >
-                          <FaCheckCircle className="me-1" /> Đã dạy xong
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Error */}
+      {error && (
+        <div className="d-flex align-items-center gap-2 p-3 mb-4 rounded-3"
+          style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444' }}>
+          <FaExclamationCircle /> {error}
         </div>
+      )}
+
+      {/* Table */}
+      <div className="p-4 rounded-4" style={{ background: '#0F172A', border: '1px solid #1E293B' }}>
+        {loading ? (
+          <div className="text-center py-5"><div className="spinner-border text-success" /></div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-5 text-muted">
+            <FaCalendarCheck style={{ fontSize: '2.5rem', marginBottom: 12, opacity: 0.4 }} />
+            <p>Chưa có lịch dạy nào{filterStatus || filterDate ? ' phù hợp bộ lọc' : ''}.</p>
+          </div>
+        ) : (
+          <div className="table-responsive">
+            <table className="table-custom">
+              <thead>
+                <tr>
+                  <th>HỌC VIÊN</th>
+                  <th>NGÀY & GIỜ</th>
+                  <th>GÓI TẬP</th>
+                  <th>GHI CHÚ</th>
+                  <th>TRẠNG THÁI</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(b => {
+                  const st = STATUS_MAP[b.status] || { label: b.status, badge: 'bg-secondary' };
+                  return (
+                    <tr key={b._id}>
+                      <td>
+                        <div className="d-flex align-items-center gap-2">
+                          <div style={{
+                            width: 36, height: 36, borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #00E676, #00B0FF)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: '#0A0F1E', fontWeight: 700, fontSize: '0.9rem', flexShrink: 0
+                          }}>
+                            {b.member?.fullName?.charAt(0)?.toUpperCase() || '?'}
+                          </div>
+                          <div>
+                            <div className="fw-bold text-white" style={{ fontSize: '0.9rem' }}>{b.member?.fullName || '—'}</div>
+                            <div className="text-muted" style={{ fontSize: '0.75rem' }}>{b.member?.phone || b.member?.email || ''}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ color: '#00E676', fontWeight: 600 }}>
+                          {b.date ? new Date(b.date).toLocaleDateString('vi-VN') : '—'}
+                        </div>
+                        <div className="text-muted small">{b.startTime} – {b.endTime}</div>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>
+                          {b.subscription?.status === 'active' ? '✅ Gói đang hoạt động' : b.subscription?.status || '—'}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="text-muted small">{b.note || '—'}</span>
+                      </td>
+                      <td>
+                        <span className={`badge ${st.badge}`}>{st.label}</span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -53,3 +53,54 @@ export const authApi = {
   /** Lấy thông tin user hiện tại */
   me: () => request('GET', '/auth/me')
 };
+
+/**
+ * Profile API — A2.1
+ */
+export const profileApi = {
+  /** Lấy profile của mình (kèm TrainerProfile nếu là trainer) */
+  getMyProfile: () => request('GET', '/profile/me'),
+
+  /** Cập nhật profile cá nhân (whitelist fields) */
+  updateMyProfile: (data) => request('PATCH', '/profile/me', data),
+
+  /** Trainer cập nhật TrainerProfile */
+  updateTrainerProfile: (data) => request('PATCH', '/profile/trainer', data),
+
+  /** Đổi mật khẩu */
+  changePassword: (currentPassword, newPassword) =>
+    request('POST', '/profile/change-password', { currentPassword, newPassword })
+};
+
+/**
+ * Trainer API — A2.2
+ */
+export const trainerApi = {
+  /** PT xem lịch dạy của mình */
+  getSchedule: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request('GET', `/trainer/schedule${qs ? '?' + qs : ''}`);
+  },
+
+  /** PT xem danh sách hội viên liên quan */
+  getMembers: () => request('GET', '/trainer/members'),
+
+  /** Tạo giáo án */
+  createWorkoutPlan: (data) => request('POST', '/trainer/workout-plans', data),
+
+  /** Danh sách giáo án của PT (query: memberId, status) */
+  getWorkoutPlans: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request('GET', `/trainer/workout-plans${qs ? '?' + qs : ''}`);
+  },
+
+  /** Chi tiết một giáo án */
+  getWorkoutPlanById: (planId) => request('GET', `/trainer/workout-plans/${planId}`),
+
+  /** Cập nhật giáo án */
+  updateWorkoutPlan: (planId, data) => request('PATCH', `/trainer/workout-plans/${planId}`, data),
+
+  /** Member xem giáo án của mình */
+  getMemberWorkoutPlans: () => request('GET', '/trainer/member/workout-plans')
+};
+

@@ -35,6 +35,9 @@ import AdminStudentsPage from './pages/AdminStudentsPage';
 import AdminSchedulesPage from './pages/AdminSchedulesPage';
 import AdminRevenuePage from './pages/AdminRevenuePage';
 
+// A2.1 — Profile cho cả 3 role
+import ProfilePage from './pages/ProfilePage';
+
 import { initialReviews, myPackageInfo } from './data/mockData';
 
 function App() {
@@ -106,6 +109,11 @@ function App() {
 
   // Render Current Page Based on Role and activeMenu
   const renderCurrentPage = () => {
+    // Profile — dùng chung cho cả 3 role
+    if (activeMenu === 'profile') {
+      return <ProfilePage user={user} />;
+    }
+
     // Admin Role Pages — role từ server là lowercase
     if (role === 'admin') {
       switch (activeMenu) {
