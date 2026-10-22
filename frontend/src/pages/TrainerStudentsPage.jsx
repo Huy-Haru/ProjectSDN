@@ -163,7 +163,7 @@ const TrainerStudentsPage = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="d-flex gap-2 pt-3 mt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="student-actions d-flex gap-2 pt-3 mt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                   <button
                     className="btn-card-action flex-grow-1 py-2"
                     style={{ background: '#1E293B', fontSize: '0.82rem' }}

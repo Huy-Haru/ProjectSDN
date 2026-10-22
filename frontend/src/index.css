@@ -837,19 +837,44 @@ body {
   margin-bottom: 20px;
 }
 
-/* Admin portal: keep navigation and tables usable on small screens. */
+/* Shared portal navigation on small screens; wide tables scroll inside their wrappers. */
 .admin-live .form-control, .admin-live .form-select { max-width: 100%; }
 @media (max-width: 767px) {
-  .admin-layout { flex-direction: column; }
-  .admin-layout .sidebar { width: 100%; padding: 12px; border-right: 0; border-bottom: 1px solid var(--border-color); }
-  .admin-layout .brand-header { padding-bottom: 12px; margin-bottom: 10px; }
-  .admin-layout .menu-section-label { margin: 8px 0; padding: 0 8px; }
-  .admin-layout .nav-menu { display: flex; flex-direction: row; gap: 6px; overflow-x: auto; padding-bottom: 5px; }
-  .admin-layout .nav-item-btn { width: auto; flex: 0 0 auto; white-space: nowrap; padding: 9px 12px; }
-  .admin-layout .top-header { padding: 12px; height: auto; min-height: 70px; }
-  .admin-layout .top-header .search-box { display: none; }
-  .admin-layout .header-right { width: 100%; justify-content: space-between; gap: 8px; }
-  .admin-layout .page-body { padding: 22px 16px; }
+  .app-container { flex-direction: column; }
+  .app-container .sidebar { width: 100%; padding: 12px; border-right: 0; border-bottom: 1px solid var(--border-color); }
+  .app-container .brand-header { padding-bottom: 12px; margin-bottom: 10px; }
+  .app-container .menu-section-label { margin: 8px 0; padding: 0 8px; }
+  .app-container .nav-menu { display: flex; flex-direction: row; gap: 6px; overflow-x: auto; padding-bottom: 5px; }
+  .app-container .nav-item-btn { width: auto; flex: 0 0 auto; white-space: nowrap; padding: 9px 12px; }
+  .app-container .top-header { padding: 12px; height: auto; min-height: 70px; }
+  .app-container .top-header .search-box { display: none; }
+  .app-container .header-right { width: 100%; justify-content: space-between; gap: 8px; }
+  .app-container .page-body { padding: 22px 16px; }
   .admin-layout .admin-live h1 { overflow-wrap: anywhere; }
   .admin-layout .admin-live .table { min-width: 620px; }
+}
+
+@media (max-width: 767px) {
+  .app-container .header-right { flex-wrap: wrap; }
+  .app-container .user-profile-btn { min-width: 0; max-width: 100%; flex: 1 1 190px; }
+  .app-container .user-profile-btn > div { min-width: 0; }
+  .app-container .user-avatar { flex-shrink: 0; }
+  .app-container .user-name { flex-wrap: wrap; overflow-wrap: anywhere; }
+  .app-container .user-role, .app-container .page-body { overflow-wrap: anywhere; }
+  .app-container .page-body .search-box { max-width: 100%; }
+  .trainer-students-page .student-actions { flex-wrap: wrap; }
+  .trainer-students-page .student-actions > button { flex: 1 1 140px; }
+  .profile-page > .d-flex { flex-wrap: wrap; }
+  .profile-page form .d-flex { flex-wrap: wrap; }
+  .profile-page form .flex-grow-1 { min-width: 0; }
+  .app-container input, .app-container select, .app-container textarea { max-width: 100%; }
+  .trainer-schedule-page .table-custom { min-width: 720px; }
+}
+
+/* Bootstrap's default muted text targets light surfaces; portals use dark cards. */
+.app-container .text-muted { color: var(--text-muted) !important; }
+.app-container .nav-item-btn:focus-visible { outline: 2px solid var(--accent-green); outline-offset: -2px; }
+@media (max-width: 767px) {
+  .app-container button { min-height: 44px; }
+  .app-container input, .app-container select, .app-container textarea { font-size: 16px !important; }
 }

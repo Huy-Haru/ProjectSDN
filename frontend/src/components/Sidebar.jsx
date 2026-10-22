@@ -80,10 +80,11 @@ const Sidebar = ({ user, activeMenu, setActiveMenu }) => {
 
       {/* Menu Section Label */}
       <div className="menu-section-label">{roleLabel}</div>
-      <nav className="nav-menu">
+      <nav className="nav-menu" aria-label="Điều hướng chính">
         {currentMenuList.map((item) => (
           <button
             key={item.id}
+            aria-current={activeMenu === item.id ? 'page' : undefined}
             className={`nav-item-btn ${activeMenu === item.id ? 'active' : ''}`}
             onClick={() => setActiveMenu(item.id)}
           >
@@ -97,10 +98,11 @@ const Sidebar = ({ user, activeMenu, setActiveMenu }) => {
       {profileMenu.length > 0 && (
         <>
           <div className="menu-section-label mt-3">TÀI KHOẢN</div>
-          <nav className="nav-menu">
+          <nav className="nav-menu" aria-label="Tài khoản">
             {profileMenu.map((item) => (
               <button
                 key={item.id}
+                aria-current={activeMenu === item.id ? 'page' : undefined}
                 className={`nav-item-btn ${activeMenu === item.id ? 'active' : ''}`}
                 onClick={() => setActiveMenu(item.id)}
               >
