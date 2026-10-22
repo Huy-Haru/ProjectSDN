@@ -105,7 +105,7 @@ async function createWorkoutPlan(req, res) {
   const user = req.user;
 
   const trainerProfile = await TrainerProfile.findOne({ user: user._id });
-  if (!trainerProfile) {
+  if (!trainerProfile || !trainerProfile.isActive) {
     throw new AppError('Hồ sơ huấn luyện viên không tồn tại.', 404);
   }
 
@@ -113,6 +113,10 @@ async function createWorkoutPlan(req, res) {
 
   if (!memberId || !title || !startDate || !endDate) {
     throw new AppError('memberId, title, startDate và endDate là bắt buộc.', 400);
+  }
+
+  if (typeof title !== 'string' || (goal !== undefined && typeof goal !== 'string')) {
+    throw new AppError('Tiêu đề và mục tiêu phải là văn bản.', 400);
   }
 
   // Kiểm tra member có booking với trainer này không (tránh tạo giáo án cho người không liên quan)
@@ -193,7 +197,7 @@ async function updateWorkoutPlan(req, res) {
   const user = req.user;
 
   const trainerProfile = await TrainerProfile.findOne({ user: user._id });
-  if (!trainerProfile) {
+  if (!trainerProfile || !trainerProfile.isActive) {
     throw new AppError('Hồ sơ huấn luyện viên không tồn tại.', 404);
   }
 
@@ -213,6 +217,11 @@ async function updateWorkoutPlan(req, res) {
 
   if (!plan) {
     throw new AppError('Giáo án không tồn tại hoặc bạn không có quyền chỉnh sửa.', 404);
+  }
+
+  if (req.body.expectedVersion !== undefined &&
+      (!Number.isInteger(req.body.expectedVersion) || req.body.expectedVersion !== plan.__v)) {
+    throw new AppError('Giáo án đã được cập nhật. Hãy tải lại trước khi sửa.', 409);
   }
 
   Object.assign(plan, updateData);
