@@ -1,6 +1,6 @@
 # FitManager backend
 
-Node.js + Express + Mongoose, CommonJS. Có 8 model; chưa có API auth/CRUD nghiệp vụ.
+Node.js + Express + Mongoose, CommonJS. Có 8 model, Auth/profile/PT và API quản trị dưới /api/admin. Xem [phần Admin](../docs/08-admin-implementation.md) để tạo tài khoản, xem hợp đồng API và kiểm thử.
 
 ## Chạy
 

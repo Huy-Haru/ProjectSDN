@@ -34,7 +34,7 @@ Backend: http://localhost:5000. Frontend: http://localhost:3000. Database: mongo
 
 ## Hiện trạng
 
-Có giao diện ba vai trò Member/PT/Admin và 8 Mongoose model. React kiểm tra kết nối qua GET /api/health. Các màn hình nghiệp vụ vẫn dùng dữ liệu mẫu; API auth/CRUD/phân quyền chưa có. Role lưu trong database: member/trainer/admin; trainer là PT.
+Có giao diện ba vai trò Member/PT/Admin và 8 Mongoose model. Auth/profile/PT của nhóm đã được tích hợp. Phần Admin có API phân quyền và giao diện dùng MongoDB thật: gói, Member/PT, lịch, thanh toán, doanh thu/dashboard. Các luồng Member chưa tích hợp vẫn dùng dữ liệu mẫu. Role database: member/trainer/admin; trainer là PT. Xem [hướng dẫn Admin và tạo tài khoản](docs/08-admin-implementation.md).
 
 ## Kiểm tra
 

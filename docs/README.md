@@ -13,6 +13,7 @@ Website quản lý phòng tập và huấn luyện viên — SDN302. Phiên bả
 | [05-setup-and-testing.md](05-setup-and-testing.md) | Chạy local, xác minh kết nối và kế hoạch kiểm thử |
 | [06-mongodb-optimization.md](06-mongodb-optimization.md) | Profile ba vai trò, validation, index và migration |
 | [07-work-plan-4-weeks.md](07-work-plan-4-weeks.md) | Kế hoạch 12/10–08/11/2026; Huy–Admin, Hiếu–Member, Anh–PT/Auth |
+| [08-admin-implementation.md](08-admin-implementation.md) | Phần Admin đã triển khai, API, kiểm thử và hướng dẫn vận hành |
 | [diagram/README.md](diagram/README.md) | Danh mục và cách mở sơ đồ draw.io |
 
 ## Cách đọc trạng thái
@@ -21,7 +22,7 @@ Website quản lý phòng tập và huấn luyện viên — SDN302. Phiên bả
 - **Yêu cầu/thiết kế:** mục tiêu cần triển khai; không phải cam kết đã chạy được.
 - **Chưa kiểm chứng:** cần môi trường hoặc dữ liệu thực để xác nhận.
 
-Tài liệu mô tả sản phẩm mục tiêu và đối chiếu với phiên bản hiện tại. Frontend nghiệp vụ vẫn dùng `mockData` và state trong trình duyệt. Backend đã có 8 model, cấu hình MongoDB và API `GET /api/health`; chưa có API đăng nhập, phân quyền hoặc CRUD nghiệp vụ. Kiểm tra kết nối trên giao diện không có nghĩa mọi chức năng đã lưu dữ liệu vào MongoDB.
+Tài liệu ban đầu ngày 11/10 ghi hiện trạng tại thời điểm đó. Cập nhật 23/10: đã tích hợp Auth/profile/PT từ nhánh Anh và triển khai Admin dùng API/MongoDB thật. Các màn hình Member còn dùng dữ liệu mẫu ở những phần chưa tích hợp. Chi tiết mới nhất và giới hạn nằm trong [phần Admin](08-admin-implementation.md); các trạng thái “chưa có API” của hồ sơ ban đầu là mốc lịch sử.
 
 ## Nguồn đối chiếu
 

@@ -6,6 +6,8 @@
 
 **Phân công đã thống nhất:** Huy phụ trách Admin; Hiếu phụ trách Member; Anh phụ trách PT và nền tài khoản dùng chung.
 
+**Tiến độ cập nhật 23/10:** phần code Admin H1–H3 đã triển khai và có kiểm thử; chi tiết trong [08-admin-implementation.md](08-admin-implementation.md). H4 có build/lint/Admin UAT và hướng dẫn; backup/restore vận hành và review chéo nhóm chưa được ghi là hoàn tất. Các bảng dưới giữ kế hoạch gốc để đối chiếu.
+
 ## 1. Mục tiêu sau 4 tuần
 
 Hoàn thành phiên bản MVP dùng dữ liệu MongoDB thật: đăng nhập theo ba role, quản lý gói/hội viên/PT, đăng ký gói và xác nhận thanh toán thủ công, đặt/hủy lịch, giáo án, tiến độ, đánh giá PT và báo cáo doanh thu. Các thao tác quan trọng phải giữ dữ liệu sau tải lại trang và được kiểm tra quyền tại backend.

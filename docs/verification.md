@@ -1,5 +1,7 @@
 # Biên bản xác minh — 11/10/2026
 
+**Cập nhật 23/10/2026:** Auth/profile/PT đã tích hợp; phần Admin đã dùng API/MongoDB thật. Backend đạt 16/16 test và verify-admin integration; frontend build/lint các file Admin đã sửa đạt. Trình duyệt đã thử đăng nhập, tạo gói/reload, Member/PT, completed lịch, payment và báo cáo; 390px không tràn ngang trang. Xem [biên bản Admin](08-admin-implementation.md). Bảng phía dưới giữ kết quả mốc 11/10; các dòng “chưa có API auth/CRUD” không còn áp dụng cho Admin.
+
 Nhánh làm việc: HuyNHHE190724. Kết quả được ghi từ lệnh chạy và trình duyệt trên máy local; không phải kết quả triển khai production.
 
 | Kiểm tra | Kết quả | Minh chứng/giới hạn |
