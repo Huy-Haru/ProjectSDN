@@ -1,5 +1,7 @@
 # Biên bản xác minh — 11/10/2026
 
+**Browser regression 23/10/2026:** [CI run 39865513485](https://github.com/Huy-Haru/ProjectSDN/actions/runs/39865513485) của commit 61ea0f2 đạt cả backend, admin-frontend và admin-browser. UAT Admin tự động kiểm tra login/reload/logout, tạo/sửa/khóa/tìm gói, tạo PT, lịch/thanh toán/doanh thu, API lỗi/thử lại/empty và viewport 390px. Xem [hướng dẫn chạy lại](10-admin-browser-uat.md).
+
 **Bổ sung H4 ngày 23/10/2026:** 17/17 test backend đạt; check:config, integration Admin và test:archive đạt local. Restore thử giữ BSON Date/ObjectId, nested values, count và index unique/partial; từ chối ghi đè file/đích đã có. Frontend lint:admin và build đạt. CI đã cấu hình; kết quả remote cần xem riêng sau push. Xem [đối chiếu H1–H4](09-admin-release-checklist.md).
 
 **Cập nhật 23/10/2026:** Auth/profile/PT đã tích hợp; phần Admin đã dùng API/MongoDB thật. Backend đạt 16/16 test và verify-admin integration; frontend build/lint các file Admin đã sửa đạt. Trình duyệt đã thử đăng nhập, tạo gói/reload, Member/PT, completed lịch, payment và báo cáo; 390px không tràn ngang trang. Xem [biên bản Admin](08-admin-implementation.md). Bảng phía dưới giữ kết quả mốc 11/10; các dòng “chưa có API auth/CRUD” không còn áp dụng cho Admin.

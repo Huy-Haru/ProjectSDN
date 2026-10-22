@@ -46,4 +46,6 @@ Script tự chọn cổng trống, tạo JWT secret/password ngẫu nhiên trong
 
 Workflow Admin release checks có job admin-browser: MongoDB service, npm ci hai phía, cài Chromium và chạy test:admin:ui; upload PNG sau test. Các job backend và admin-frontend vẫn chạy độc lập.
 
-CI của bản H4 trước đã thành công: [run 39865008393](https://github.com/Huy-Haru/ProjectSDN/actions/runs/39865008393), commit 2092920. Job browser là phần bổ sung mới; kết quả của nó cần được xác nhận sau lần push chứa thay đổi này. Local Edge headless đã chạy đạt toàn bộ tình huống trên.
+CI của bản H4 trước đã thành công: [run 39865008393](https://github.com/Huy-Haru/ProjectSDN/actions/runs/39865008393), commit 2092920.
+
+Bản có browser regression đã được xác minh: [run 39865513485](https://github.com/Huy-Haru/ProjectSDN/actions/runs/39865513485), commit 61ea0f2, cả ba job backend/admin-frontend/admin-browser đều success. Bộ UAT đã đạt trên Edge local và Chromium Linux CI; screenshot artifact được tạo bởi job browser.

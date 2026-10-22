@@ -44,7 +44,7 @@ Các script integration/archive dùng database tạm tên ngẫu nhiên, không 
 
 Workflow `.github/workflows/admin-checks.yml` chạy trên push nhánh Huy/main và PR vào main: backend với MongoDB service; frontend lint Admin/build. CI không dùng .env hoặc database thật của máy. Thêm workflow không đồng nghĩa CI remote đã pass; xem kết quả thực trên GitHub sau push.
 
-CI bản H4 commit 2092920 đã đạt: [GitHub Actions 39865008393](https://github.com/Huy-Haru/ProjectSDN/actions/runs/39865008393). Bổ sung job admin-browser và npm run test:admin:ui; xem [hướng dẫn UAT trình duyệt](10-admin-browser-uat.md). Local Edge đã đạt; job browser mới cần xác minh riêng sau push.
+CI bản H4 commit 2092920 đã đạt: [GitHub Actions 39865008393](https://github.com/Huy-Haru/ProjectSDN/actions/runs/39865008393). Bản bổ sung browser commit 61ea0f2 cũng đã đạt cả ba job: [GitHub Actions 39865513485](https://github.com/Huy-Haru/ProjectSDN/actions/runs/39865513485). Xem [hướng dẫn UAT trình duyệt](10-admin-browser-uat.md). Edge local và Chromium Linux CI đều đã chạy đạt.
 
 ## Công cụ sao lưu/khôi phục cho dự án
 
