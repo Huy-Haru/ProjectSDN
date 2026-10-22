@@ -3,12 +3,14 @@ import { FaUserFriends, FaDumbbell, FaSearch, FaExclamationCircle, FaSyncAlt } f
 import { trainerApi } from '../api/apiClient';
 import CreatePlanModal from '../components/CreatePlanModal';
 import TrainerProgressPanel from '../components/TrainerProgressPanel';
+import TrainerPlansPanel from '../components/TrainerPlansPanel';
 
 /**
  * A2.2 — TrainerStudentsPage: PT chỉ thấy hội viên liên quan (có booking với mình), dùng API thật.
  * Cho phép tạo giáo án qua modal kết nối API.
  */
 const TrainerStudentsPage = () => {
+  const [plansMember, setPlansMember] = useState(null);
   const [progressMember, setProgressMember] = useState(null);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -169,7 +171,8 @@ const TrainerStudentsPage = () => {
                   >
                     <FaDumbbell className="me-1" /> Tạo Giáo Án
                   </button>
-                  <button className="btn btn-success" onClick={() => setProgressMember(member)}>Ghi nhận tiến độ</button>
+                  <button className="btn btn-success" onClick={() => {setPlansMember(null);setProgressMember(member);}}>Ghi nhận tiến độ</button>
+                  <button className="btn btn-secondary" onClick={() => {setProgressMember(null);setPlansMember(member);}}>Xem giáo án</button>
                 </div>
               </div>
             </div>
@@ -178,6 +181,8 @@ const TrainerStudentsPage = () => {
       )}
 
       {progressMember && <TrainerProgressPanel key={progressMember._id} member={progressMember} onClose={() => setProgressMember(null)} />}
+
+      {plansMember && <TrainerPlansPanel key={plansMember._id} member={plansMember} onClose={() => setPlansMember(null)} />}
 
       {/* Create Workout Plan Modal */}
       {showPlanModal && <CreatePlanModal
