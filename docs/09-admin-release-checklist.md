@@ -44,6 +44,8 @@ Các script integration/archive dùng database tạm tên ngẫu nhiên, không 
 
 Workflow `.github/workflows/admin-checks.yml` chạy trên push nhánh Huy/main và PR vào main: backend với MongoDB service; frontend lint Admin/build. CI không dùng .env hoặc database thật của máy. Thêm workflow không đồng nghĩa CI remote đã pass; xem kết quả thực trên GitHub sau push.
 
+CI bản H4 commit 2092920 đã đạt: [GitHub Actions 39865008393](https://github.com/Huy-Haru/ProjectSDN/actions/runs/39865008393). Bổ sung job admin-browser và npm run test:admin:ui; xem [hướng dẫn UAT trình duyệt](10-admin-browser-uat.md). Local Edge đã đạt; job browser mới cần xác minh riêng sau push.
+
 ## Công cụ sao lưu/khôi phục cho dự án
 
 `database-archive.js` tạo gzip với Extended JSON canonical, giữ document/BSON và index. Định dạng fitmanager-logical-v1. Giới hạn 100.000 document và 64 MiB chưa nén; chỉ collection thường không có option đặc biệt. Không hỗ trợ view/time-series/capped collection, user/role server, oplog hoặc backup online.
