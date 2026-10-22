@@ -37,6 +37,7 @@ Script tự chọn cổng trống, tạo JWT secret/password ngẫu nhiên trong
 | Báo cáo | Doanh thu khớp dữ liệu test; API 503 → hiển thị lỗi → thử lại thành công; lọc không có doanh thu |
 | Mobile | Viewport 390×844; document không tràn ngang; bảng có vùng cuộn riêng |
 | Runtime UI | Không có pageerror JavaScript trong suốt luồng |
+| Profile/filter/modal | Admin profile, phản hồi filter cũ không ghi đè, reset/switch bốn modal dùng chung; xem 11-frontend-quality.md |
 
 Ảnh doanh thu desktop/mobile sinh tại frontend/test-results/admin/. Thư mục này bị Git ignore. Không ghi trace/form password vào artifact. Test dùng credential ngẫu nhiên và dữ liệu giả riêng, không dùng tài khoản của người thật.
 

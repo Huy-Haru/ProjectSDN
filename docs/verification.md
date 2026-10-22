@@ -1,5 +1,7 @@
 # Biên bản xác minh — 11/10/2026
 
+**Full frontend quality 23/10/2026:** đã sửa 39 lỗi lint nền; npm run lint toàn frontend và production build đạt local. Browser UAT bổ sung profile, chống phản hồi lọc cũ ghi đè và reset/switch bốn modal dùng chung đạt. CI frontend được nâng từ lint:admin lên full lint; kết quả CI của phần bổ sung cần xác nhận sau push. Xem [chi tiết](11-frontend-quality.md).
+
 **Browser regression 23/10/2026:** [CI run 39865513485](https://github.com/Huy-Haru/ProjectSDN/actions/runs/39865513485) của commit 61ea0f2 đạt cả backend, admin-frontend và admin-browser. UAT Admin tự động kiểm tra login/reload/logout, tạo/sửa/khóa/tìm gói, tạo PT, lịch/thanh toán/doanh thu, API lỗi/thử lại/empty và viewport 390px. Xem [hướng dẫn chạy lại](10-admin-browser-uat.md).
 
 **Bổ sung H4 ngày 23/10/2026:** 17/17 test backend đạt; check:config, integration Admin và test:archive đạt local. Restore thử giữ BSON Date/ObjectId, nested values, count và index unique/partial; từ chối ghi đè file/đích đã có. Frontend lint:admin và build đạt. CI đã cấu hình; kết quả remote cần xem riêng sau push. Xem [đối chiếu H1–H4](09-admin-release-checklist.md).
