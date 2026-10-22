@@ -1,118 +1,30 @@
 import { useState } from 'react';
-import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
-
-const SchedulePage = ({ schedules, onCancelSchedule, onCompleteSchedule }) => {
-  const [filterStatus, setFilterStatus] = useState('Tất cả');
-
-  const filteredSchedules = schedules.filter(sch => {
-    if (filterStatus === 'Tất cả') return true;
-    return sch.status === filterStatus;
-  });
-
-  return (
-    <div className="schedule-page">
-      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <div>
-          <span className="section-tag">LỊCH TẬP CÁ NHÂN</span>
-          <h2 className="section-header-title">Danh sách Các Buổi Tập Đã Xếp Lịch</h2>
-          <p className="text-muted mb-0">Theo dõi thời gian, nội dung bài tập và huấn luyện viên đồng hành.</p>
-        </div>
-
-        {/* Status Filter Tabs */}
-        <div className="billing-toggle-container m-0">
-          {['Tất cả', 'Sắp diễn ra', 'Hoàn thành'].map(st => (
-            <button
-              key={st}
-              className={`toggle-btn ${filterStatus === st ? 'active' : ''}`}
-              onClick={() => setFilterStatus(st)}
-            >
-              {st}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {filteredSchedules.length === 0 ? (
-        <div className="text-center py-5 rounded-4" style={{ background: '#0F172A', border: '1px solid #1E293B' }}>
-          <FaCalendarAlt className="fs-1 text-muted mb-3" />
-          <h5 className="text-white">Không tìm thấy buổi tập nào</h5>
-          <p className="text-muted">Bạn chưa có lịch tập nào trong trạng thái "{filterStatus}".</p>
-        </div>
-      ) : (
-        <div className="d-flex flex-direction-column flex-column gap-3">
-          {filteredSchedules.map((sch) => (
-            <div 
-              key={sch.id}
-              className="p-4 rounded-4 d-flex align-items-center justify-content-between flex-wrap gap-3"
-              style={{ 
-                background: '#0F172A', 
-                border: '1px solid #1E293B',
-                borderLeft: sch.status === 'Sắp diễn ra' ? '4px solid #00E676' : '4px solid #64748B'
-              }}
-            >
-              <div className="d-flex align-items-center gap-3">
-                <img 
-                  src={sch.trainerAvatar} 
-                  alt={sch.trainerName} 
-                  style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #00E676' }} 
-                />
-                <div>
-                  <div className="d-flex align-items-center gap-2 mb-1">
-                    <span 
-                      className={`badge px-2.5 py-1 ${sch.status === 'Sắp diễn ra' ? 'bg-success' : 'bg-secondary'}`}
-                      style={{ fontSize: '0.7rem' }}
-                    >
-                      {sch.status}
-                    </span>
-                    <h5 className="text-white fw-bold mb-0 fs-6">{sch.workoutType}</h5>
-                  </div>
-                  
-                  <div className="text-muted d-flex align-items-center gap-3 flex-wrap" style={{ fontSize: '0.82rem' }}>
-                    <span style={{ color: '#00E676', fontWeight: 600 }}>{sch.trainerName}</span>
-                    <span>•</span>
-                    <span><FaCalendarAlt className="me-1" /> {sch.date}</span>
-                    <span>•</span>
-                    <span><FaClock className="me-1" /> {sch.time}</span>
-                  </div>
-
-                  <div className="text-secondary mt-1" style={{ fontSize: '0.78rem' }}>
-                    <FaMapMarkerAlt className="me-1 text-danger" /> {sch.location} {sch.note ? `| Note: ${sch.note}` : ''}
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="d-flex align-items-center gap-2">
-                {sch.status === 'Sắp diễn ra' && (
-                  <>
-                    <button 
-                      className="btn-card-action btn-green px-3 py-2"
-                      style={{ fontSize: '0.82rem', width: 'auto' }}
-                      onClick={() => onCompleteSchedule(sch.id)}
-                    >
-                      <FaCheckCircle className="me-1" /> Hoàn thành
-                    </button>
-                    <button 
-                      className="btn-card-action px-3 py-2 text-danger border-danger"
-                      style={{ fontSize: '0.82rem', width: 'auto', background: 'transparent' }}
-                      onClick={() => onCancelSchedule(sch.id)}
-                    >
-                      <FaTimesCircle className="me-1" /> Hủy lịch
-                    </button>
-                  </>
-                )}
-                {sch.status === 'Hoàn thành' && (
-                  <span className="text-success fw-bold" style={{ fontSize: '0.85rem' }}>
-                    ✓ Đã tập xong
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default SchedulePage;
+import { bookingApi } from '../api/apiClient';
+import { useApiResource } from '../hooks/useApiResource';
+const load = () => bookingApi.bookings().then(r => r.data.bookings);
+const labels = {booked:'Đã đặt',completed:'Hoàn thành',cancelled:'Đã hủy',no_show:'Vắng mặt'};
+export default function SchedulePage() {
+  const {data, loading, error, reload} = useApiResource(load, 'member-bookings');
+  const [busy, setBusy] = useState('');
+  const [failure, setFailure] = useState('');
+  const [filter, setFilter] = useState('');
+  const [confirmId, setConfirmId] = useState('');
+  async function cancel(id) {
+    setBusy(id); setFailure('');
+    try { await bookingApi.cancel(id); setConfirmId(''); reload(); }
+    catch (err) { setFailure(err.message); }
+    finally { setBusy(''); }
+  }
+  return <section><h2>Lịch tập của tôi</h2>
+    <label htmlFor="member-booking-status">Trạng thái</label><select id="member-booking-status" className="form-select mb-3" value={filter} onChange={e => setFilter(e.target.value)}><option value="">Tất cả</option>{Object.entries(labels).map(([k,v]) => <option key={k} value={k}>{v}</option>)}</select>
+    {loading && <p role="status">Đang tải lịch...</p>}
+    {error && <div role="alert">{error} <button onClick={reload}>Thử lại</button></div>}
+    {failure && <p role="alert">{failure}</p>}
+    {!loading && !error && !data.filter(b => !filter || b.status === filter).length && <p>Chưa có lịch tập phù hợp.</p>}
+    {data.filter(b => !filter || b.status === filter).map(b => <article className="border rounded-3 p-4 mb-3" key={b._id}>
+      <h3>{b.trainer?.user?.fullName || 'PT không còn trong hệ thống'}</h3><p>{b.date.slice(0,10)} · {b.startTime}–{b.endTime} (giờ Việt Nam)</p>
+      <p>{b.subscription?.package?.name} · {labels[b.status]}</p><p>{b.note}</p>
+      {b.status === 'booked' && <>{confirmId === b._id ? <div><p>Xác nhận hủy buổi tập này?</p><button className="btn btn-danger me-2" disabled={!!busy} onClick={() => cancel(b._id)}>Xác nhận hủy</button><button className="btn btn-secondary" disabled={!!busy} onClick={() => setConfirmId('')}>Giữ lịch</button></div> : <button className="btn btn-outline-danger" disabled={!!busy} onClick={() => setConfirmId(b._id)}>Hủy lịch</button>}</>}
+    </article>)}
+  </section>;
+}

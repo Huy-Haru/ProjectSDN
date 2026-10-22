@@ -109,3 +109,9 @@ export const memberApi = {
   subscriptions: () => request('GET', '/member/subscriptions'),
   subscribe: (packageId, startDate) => request('POST', '/member/subscriptions', { packageId, startDate })
 };
+export const bookingApi = {
+  trainers: () => request('GET', '/member/trainers'),
+  bookings: () => request('GET', '/member/bookings'),
+  create: data => request('POST', '/member/bookings', data),
+  cancel: id => request('POST', `/member/bookings/${id}/cancel`)
+};

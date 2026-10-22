@@ -44,7 +44,7 @@ import { initialReviews, myPackageInfo } from './data/mockData';
 function App() {
   // Custom Hooks — auth thật từ server
   const { user, loading: authLoading, login, logout, register, role } = useAuth();
-  const { schedules, addSchedule, cancelSchedule, completeSchedule } = useSchedule();
+  const { schedules } = useSchedule();
   const { progress } = useProgress();
 
   // App Level State
@@ -56,7 +56,6 @@ function App() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [preSelectedTrainer, setPreSelectedTrainer] = useState(null);
   const [trainerToReview, setTrainerToReview] = useState(null);
 
   // Tự redirect theo role server sau khi đăng nhập/phục hồi phiên
@@ -87,8 +86,8 @@ function App() {
   };
 
   // Handlers
-  const handleSelectPtForBooking = (pt) => {
-    setPreSelectedTrainer(pt);
+  const handleSelectPtForBooking = () => {
+
     setActiveMenu('booking');
   };
 
@@ -167,19 +166,12 @@ function App() {
 
       case 'booking':
         return (
-          <BookingPage
-            preSelectedTrainer={preSelectedTrainer}
-            onAddScheduleSuccess={addSchedule}
-          />
+          <BookingPage onBooked={() => setActiveMenu('schedule')} />
         );
 
       case 'schedule':
         return (
-          <SchedulePage
-            schedules={schedules}
-            onCancelSchedule={cancelSchedule}
-            onCompleteSchedule={completeSchedule}
-          />
+          <SchedulePage />
         );
 
       case 'progress':
