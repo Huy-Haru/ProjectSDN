@@ -1,22 +1,29 @@
 import React from 'react';
-import { 
-  FaDumbbell, 
-  FaChartPie, 
-  FaCalendarAlt, 
-  FaIdCard, 
-  FaCreditCard, 
-  FaUserFriends, 
-  FaCalendarCheck, 
-  FaChartLine, 
+import {
+  FaDumbbell,
+  FaChartPie,
+  FaCalendarAlt,
+  FaIdCard,
+  FaCreditCard,
+  FaUserFriends,
+  FaCalendarCheck,
+  FaChartLine,
   FaStar,
   FaUserShield,
   FaUsers,
   FaChalkboardTeacher,
-  FaDollarSign
+  FaDollarSign,
+  FaUserCircle
 } from 'react-icons/fa';
 
 const Sidebar = ({ user, activeMenu, setActiveMenu }) => {
-  const role = user?.role || 'USER';
+  // A1.2: role từ server là lowercase
+  const role = user?.role || null;
+
+  // Menu chung cuối Sidebar: Hồ sơ cá nhân (hiện với mọi role đã đăng nhập)
+  const profileMenu = user
+    ? [{ id: 'profile', label: 'Hồ sơ của tôi', icon: <FaUserCircle /> }]
+    : [];
 
   // Role-based menu definitions
   const studentMenus = [
@@ -32,8 +39,8 @@ const Sidebar = ({ user, activeMenu, setActiveMenu }) => {
 
   const trainerMenus = [
     { id: 'trainer-dashboard', label: 'Tổng quan HLV', icon: <FaChalkboardTeacher /> },
-    { id: 'trainer-schedule', label: 'Quản lý lịch tập', icon: <FaCalendarCheck /> },
-    { id: 'trainer-students', label: 'Học viên & Tiến độ', icon: <FaUserFriends /> },
+    { id: 'trainer-schedule', label: 'Lịch dạy của tôi', icon: <FaCalendarCheck /> },
+    { id: 'trainer-students', label: 'Học viên & Giáo án', icon: <FaUserFriends /> },
     { id: 'trainer-reviews', label: 'Đánh giá từ Học viên', icon: <FaStar /> },
   ];
 
@@ -46,13 +53,14 @@ const Sidebar = ({ user, activeMenu, setActiveMenu }) => {
     { id: 'admin-revenue', label: 'Thống kê Doanh thu', icon: <FaDollarSign /> },
   ];
 
+  // A1.2: dùng lowercase role từ server
   let currentMenuList = studentMenus;
   let roleLabel = 'MỤC HỌC VIÊN';
 
-  if (role === 'TRAINER') {
+  if (role === 'trainer') {
     currentMenuList = trainerMenus;
     roleLabel = 'PORTAL HUẤN LUYỆN VIÊN';
-  } else if (role === 'ADMIN') {
+  } else if (role === 'admin') {
     currentMenuList = adminMenus;
     roleLabel = 'HỆ THỐNG QUẢN TRỊ ADMIN';
   }
@@ -84,6 +92,25 @@ const Sidebar = ({ user, activeMenu, setActiveMenu }) => {
           </button>
         ))}
       </nav>
+
+      {/* Profile menu — hiện với mọi user đã đăng nhập */}
+      {profileMenu.length > 0 && (
+        <>
+          <div className="menu-section-label mt-3">TÀI KHOẢN</div>
+          <nav className="nav-menu">
+            {profileMenu.map((item) => (
+              <button
+                key={item.id}
+                className={`nav-item-btn ${activeMenu === item.id ? 'active' : ''}`}
+                onClick={() => setActiveMenu(item.id)}
+              >
+                <span className="nav-item-icon">{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
+        </>
+      )}
     </aside>
   );
 };
