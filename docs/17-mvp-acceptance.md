@@ -44,7 +44,7 @@ Backend có 17 bài nền và các integration suite theo chức năng: test:int
 
 - Review chéo theo phân công gốc, biên bản UAT thủ công đủ Member/PT/Admin, thiết bị mobile thật và bàn phím toàn hệ thống.
 - Đo NFR hiệu năng p95 với bộ dữ liệu/mức đồng thời đã định; chưa có số liệu đo để kết luận đạt.
-- Phân trang các danh sách Member/PT hiện trả toàn bộ; giới hạn 100 hiện áp dụng cho danh sách Admin, chưa đáp ứng NFR-05 toàn hệ thống.
+- Danh sách học viên PT đã phân trang (docs/20), Admin đã giới hạn 100. Những danh sách Member/PT khác như lịch, đăng ký gói, tiến độ, giáo án và đánh giá vẫn cần bổ sung để đạt NFR-05 toàn hệ thống.
 - Nếu cần đảm bảo qua sự cố: replica set + transaction cho quota/Booking; standalone hiện có đối soát bảo trì, không bảo đảm nguyên tử nhiều document.
 - Idempotency ProgressLog đã bổ sung: client mới gửi requestId; client cũ không gửi mã vẫn tạo mới mỗi POST. Form chưa lưu mã/bản nháp qua đóng hoặc tải lại trang; xem docs/18.
 - Chuẩn bị hosting/TLS, secret riêng và backup/restore trên môi trường triển khai. Không coi CI Linux là hosting.

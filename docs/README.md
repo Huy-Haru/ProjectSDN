@@ -55,3 +55,5 @@ Nhánh làm việc: `HuyNHHE190724`, tạo từ `origin/main`. Hai nhánh `origi
 [18-progress-idempotency.md](18-progress-idempotency.md): chống lưu trùng tiến độ khi PT gửi lại sau lỗi mạng; unique index, retry UI và giới hạn tương thích.
 
 [19-member-trainer-mobile.md](19-member-trainer-mobile.md): bố cục mobile ba role, 14 màn Member/PT ở 375px, vùng bấm và điều hướng bàn phím.
+
+[20-trainer-members-pagination.md](20-trainer-members-pagination.md): phân trang/tìm học viên tại backend, thống kê bằng aggregation và tổng số dashboard PT.

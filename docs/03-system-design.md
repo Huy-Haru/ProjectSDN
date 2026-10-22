@@ -62,3 +62,6 @@ Giáo án dùng document save để validate cả khoảng ngày. Form sửa g�
 Runtime kiểm tra cấu hình trước khi mở server; .env không commit. Công cụ additive indexes, backup/restore có bảo vệ và đối soát quota được mô tả trong docs/05, docs/09 và docs/12. Bộ kiểm thử backend/browser dùng database tạm riêng; CI chạy MongoDB service và Chromium Linux.
 
 Chưa có rate limiting đăng nhập, thu hồi JWT phía server, audit log bất biến cho thanh toán, lịch rảnh PT, cổng thanh toán, scheduler hết hạn hoặc cập nhật realtime. Không ghi các phần này là đã hoàn thành. Hosting, review chéo và nghiệm thu nhóm cần biên bản riêng.
+
+
+GET /trainer/members đã phân trang page/limit/search và trả total/pages; dashboard PT dùng total. Chi tiết hợp đồng và truy vấn tổng hợp: [20-trainer-members-pagination.md](20-trainer-members-pagination.md).

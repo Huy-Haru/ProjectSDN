@@ -123,3 +123,10 @@ Index và validation là cải thiện nền dữ liệu, chưa chứng minh hi�
 - Chỉnh tương phản chữ phụ trên nền tối, input mobile 16px, nút tối thiểu 44px và menu có aria-current/focus.
 - PASS: Edge browser UAT 14 màn Member/PT ở 375×812, kiểm tra document/main/page-body không tràn, menu không ép hẹp, màu chữ/vùng bấm và Tab trong form giáo án; các luồng cũ và Admin 390px vẫn đạt. Frontend lint/build đạt.
 - Minh chứng ảnh và giới hạn nghiệm thu thiết bị thật: [19-member-trainer-mobile.md](19-member-trainer-mobile.md).
+
+## Phân trang học viên PT — 23/10/2026
+
+- API /trainer/members có page/limit/search, whitelist response và metadata total/pages; giới hạn tối đa 100. Aggregation thay truy vấn thống kê từng User.
+- UI có tìm kiếm backend và trước/sau; dashboard lấy total, không lấy độ dài trang đầu. Validation pagination dùng chung PT/Admin, từ chối mảng và offset không an toàn.
+- PASS: test:trainer với 13 học viên, test:integration, backend 17/17, frontend lint/build; Edge UAT hai trang, tìm kiếm/empty/reset, tổng dashboard và mobile/luồng cũ.
+- Hợp đồng và giới hạn: [20-trainer-members-pagination.md](20-trainer-members-pagination.md).

@@ -529,6 +529,38 @@ async function run() {
   await page.screenshot({path:path.join(output,'member-booking-mobile-375.png'),fullPage:true});
   await assertMobileLayout('Member booking inputs');
   await page.setViewportSize({width:1440,height:1000});
+  // Live two-page dataset validates server search and dashboard totals beyond one page.
+  for(let i=0;i<12;i++) {
+    const student=await User.create({fullName:i===0?'Z Member [Pro]':'Z Member '+String(i).padStart(2,'0'),email:'paging'+i+'@test.example',password});
+    const membership=await Subscription.create({member:student._id,package:pkg._id,startDate:'2020-01-01',endDate:'2020-02-01',amount:1});
+    await Booking.create({member:student._id,trainer:profile._id,subscription:membership._id,date:'2020-02-'+String(i+1).padStart(2,'0'),startTime:'09:00',endTime:'10:00'});
+  }
+  await page.locator('#header-logout-btn').click();
+  await page.getByRole('button',{name:'Đăng nhập',exact:true}).click();
+  await page.locator('#login-email').fill('pt-e2e@test.example');
+  await page.locator('#login-password').fill(password);
+  await page.locator('#login-submit-btn').click();
+  await page.getByRole('heading',{name:'Tổng quan PT',exact:true}).waitFor();
+  await page.locator('article').filter({has:page.getByRole('heading',{name:'Học viên từng đặt lịch',exact:true})}).getByText('13',{exact:true}).waitFor();
+  await navigate('Học viên & Giáo án');
+  await page.getByText('Trang 1/2',{exact:true}).waitFor();
+  assert.equal(await page.getByRole('button',{name:'Xem giáo án',exact:true}).count(),10);
+  await page.getByRole('button',{name:'Trang học viên sau',exact:true}).click();
+  await page.getByText('Trang 2/2',{exact:true}).waitFor();
+  assert.equal(await page.getByRole('button',{name:'Xem giáo án',exact:true}).count(),3);
+  await page.getByLabel('Tìm học viên theo tên/email',{exact:true}).fill('[Pro]');
+  await page.getByRole('button',{name:'Tìm học viên',exact:true}).click();
+  await page.getByText('Trang 1/1',{exact:true}).waitFor();
+  await page.getByRole('heading',{name:'Z Member [Pro]',exact:true}).waitFor();
+  assert.equal(await page.getByRole('button',{name:'Xem giáo án',exact:true}).count(),1);
+  await page.getByLabel('Tìm học viên theo tên/email',{exact:true}).fill('not-found');
+  await page.getByRole('button',{name:'Tìm học viên',exact:true}).click();
+  await page.getByText('Không có học viên phù hợp ở trang này. Học viên xuất hiện sau khi đặt lịch với bạn.',{exact:true}).waitFor();
+  await page.getByLabel('Tìm học viên theo tên/email',{exact:true}).fill('');
+  await page.getByRole('button',{name:'Tìm học viên',exact:true}).click();
+  await page.getByText('Trang 1/2',{exact:true}).waitFor();
+  await page.screenshot({path:path.join(output,'trainer-members-paginated.png'),fullPage:true});
+
 
 
 
@@ -598,7 +630,7 @@ async function run() {
   await closeModal();
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: browser regression: 375px Member/PT pages and keyboard plan form, progress retry after committed response loss, PT plan editing and Member updated content, PT completion/absence to member review, live Member/PT dashboards, completed-session reviews and trainer ratings, PT progress/plan assignment and Member visibility, Member package registration/persistence and PT booking/cancellation, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
+    "PASS: browser regression: live PT member paging/search and total counts, 375px Member/PT pages and keyboard plan form, progress retry after committed response loss, PT plan editing and Member updated content, PT completion/absence to member review, live Member/PT dashboards, completed-session reviews and trainer ratings, PT progress/plan assignment and Member visibility, Member package registration/persistence and PT booking/cancellation, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
   );
 }
 

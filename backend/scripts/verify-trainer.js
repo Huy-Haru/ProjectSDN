@@ -104,10 +104,31 @@ async function run() {
   assert.equal(memberUpdated.items[0].reps,'12');assert.equal(memberUpdated.status,'completed');
   await call('/trainer/workout-plans','POST',{memberId:member._id,title:123,startDate:'2026-10-01',endDate:'2026-11-01'},400,token);
   await call('/trainer/workout-plans','POST',{memberId:member._id,title:'Bad goal',goal:123,startDate:'2026-10-01',endDate:'2026-11-01'},400,token);
+  for(let i=0;i<12;i++) {
+    const student=await User.create({fullName:i===0?'Paged [Pro]':'Paged '+String(i).padStart(2,'0'),email:'paged'+i+'@test.example',password:'StrongPass123'});
+    const membership=await Subscription.create({member:student._id,package:pkg._id,startDate:'2020-01-01',endDate:'2020-02-01',amount:1});
+    await Booking.create({member:student._id,trainer:trainer._id,subscription:membership._id,date:'2020-01-'+String(i+1).padStart(2,'0'),startTime:'09:00',endTime:'10:00'});
+  }
+  await Booking.create({member:member._id,trainer:trainer._id,subscription:sub._id,date:'2020-06-01',startTime:'09:00',endTime:'10:00',status:'completed'});
+  await Booking.create({member:member._id,trainer:trainer._id,subscription:sub._id,date:'2020-07-01',startTime:'09:00',endTime:'10:00',status:'cancelled'});
+  const listPath='/trainer/members';
+  const first=await call(listPath+'?limit=5','GET',null,200,token);
+  const secondPage=await call(listPath+'?limit=5&page=2','GET',null,200,token);
+  assert.equal(first.total,13);assert.equal(first.pages,3);assert.equal(first.members.length,5);
+  assert.equal(new Set([...first.members,...secondPage.members].map(m=>m._id)).size,10);
+  assert.equal((await call(listPath+'?limit=5&page=3','GET',null,200,token)).members.length,3);
+  assert.equal((await call(listPath+'?limit=5&page=4','GET',null,200,token)).members.length,0);
+  const memberStats=(await call(listPath+'?search=member%40test.example','GET',null,200,token)).members[0];
+  assert.equal(memberStats.totalBookings,3);assert.equal(memberStats.completedBookings,1);assert.equal(memberStats.latestBooking.date,'2026-10-23T00:00:00.000Z');
+  assert.equal(memberStats.password,undefined);
+  assert.equal((await call(listPath+'?search=%5BPro%5D','GET',null,200,token)).total,1);
+  assert.equal((await call(listPath+'?search=.*','GET',null,200,token)).total,0);
+  assert.equal((await call(listPath,'GET',null,200,otherToken)).total,0);
+  for(const query of ['limit=101','page=0','page=1&page=2','search=a&search=b','page=90071992547409910','search='+ 'a'.repeat(121)]) await call(listPath+'?'+query,'GET',null,400,token);
   await TrainerProfile.updateOne({_id:trainer._id},{$set:{isActive:false}});
   await call(path,'PATCH',{title:'Locked PT edit'},404,token);
   await call('/trainer/workout-plans','POST',{memberId:member._id,title:'Locked PT plan',startDate:'2026-10-01',endDate:'2026-11-01'},404,token);
-  console.log('PASS: PT plan revision races/items/status, calendar filters, role/ownership isolation, partial-update date validation and member trainer details.');
+  console.log('PASS: paginated PT members with literal search and aggregate stats, PT plan revision races/items/status, calendar filters, role/ownership isolation, partial-update date validation and member trainer details.');
 }
 run()
   .catch((error) => {
