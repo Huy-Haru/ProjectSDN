@@ -104,3 +104,8 @@ export const trainerApi = {
   getMemberWorkoutPlans: () => request('GET', '/trainer/member/workout-plans')
 };
 
+export const memberApi = {
+  packages: () => request('GET', '/member/packages'),
+  subscriptions: () => request('GET', '/member/subscriptions'),
+  subscribe: (packageId, startDate) => request('POST', '/member/subscriptions', { packageId, startDate })
+};

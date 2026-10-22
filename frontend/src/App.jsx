@@ -10,7 +10,6 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import LoginModal from './components/LoginModal';
 import SignUpModal from './components/SignUpModal';
-import RegisterModal from './components/RegisterModal';
 import RateTrainerModal from './components/RateTrainerModal';
 
 // Pages - Student
@@ -56,9 +55,7 @@ function App() {
   // Modals & Navigation State
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState(null);
   const [preSelectedTrainer, setPreSelectedTrainer] = useState(null);
   const [trainerToReview, setTrainerToReview] = useState(null);
 
@@ -90,11 +87,6 @@ function App() {
   };
 
   // Handlers
-  const handleSelectPackage = (pkg) => {
-    setSelectedPackage(pkg);
-    setShowRegisterModal(true);
-  };
-
   const handleSelectPtForBooking = (pt) => {
     setPreSelectedTrainer(pt);
     setActiveMenu('booking');
@@ -211,7 +203,7 @@ function App() {
       case 'packages':
       default:
         return (
-          <PackagesPage onSelectPackage={handleSelectPackage} />
+          <PackagesPage user={user} onLogin={() => setShowLoginModal(true)} onRegistered={() => setActiveMenu('my-packages')} />
         );
     }
   };
@@ -265,13 +257,6 @@ function App() {
         show={showSignUpModal}
         onHide={() => setShowSignUpModal(false)}
         onRegisterSuccess={handleRegisterSuccess}
-      />
-
-      <RegisterModal
-        show={showRegisterModal}
-        onHide={() => setShowRegisterModal(false)}
-        selectedPackage={selectedPackage}
-        isYearly={true}
       />
 
       <RateTrainerModal
