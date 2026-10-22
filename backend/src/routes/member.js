@@ -45,6 +45,7 @@ router.post('/subscriptions', asyncHandler(async (req, res) => {
 }));
 
 const bookingService = require('../services/memberBookingService');
+router.get('/progress', asyncHandler(async (req, res) => sendSuccess(res, { logs: await require('../services/progressService').listForMember(req.user._id) })));
 router.get('/trainers', asyncHandler(async (req, res) => sendSuccess(res, { trainers: await bookingService.trainers() })));
 router.get('/bookings', asyncHandler(async (req, res) => sendSuccess(res, { bookings: await bookingService.bookings(req.user._id) })));
 router.post('/bookings', asyncHandler(async (req, res) => sendSuccess(res, { booking: await bookingService.create(req.user._id, req.body) }, 'Đặt lịch thành công.', 201)));

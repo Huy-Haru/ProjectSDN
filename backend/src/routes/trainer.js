@@ -5,6 +5,12 @@ const { authenticate, authorize } = require('../middlewares/auth');
 const { ROLES } = require('../constants/roles');
 
 const router = express.Router();
+const progressService = require('../services/progressService');
+const { sendSuccess } = require('../utils/response');
+router.get('/members/:memberId/progress', authenticate, authorize(ROLES.TRAINER), asyncHandler(async (req, res) =>
+  sendSuccess(res, { logs: await progressService.listForTrainer(req.user._id, req.params.memberId) })));
+router.post('/members/:memberId/progress', authenticate, authorize(ROLES.TRAINER), asyncHandler(async (req, res) =>
+  sendSuccess(res, { log: await progressService.create(req.user._id, req.params.memberId, req.body) }, 'Đã lưu tiến độ.', 201)));
 
 // ─── Routes dành riêng cho TRAINER ────────────────────────────────────────────
 
