@@ -1,18 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Modal, Form } from 'react-bootstrap';
 import { FaStar, FaCommentAlt, FaUserCheck } from 'react-icons/fa';
 import { trainersData } from '../data/mockData';
 
-const RateTrainerModal = ({ show, onHide, trainerToReview, onSubmitReview }) => {
-  const [trainerId, setTrainerId] = useState(trainersData[0].id);
+const RateTrainerModalForm = ({ show, onHide, trainerToReview, onSubmitReview }) => {
+  const [trainerId, setTrainerId] = useState(trainerToReview?.id || trainersData[0].id);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
-
-  useEffect(() => {
-    if (trainerToReview) {
-      setTrainerId(trainerToReview.id);
-    }
-  }, [trainerToReview]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -112,4 +106,7 @@ const RateTrainerModal = ({ show, onHide, trainerToReview, onSubmitReview }) => 
   );
 };
 
-export default RateTrainerModal;
+export default function RateTrainerModal(props) {
+  if (!props.show) return null;
+  return <RateTrainerModalForm key={props.trainerToReview?.id || 'new'} {...props} />;
+}

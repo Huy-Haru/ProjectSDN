@@ -1,20 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Modal, Form } from 'react-bootstrap';
 import { FaWeight, FaChartLine, FaCommentMedical } from 'react-icons/fa';
 
-const UpdateStudentProgressModal = ({ show, onHide, student, onUpdateProgress }) => {
-  const [weight, setWeight] = useState('');
-  const [bodyFat, setBodyFat] = useState('');
+const UpdateStudentProgressModalForm = ({ show, onHide, student, onUpdateProgress }) => {
+  const [weight, setWeight] = useState(student?.currentWeight ?? '');
+  const [bodyFat, setBodyFat] = useState(student?.bodyFat ?? '');
   const [notes, setNotes] = useState('');
-
-  useEffect(() => {
-    if (student) {
-      setWeight(student.currentWeight || '');
-      setBodyFat(student.bodyFat || '');
-      setNotes('');
-    }
-  }, [student]);
-
   if (!student) return null;
 
   const handleSubmit = (e) => {
@@ -103,4 +94,7 @@ const UpdateStudentProgressModal = ({ show, onHide, student, onUpdateProgress })
   );
 };
 
-export default UpdateStudentProgressModal;
+export default function UpdateStudentProgressModal(props) {
+  if (!props.show) return null;
+  return <UpdateStudentProgressModalForm key={props.student?.id || 'new'} {...props} />;
+}
