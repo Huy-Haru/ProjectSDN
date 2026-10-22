@@ -322,6 +322,22 @@ async function run() {
   await page.getByRole('button',{name:'Tạo Giáo Án',exact:true}).click();
   assert.equal(await page.getByPlaceholder('VD: Giảm mỡ - Tháng 1').inputValue(),'');
   await page.locator('.modal .btn-close').click();
+  await page.getByRole('button',{name:'Xem giáo án',exact:true}).click();
+  await page.getByRole('button',{name:'Sửa giáo án',exact:true}).click();
+  await page.getByLabel('Tên giáo án',{exact:true}).fill('Member E2E workout revised');
+  await page.getByLabel('Số hiệp bài 1',{exact:true}).fill('4');
+  await page.getByLabel('Số lần lặp bài 1',{exact:true}).fill('12');
+  await page.getByLabel('Trạng thái giáo án',{exact:true}).selectOption('completed');
+  await page.getByRole('button',{name:'Lưu giáo án',exact:true}).click();
+  await page.getByText('Đã cập nhật giáo án.',{exact:true}).waitFor();
+  await page.getByRole('heading',{name:'Member E2E workout revised',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Sửa giáo án',exact:true}).click();
+  await page.getByLabel('Tên giáo án',{exact:true}).fill('Discarded draft');
+  await page.getByRole('button',{name:'Bỏ thay đổi',exact:true}).click();
+  await page.getByRole('button',{name:'Sửa giáo án',exact:true}).click();
+  assert.equal(await page.getByLabel('Tên giáo án',{exact:true}).inputValue(),'Member E2E workout revised');
+  await page.getByRole('button',{name:'Bỏ thay đổi',exact:true}).click();
+  await page.getByRole('button',{name:'Đóng giáo án',exact:true}).click();
   await navigate("Lịch dạy của tôi");
   await page.getByText("Member E2E", { exact: true }).first().waitFor();
   let finishOld;
@@ -391,8 +407,8 @@ async function run() {
   await page.getByText(/Cân nặng: 71.5 kg/).waitFor();
   await navigate('Tiến độ & Thể trạng');
   await page.getByText('Progress E2E note',{exact:true}).waitFor();
-  await page.getByRole('heading',{name:'Member E2E workout',exact:true}).waitFor();
-  await page.getByText(/Squat E2E/).waitFor();
+  await page.getByRole('heading',{name:'Member E2E workout revised',exact:true}).waitFor();
+  await page.getByText(/Squat E2E.*4 hiệp × 12 lần/).waitFor();
   await page.screenshot({path:path.join(output,'member-progress-plans.png'),fullPage:true});
   await navigate('Danh sách gói tập');
   await page.getByRole('button', { name: 'Đăng ký Seed E2E', exact: true }).click();
@@ -520,7 +536,7 @@ async function run() {
   await closeModal();
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: browser regression: PT completion/absence to member review, live Member/PT dashboards, completed-session reviews and trainer ratings, PT progress/plan assignment and Member visibility, Member package registration/persistence and PT booking/cancellation, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
+    "PASS: browser regression: PT plan editing and Member updated content, PT completion/absence to member review, live Member/PT dashboards, completed-session reviews and trainer ratings, PT progress/plan assignment and Member visibility, Member package registration/persistence and PT booking/cancellation, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
   );
 }
 

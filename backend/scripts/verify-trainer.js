@@ -91,7 +91,23 @@ async function run() {
   assert.equal(result.plans[0].trainerUser.fullName,'PT One');
   assert.equal(result.plans[0].trainerUser.password,undefined);
   assert.equal(result.plans[0].endDate,'2026-11-01T00:00:00.000Z');
-  console.log('PASS: PT calendar filters, role/ownership isolation, partial-update date validation and member trainer details.');
+  const current=(await call(path,'GET',null,200,token)).plan;
+  await call(path,'PATCH',{title:'Stale overwrite',expectedVersion:current.__v-1},409,token);
+  await call(path,'PATCH',{title:'Bad version',expectedVersion:String(current.__v)},409,token);
+  const revised=await call(path,'PATCH',{title:'Revised strength',status:'completed',expectedVersion:current.__v,items:[{exerciseName:'Squat',sets:4,reps:'12',dayOfWeek:'Thứ 2',note:'Control tempo'}]},200,token);
+  assert.equal(revised.plan.items[0].sets,4);
+  assert.equal(revised.plan.status,'completed');
+  assert.ok(revised.plan.__v>current.__v);
+  const simultaneous=await Promise.all(['First edit','Second edit'].map(title=>fetch(base+path,{method:'PATCH',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({title,expectedVersion:revised.plan.__v})})));
+  assert.deepEqual(simultaneous.map(r=>r.status).sort(),[200,409]);
+  const memberUpdated=(await call('/trainer/member/workout-plans','GET',null,200,memberToken)).plans[0];
+  assert.equal(memberUpdated.items[0].reps,'12');assert.equal(memberUpdated.status,'completed');
+  await call('/trainer/workout-plans','POST',{memberId:member._id,title:123,startDate:'2026-10-01',endDate:'2026-11-01'},400,token);
+  await call('/trainer/workout-plans','POST',{memberId:member._id,title:'Bad goal',goal:123,startDate:'2026-10-01',endDate:'2026-11-01'},400,token);
+  await TrainerProfile.updateOne({_id:trainer._id},{$set:{isActive:false}});
+  await call(path,'PATCH',{title:'Locked PT edit'},404,token);
+  await call('/trainer/workout-plans','POST',{memberId:member._id,title:'Locked PT plan',startDate:'2026-10-01',endDate:'2026-11-01'},404,token);
+  console.log('PASS: PT plan revision races/items/status, calendar filters, role/ownership isolation, partial-update date validation and member trainer details.');
 }
 run()
   .catch((error) => {

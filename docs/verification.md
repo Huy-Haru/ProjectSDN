@@ -94,3 +94,11 @@ Index và validation là cải thiện nền dữ liệu, chưa chứng minh hi�
 - Giao diện lịch PT có bước xác nhận tên học viên, ngày và giờ; thông báo lỗi/thành công và khóa thao tác khi gửi.
 - PASS: test:attendance, test:integration, test:booking, backend 17/17, frontend lint/build, Edge UAT PT xác nhận → Member đánh giá và dữ liệu tiến độ.
 - Chi tiết: [15-trainer-attendance.md](15-trainer-attendance.md).
+
+## Quản lý giáo án PT — 2026-10-23
+
+- Bổ sung xem/sửa giáo án theo học viên, bài tập, thời hạn, trạng thái và bỏ bản nháp.
+- Giao diện gửi expectedVersion để chống ghi đè bản cũ; backend kiểm tra phiên bản và optimistic concurrency.
+- Chặn tạo/sửa khi TrainerProfile khóa; trả lỗi 400 với title/goal sai kiểu khi tạo.
+- PASS: test:trainer (gồm hai yêu cầu cạnh tranh), frontend lint/build và Edge UAT PT sửa → Member xem nội dung mới, cùng các luồng cũ.
+- Chi tiết: [16-trainer-plan-management.md](16-trainer-plan-management.md).
