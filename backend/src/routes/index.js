@@ -16,6 +16,7 @@ router.use('/profile', profileRoutes);
 
 // Trainer routes: /api/trainer/*
 router.use('/trainer', trainerRoutes);
+router.use('/admin', require('./admin'));
 
 module.exports = router;
 
