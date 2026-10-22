@@ -24,7 +24,7 @@ Bốn workflow có **swimlane thực trong draw.io**, các node con nằm trong 
 
 ERD và database diagram dùng **8 entity duy nhất trên cùng một mạng liên kết**, đủ 13 quan hệ. Crow's foot thể hiện 1, 0..1 và 0..N. Trường trainer của ProgressLog tùy chọn; User có 0..1 TrainerProfile; Booking có 0..1 Review. WorkoutPlan.items là dữ liệu nhúng, không phải collection.
 
-Context/use case/workflow mô tả **yêu cầu mục tiêu**. ERD/database mô tả **schema hiện có**; ref không phải khóa ngoại MongoDB. Không đưa cổng thanh toán ngoài vào sơ đồ vì phiên bản đầu xác nhận thủ công.
+Cập nhật 23/10: context/use case/workflow đối chiếu các luồng đã nối API; Guest chỉ đọc gói, danh mục PT yêu cầu Member. ERD/database mô tả schema hiện có, gồm snapshot quyền lợi và bộ đếm quota; ref không phải khóa ngoại MongoDB. Không đưa cổng thanh toán ngoài vào sơ đồ vì phiên bản đầu xác nhận thủ công.
 
 Các đường nối được định tuyến theo hành lang trống, gắn đúng cổng nguồn/đích và không xuyên qua entity khác. Chỗ đường nối giao nhau không có dấu chấm không phải quan hệ mới. ERD có tên quan hệ; database diagram bổ sung thuộc tính/ref chính. Từ điển đầy đủ và index nằm trong [thiết kế database](../04-database-design.md) và [tối ưu MongoDB](../06-mongodb-optimization.md).
 

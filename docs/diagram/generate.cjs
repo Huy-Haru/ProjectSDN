@@ -14,7 +14,7 @@ function vertical(d,a,b,text='',opts={}){const af=opts.sf??.5,bf=opts.tf??.5,fro
  for(const [id,label,x,y] of [['guest','Khách',70,180],['member','Member / Hội viên',70,730],['trainer','PT / Huấn luyện viên',1330,180],['admin','Admin / Quản trị viên',1330,730]])d.node(id,label,x,y,230,110,'external',{color:'gray',bold:true,font:19});
  function flow(a,b,text,from,to,sf,tf,x,label){const p=P(d,a,from,sf),q=P(d,b,to,tf);d.edge(a,b,text,{from,to,sf,tf,via:[[x,p[1]],[x,q[1]]],label,backing:false});}
  flow('guest','system','Tiêu chí tra cứu; thông tin\nđăng ký / đăng nhập','right','left',.35,.25,540,[420,176]);
- flow('system','guest','Thông tin gói / PT;\nkết quả đăng ký / xác thực','left','right',.12,.85,600,[415,302]);
+ flow('system','guest','Thông tin gói tập;\nkết quả đăng ký / xác thực','left','right',.12,.85,600,[415,302]);
  flow('member','system','Yêu cầu gói / đặt, hủy lịch;\nprofile và đánh giá','right','left',.35,.70,540,[425,708]);
  flow('system','member','Trạng thái gói / lịch;\ngiáo án, tiến độ và kết quả xử lý','left','right',.85,.85,600,[460,855]);
  flow('trainer','system','Profile PT; giáo án / tiến độ;\nkết quả buổi tập','left','right',.35,.25,1170,[1210,165]);
@@ -42,20 +42,20 @@ function usecases(file,role,bases,helpers=[]){
  d.write(file);
 }
 usecases('usecase-guest','Khách',[
- ['packages','Xem danh sách / chi tiết gói tập'],['trainers','Tìm và xem hồ sơ PT'],['register','UC-01 · Đăng ký tài khoản Member'],['login','UC-02 · Đăng nhập']
+ ['packages','Xem danh sách / chi tiết gói tập'],['register','UC-01 · Đăng ký tài khoản Member'],['login','UC-02 · Đăng nhập']
 ],[{base:'register',text:'Kiểm tra email / mật khẩu\nGán role member'},{base:'login',text:'Kiểm tra tài khoản hoạt động\nvà mật khẩu'}]);
 usecases('usecase-member','Member / Hội viên',[
  ['auth','UC-02 · Đăng nhập'],['profile','UC-11 · Xem / cập nhật profile'],['catalog','FR-03 · Xem gói tập và tìm PT'],['subscribe','UC-03 · Đăng ký gói tập'],['my-package','Xem gói / trạng thái thanh toán'],['book','UC-04 · Đặt lịch với PT'],['schedule','UC-05 · Xem lịch của mình'],['plan','UC-07 · Xem giáo án'],['progress','UC-07 · Xem tiến độ tập luyện'],['review','UC-08 · Đánh giá PT'],['dashboard','FR-15 · Xem dashboard cá nhân']
 ],[{base:'subscribe',text:'Kiểm tra gói hoạt động\nChốt giá / thời hạn'}, {base:'book',text:'Kiểm tra gói paid / active\nNgày hiệu lực và hạn mức buổi',y:795}, {base:'book',text:'Kiểm tra thời gian / xung đột\nPT và hội viên',y:900,x:1040}, {base:'schedule',text:'Hủy lịch của mình',kind:'extend',guard:'[trước giờ bắt đầu]',y:1040}, {base:'review',text:'Kiểm tra booking completed\nĐúng chủ và chưa đánh giá'}]);
 usecases('usecase-trainer','PT / Huấn luyện viên',[
  ['auth','UC-02 · Đăng nhập'],['profile','UC-11 · Xem / cập nhật profile PT'],['schedule','FR-09 · Xem lịch của mình'],['result','UC-06 · Xác nhận kết quả buổi tập'],['students','Xem hội viên liên quan'],['plan','UC-07 · Tạo / cập nhật giáo án'],['progress','UC-07 · Cập nhật tiến độ hội viên'],['reviews','Xem đánh giá của hội viên'],['dashboard','FR-15 · Xem dashboard PT']
-],[{base:'result',text:'Kiểm tra quyền / trạng thái\nLưu completed hoặc no_show'}, {base:'plan',text:'Kiểm tra hội viên liên quan\nValidate giáo án và khoảng ngày'}, {base:'progress',text:'Kiểm tra quyền cập nhật\nValidate chỉ số cơ thể'}]);
+],[{base:'result',text:'Kiểm tra quyền / giờ kết thúc\nLưu completed hoặc no_show'}, {base:'plan',text:'Kiểm tra hội viên liên quan\nValidate giáo án và khoảng ngày'}, {base:'progress',text:'Kiểm tra quyền cập nhật\nValidate chỉ số cơ thể'}]);
 usecases('usecase-admin','Admin / Quản trị viên',[
  ['auth','UC-02 · Đăng nhập'],['profile','UC-11 · Xem / cập nhật profile'],['packages','UC-09 · Quản lý gói tập'],['trainers','UC-09 · Quản lý PT'],['members','UC-09 · Quản lý hội viên'],['schedule','Quản lý lịch và kết quả buổi tập'],['payment','UC-03 · Xác nhận thanh toán'],['revenue','UC-10 · Xem báo cáo doanh thu'],['dashboard','FR-15 · Xem dashboard quản trị']
 ],[{base:'packages',text:'Vô hiệu hóa gói tập',kind:'extend',guard:'[chọn khóa gói]'}, {base:'trainers',text:'Khóa tài khoản / hồ sơ PT',kind:'extend',guard:'[chọn khóa PT]'}, {base:'members',text:'Khóa tài khoản hội viên',kind:'extend',guard:'[chọn khóa hội viên]'}, {base:'payment',text:'Lưu paid / paidAt\nKích hoạt khi đủ điều kiện'}, {base:'revenue',text:'Lọc paid theo paidAt\nTổng hợp amount theo kỳ'}]);
 
 function swim(titleText,roles,height){
- const d=new Diagram(titleText,1490,height);title(d,titleText.toUpperCase());subtitle(d,'Activity workflow · Trách nhiệm theo lane · Luồng mục tiêu, API nghiệp vụ chưa hoàn chỉnh');
+ const d=new Diagram(titleText,1490,height);title(d,titleText.toUpperCase());subtitle(d,'Activity workflow · Trách nhiệm theo lane · Luồng đã nối API / MongoDB');
  roles.forEach((role,i)=>d.lane('lane'+i,role,40+i*470,140,470,height-210,['blue','green','purple'][i]));
  const n=(id,text,lane,y,kind='activity',opts={})=>{
    const size=kind==='decision'?[270,115]:['initial','final'].includes(kind)?[26,26]:[350,85];
@@ -83,20 +83,20 @@ function swim(titleText,roles,height){
  n('error','Hiển thị lỗi điều kiện / quyền\nKhông tạo booking',0,650);n('failed','',0,875,'final');
  n('conditions','Kiểm tra gói paid / active, hạn mức\nNgày trong hạn, giờ hợp lệ / tương lai',1,840);n('valid','Đủ điều kiện?',1,995,'decision');
  n('query','Tra cứu lịch PT và hội viên\nKiểm tra khoảng giờ giao nhau',1,1220);n('conflict','Có xung đột?',1,1380,'decision');n('retry','Hiển thị lỗi (409 nếu trùng lịch)\nSửa thông tin / chọn lại',0,1395);
- n('save','Lưu Booking booked\nBảo vệ cạnh tranh khi ghi dữ liệu',1,1610);n('written','Ghi thành công?',1,1770,'decision');n('return','Trả booking / trạng thái thành công',1,1990);n('confirm','Xem lịch đã đặt',0,2170);n('end','',0,2350,'final');n('pt-view','Tra cứu lịch của mình\nThấy booking mới đã được lưu',2,1980);
+ n('save','Giữ quota có điều kiện\nLưu Booking booked bằng unique slot',1,1610);n('written','Ghi thành công?',1,1770,'decision');n('return','Trả booking / trạng thái thành công',1,1990);n('confirm','Xem lịch đã đặt',0,2170);n('end','',0,2350,'final');n('pt-view','Tra cứu lịch của mình\nThấy booking mới đã được lưu',2,1980);
  vertical(d,'start','select');horizontal(d,'select','auth','Yêu cầu đặt lịch',{label:[505,420]});vertical(d,'auth','authorized');horizontal(d,'authorized','error','[Không]',{from:'left',to:'right',label:[500,672]});vertical(d,'error','failed');vertical(d,'authorized','conditions','[Có]',{label:[745,790]});vertical(d,'conditions','valid');
  const a=P(d,'valid','left'),b=P(d,'error','right',.8);d.edge('valid','error','[Không]',{from:'left',to:'right',tf:.8,via:[[485,a[1]],[485,b[1]]],label:[475,1020]});
  vertical(d,'valid','query','[Có]',{label:[745,1160]});vertical(d,'query','conflict');horizontal(d,'conflict','retry','[Có]',{from:'left',to:'right',label:[495,1435]});vertical(d,'conflict','save','[Không]',{label:[755,1570]});vertical(d,'save','written');vertical(d,'written','return','[Có]',{label:[745,1940]});
  const s=P(d,'written','left'),t=P(d,'retry','right',.8);d.edge('written','retry','[Cạnh tranh / thất bại]',{from:'left',to:'right',tf:.8,via:[[465,s[1]],[465,t[1]]],label:[345,1770]});
  const r=P(d,'retry','left'),sel=P(d,'select','left',.8);d.edge('retry','select','Chọn lại',{from:'left',to:'left',tf:.8,via:[[70,r[1]],[70,sel[1]]],label:[125,1100]});
  horizontal(d,'return','confirm','Kết quả đặt lịch',{from:'left',to:'right',label:[500,2130]});vertical(d,'confirm','end');horizontal(d,'return','pt-view','Dữ liệu lịch đã lưu',{kind:'data',label:[1010,1970]});
- d.node('note','Chống cùng startTime đã có partial unique index. Chống mọi khoảng giờ chồng nhau và xử lý cạnh tranh là yêu cầu service cần triển khai.',55,2450,1370,45,'note',{font:15});d.write('workflow-booking');
+ d.node('note','Ca mới 60 phút tại giờ tròn; unique slot bảo vệ cạnh tranh. MongoDB standalone: đối soát quota sau sự cố (docs/12).',55,2450,1370,45,'note',{font:15});d.write('workflow-booking');
 }
 {
  const {d,n}=swim('Swimlane — Huấn luyện, tiến độ và đánh giá',['PT / Huấn luyện viên','Hệ thống (React / API / MongoDB)','Member / Hội viên'],3390);
  n('start','',0,225,'initial');n('choose','Chọn hội viên liên quan\nNhập giáo án / mục tiêu',0,315);n('permission','Kiểm tra quan hệ PT – hội viên\nValidate giáo án / khoảng ngày',1,470);n('allowed','Đủ quyền / hợp lệ?',1,630,'decision');n('error','Hiển thị lỗi\nKhông lưu dữ liệu',0,645);n('failed','',0,840,'final');
- n('plan','Lưu WorkoutPlan',1,850);n('view','Xem giáo án\nTham gia buổi tập đã đặt',2,1020);n('result','Xác nhận kết quả buổi tập\n(booked → completed / no_show)',0,1200);n('attended','Đã tham gia?',0,1370,'decision');
- n('noshow','Lưu no_show\nGiữ lịch sử; áp dụng chính sách buổi',1,1510);n('noshow-end','',1,1710,'final');
+ n('plan','Lưu WorkoutPlan',1,850);n('view','Xem giáo án\nTham gia buổi tập đã đặt',2,1020);n('result','Sau giờ kết thúc, xác nhận kết quả\n(booked → completed / no_show)',0,1200);n('attended','Đã tham gia?',0,1370,'decision');
+ n('noshow','Lưu no_show\nGiữ lịch sử và giữ hạn mức buổi',1,1510);n('noshow-end','',1,1710,'final');
  n('complete','Lưu completed\nKhông tính buổi lặp',1,1870);n('progress','Nhập chỉ số cơ thể / ghi chú\nCập nhật tiến độ',0,2050);n('save-progress','Validate và lưu ProgressLog',1,2210);n('review','Gửi đánh giá?',2,2370,'decision');n('validate-review','Kiểm tra completed / đúng chủ\nChưa có review, rating nguyên 1–5',1,2520);n('review-valid','Đánh giá hợp lệ?',1,2690,'decision');n('review-error','Hiển thị lỗi đánh giá\nKhông tạo Review',2,2705);n('save-review','Lưu Review\nTính ratingAverage / ratingCount',1,2900);n('feedback','Xem kết quả đánh giá',2,3060);n('end','',2,3220,'final');
  vertical(d,'start','choose');horizontal(d,'choose','permission','Yêu cầu lưu',{label:[505,420]});vertical(d,'permission','allowed');horizontal(d,'allowed','error','[Không]',{from:'left',to:'right',label:[500,685]});vertical(d,'error','failed');vertical(d,'allowed','plan','[Có]',{label:[745,800]});horizontal(d,'plan','view','Giáo án',{label:[975,980]});
  const a=P(d,'view','left'),b=P(d,'result','right');d.edge('view','result','Buổi tập diễn ra',{from:'left',to:'right',via:[[970,a[1]],[970,1150],[470,1150],[470,b[1]]],label:[720,1130]});vertical(d,'result','attended');horizontal(d,'attended','noshow','[Không]',{label:[520,1450]});vertical(d,'noshow','noshow-end');
@@ -109,7 +109,7 @@ function swim(titleText,roles,height){
 {
  const {d,n}=swim('Swimlane — Hủy lịch và giữ lịch sử',['Member / Hội viên','Hệ thống (React / API / MongoDB)','PT / Huấn luyện viên'],1490);
  n('start','',0,225,'initial');n('request','Chọn booking của mình\nGửi yêu cầu hủy',0,325);n('validate','Kiểm tra quyền, trạng thái booked\nvà chưa đến giờ bắt đầu',1,500);n('valid','Cho phép hủy?',1,675,'decision');n('error','Hiển thị lỗi từ chối\nGiữ nguyên trạng thái',0,690);n('failed','',0,900,'final');
- n('cancel','Cập nhật cancelled\nGiữ document và lịch sử',1,930);n('view','Xem lịch đã hủy\nCó thể đặt lại chỗ đã giải phóng',0,1120);n('pt-view','Xem lịch cập nhật\nBooking không còn giữ chỗ',2,1120);n('end','',0,1320,'final');
+ n('cancel','Lưu cancelled; hoàn quota\nGiữ document và lịch sử',1,930);n('view','Xem lịch đã hủy\nCó thể đặt lại chỗ đã giải phóng',0,1120);n('pt-view','Xem lịch cập nhật\nBooking không còn giữ chỗ',2,1120);n('end','',0,1320,'final');
  vertical(d,'start','request');horizontal(d,'request','validate','Yêu cầu hủy',{label:[510,450]});vertical(d,'validate','valid');horizontal(d,'valid','error','[Không]',{from:'left',to:'right',label:[500,715]});vertical(d,'error','failed');vertical(d,'valid','cancel','[Có]',{label:[745,870]});horizontal(d,'cancel','view','Kết quả hủy',{from:'left',to:'right',label:[505,1070]});horizontal(d,'cancel','pt-view','Lịch đã cập nhật',{kind:'data',label:[990,1070]});vertical(d,'view','end');d.write('workflow-cancellation');
 }
 
@@ -117,8 +117,8 @@ const entityFields={
  user:['User / users','_id: ObjectId [PK]','fullName, email [unique], password','phone, gender, dateOfBirth, avatar','role: member | trainer (PT) | admin','isActive: Boolean'],
  trainer:['TrainerProfile / trainerprofiles','_id: ObjectId [PK]','user: ObjectId [ref User, unique]','specialties[], certificates[], bio','experienceYears, pricePerSession','ratingAverage, ratingCount, isActive'],
  pkg:['MembershipPackage / membershippackages','_id: ObjectId [PK]','name, description, durationDays','price, sessionLimit (null = unlimited)','includesPT, isActive'],
- sub:['Subscription / subscriptions','_id: ObjectId [PK]','member: ref User; package: ref Package','startDate, endDate, amount, paidAt','status: pending / active / expired / cancelled','paymentStatus: unpaid / paid'],
- booking:['Booking / bookings','_id: ObjectId [PK]','member: ref User; trainer: ref TrainerProfile','subscription: ref Subscription','date, startTime, endTime, note','status: booked / completed / cancelled / no_show'],
+ sub:['Subscription / subscriptions','_id: ObjectId [PK]','member: ref User; package: ref Package','startDate, endDate, amount, paidAt','status: pending / active / expired / cancelled','paymentStatus: unpaid / paid','includesPT, sessionLimit; reservedSessions'],
+ booking:['Booking / bookings','_id: ObjectId [PK]','member: ref User; trainer: ref TrainerProfile','subscription: ref Subscription','date, startTime, endTime, note','quotaReserved: Boolean','status: booked / completed / cancelled / no_show'],
  plan:['WorkoutPlan / workoutplans','_id: ObjectId [PK]','member: ref User; trainer: ref TrainerProfile','title, goal, startDate, endDate, status','items[]: embedded exercises / sets / reps'],
  progress:['ProgressLog / progresslogs','_id: ObjectId [PK]','member: ref User; trainer?: ref TrainerProfile','date, weight, bodyFat, height','attendedSessions, note'],
  review:['Review / reviews','_id: ObjectId [PK]','member: ref User; trainer: ref TrainerProfile','booking: ref Booking [unique]','rating: integer 1–5; comment'],
