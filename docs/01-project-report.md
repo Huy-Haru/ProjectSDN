@@ -46,12 +46,13 @@ Các sơ đồ trong `diagram/` gồm context, use case cho khách và ba vai tr
 
 | Hạng mục | Hiện trạng | Giới hạn |
 | --- | --- | --- |
-| Giao diện | Có trang cho hội viên, PT, quản trị viên | Dữ liệu mẫu và cập nhật state cục bộ |
-| Model | 8 Mongoose model và các enum trạng thái | Chưa đủ ràng buộc nghiệp vụ liên collection |
-| Kết nối | Đã xác minh React → Express → MongoDB local; health API trả 200 | Kiểm tra kết nối chưa đồng nghĩa API nghiệp vụ đã hoàn chỉnh |
-| Mật khẩu | User có hook hash và phương thức so sánh | Chưa có API đăng ký/đăng nhập, token hay middleware phân quyền |
-| Lịch tập | Booking có partial unique index theo PT hoặc hội viên/ngày/giờ bắt đầu | Chưa xử lý mọi khoảng giờ chồng nhau; cancelled không giữ chỗ |
-| Kiểm thử | Có kiểm thử cấu hình, HTTP, schema và integration database tạm | Chưa có UAT cho API nghiệp vụ đầy đủ |
+| Giao diện | Các trang chính Member/PT/Admin dùng API thật | Chưa có realtime giữa phiên |
+| Model | 8 model, indexes, validation và optimistic concurrency | Ref không phải khóa ngoại; nghiệp vụ do service kiểm tra |
+| Kết nối | React → Express → MongoDB local; health ping thật | Hosting chưa nghiệm thu |
+| Tài khoản | Auth JWT, hash bcrypt, role/ownership, profile ba role | Đăng xuất phía client; chưa có denylist/rate limit |
+| Lịch tập | Ca 60 phút, paid/active, hạn mức, xung đột và hủy/hoàn buổi | Standalone cần đối soát quota sau sự cố; không transaction nhiều document |
+| Huấn luyện | PT chốt buổi, giáo án xem/sửa, tiến độ và Review buổi completed | Chưa có lịch rảnh PT/phân công collection riêng |
+| Kiểm thử | Backend nghiệp vụ và UAT browser tự động trên DB tạm | Không thay biên bản review/UAT nhóm hoặc hosting |
 
 ## 8. Kế hoạch triển khai trong 4 tuần
 
@@ -64,7 +65,7 @@ Nhóm đã thống nhất: **Huy–Admin, Hiếu–Member, Anh–PT và tài kho
 | 3 | 26/10–01/11 | Doanh thu/dashboard và lỗi API | Dashboard/giáo án/tiến độ/review Member | Kết quả buổi, ProgressLog, Review/PT dashboard | Completed → tiến độ → review; báo cáo đúng |
 | 4 | 02–08/11 | UAT Admin, build/lint, cấu hình bàn giao | UAT Member, diagram và minh chứng | UAT bảo mật/PT, API/ERD và biên bản test | MVP ổn định, hồ sơ và demo đủ ba role |
 
-Chi tiết mã công việc, SP, phụ thuộc và tiêu chí nghiệm thu nằm trong [kế hoạch làm việc 4 tuần](07-work-plan-4-weeks.md). SP là ước lượng tương đối, không quy đổi cứng ra giờ/ngày; nhóm hiệu chỉnh sau tuần đầu. Cơ chế slot lịch và chính sách no_show cần chốt đầu tuần 1.
+Chi tiết mã công việc, SP, phụ thuộc và tiêu chí nghiệm thu nằm trong [kế hoạch làm việc 4 tuần](07-work-plan-4-weeks.md). SP là ước lượng tương đối, không quy đổi cứng ra giờ/ngày; nhóm hiệu chỉnh sau tuần đầu. Bản triển khai hiện dùng ca 60 phút tại giờ tròn 08:00–21:00; no_show tính hạn mức như completed.
 
 ## 9. Rủi ro và xử lý
 
@@ -76,4 +77,4 @@ Chi tiết mã công việc, SP, phụ thuộc và tiêu chí nghiệm thu nằm
 
 ## 10. Đánh giá và hướng phát triển
 
-Phiên bản hiện tại là nền giao diện và dữ liệu cho sản phẩm, chưa phải hệ thống quản lý hoàn chỉnh. Công việc tiếp theo tập trung vào API, xác thực, ràng buộc nghiệp vụ và thay dữ liệu mẫu bằng MongoDB. Khi hoàn thành các tiêu chí trong SRS, nhóm có thể bổ sung thông báo, thanh toán trực tuyến và quản lý nhiều chi nhánh.
+Bản MVP hiện đã nối các trang chính với API và MongoDB, gồm Auth/profile, Admin, đăng ký/thanh toán thủ công, lịch PT, giáo án/tiến độ, đánh giá và tổng quan. Kết quả kỹ thuật được ghi trong verification.md; cần nghiệm thu nhóm, review chéo và triển khai hosting riêng. Thanh toán trực tuyến, thông báo và nhiều chi nhánh nằm ngoài phạm vi hiện tại.

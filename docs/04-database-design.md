@@ -38,7 +38,7 @@ MongoDB không thực thi khóa ngoại. `ref` hỗ trợ populate nhưng không
 | ratingCount | Number | Mặc định 0 |
 | isActive | Boolean | Mặc định true |
 
-user phải trỏ đến tài khoản trainer theo yêu cầu nghiệp vụ; schema chưa kiểm tra role. Giá PT và cơ chế gói includesPT cần được chốt trước tính tiền.
+Admin service kiểm tra User có role trainer khi tạo/cập nhật hồ sơ. Giá gói là số tiền đăng ký; đặt lịch yêu cầu includesPT, không phát sinh khoản thu PT riêng tự động.
 
 ### MembershipPackage → membershippackages
 
@@ -65,8 +65,11 @@ durationDays/sessionLimit/price đã có kiểm tra số nguyên; sessionLimit v
 | paymentStatus | String | unpaid/paid; mặc định unpaid |
 | amount | Number | Bắt buộc, số nguyên >= 0 |
 | paidAt | Date | Bắt buộc khi paymentStatus=paid |
+| includesPT | Boolean | Snapshot quyền PT tại đăng ký; legacy có thể thiếu |
+| sessionLimit | Number/null | Snapshot số nguyên >= 1 hoặc null; legacy có thể thiếu |
+| reservedSessions | Number | Số nguyên >= 0; đếm lịch mới đang giữ quota |
 
-amount lưu giá trị đăng ký để không thay đổi theo giá danh mục. `isValid(at)` kiểm tra active/paid và startDate <= at <= endDate. `findActiveByMember()` áp dụng các điều kiện này và sort endDate/_id giảm dần; chính sách nhiều gói active vẫn cần xác nhận.
+amount lưu giá trị đăng ký để không thay đổi theo giá danh mục. `isValid(at)` kiểm tra active/paid và startDate <= at <= endDate. `findActiveByMember()` áp dụng các điều kiện này và sort endDate/_id giảm dần; API cho phép nhiều gói active và yêu cầu chọn subscription cụ thể khi đặt lịch.
 
 ### Booking → bookings
 
@@ -79,8 +82,9 @@ amount lưu giá trị đăng ký để không thay đổi theo giá danh mục.
 | startTime/endTime | String | Bắt buộc, trim, kiểm tra HH:mm và endTime > startTime |
 | status | String | booked/completed/cancelled/no_show; mặc định booked |
 | note | String | Trim |
+| quotaReserved | Boolean | Mặc định false; lịch mới giữ quota qua reservedSessions |
 
-Partial unique index theo trainer/date/startTime và member/date/startTime, áp dụng booked/completed/no_show, không giữ chỗ cancelled. date chuẩn hóa UTC midnight khi validate/save; API dùng YYYY-MM-DD. Chặn cùng startTime, chưa chặn mọi khoảng giờ chồng nhau.
+Partial unique index theo trainer/date/startTime và member/date/startTime, áp dụng booked/completed/no_show, không giữ chỗ cancelled. date chuẩn hóa UTC midnight khi validate/save; API dùng YYYY-MM-DD. API mới chỉ tạo slot 60 phút tại giờ tròn 08:00–21:00, có precheck khoảng giao nhau với lịch cũ. Unique index bảo vệ cạnh tranh ở các slot cố định.
 
 ### WorkoutPlan → workoutplans
 
@@ -151,4 +155,4 @@ Các query index đã khai báo và áp dụng qua migration; cần đo explain/
 
 Thứ tự tạo mẫu: User → TrainerProfile/MembershipPackage → Subscription → Booking → WorkoutPlan/ProgressLog/Review. Dùng ObjectId thật và hash password qua save. Không dùng trực tiếp id mock trong React. Seed phải idempotent và không tạo tài khoản admin với mật khẩu công khai cố định trong môi trường triển khai.
 
-Đã có paidAt. Đề xuất bổ sung: payment reference hoặc Payment collection, snapshot quyền lợi gói tại đăng ký, cơ chế đếm buổi, lịch rảnh PT và quan hệ phân công hội viên. Đây chưa phải schema hiện có. Mọi migration cần kiểm tra dữ liệu cũ, sao lưu và ghi lại thay đổi index.
+Đã có paidAt. Đã có snapshot quyền lợi và bộ đếm buổi cho đăng ký mới. Lịch cũ chưa đánh dấu quota được đếm riêng; xem [quy tắc và khôi phục](12-member-booking.md). Chưa có Payment collection/reference ngân hàng, lịch rảnh PT hoặc collection phân công hội viên riêng. Mọi migration cần kiểm tra dữ liệu cũ, sao lưu và ghi lại thay đổi index.

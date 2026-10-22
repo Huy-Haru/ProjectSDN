@@ -1,94 +1,64 @@
-# Phân tích và thiết kế hệ thống
+# Thiết kế hệ thống FitManager
+
+Cập nhật 23/10/2026 theo mã nguồn nhánh HuyNHHE190724.
 
 ## 1. Kiến trúc
 
-Browser → React/Vite → REST API Express → controller → service → Mongoose model → MongoDB. Middleware xác thực/phân quyền/validation là thiết kế mục tiêu; hiện mới có CORS, JSON parsing, xử lý lỗi và health route.
+React/Vite gọi Express REST JSON; Express xác thực và xử lý nghiệp vụ qua Mongoose/MongoDB local fitmanager. Trình duyệt không truy cập trực tiếp database. Frontend mặc định localhost:3000, backend localhost:5000/api. Base URL frontend cấu hình bằng VITE_API_URL; backend dùng MONGODB_URI, CORS_ORIGIN, PORT, JWT_SECRET, JWT_EXPIRES_IN.
 
-React chịu trách nhiệm hiển thị và tương tác. Express kiểm tra dữ liệu và quyền trước khi gọi service. Service xử lý hiệu lực gói, xung đột lịch và doanh thu. Mongoose mô tả schema và index. MongoDB là nguồn dữ liệu bền vững. Secret chỉ nằm ở backend.
+App và các trang nghiệp vụ dùng API thật với trạng thái loading/error/empty. _id là ObjectId thật, tên người dùng là fullName, role thống nhất member/trainer/admin. Dữ liệu mẫu cũ chỉ còn ở các thành phần không dùng trong luồng chính và fixture kiểm thử modal.
 
-`context.drawio` thể hiện tác nhân ngoài hệ thống; `database.drawio` thể hiện cấu trúc lưu trữ, không đưa MongoDB thành một người dùng nghiệp vụ.
+## 2. Xác thực và response
 
-## 2. Hiện trạng tích hợp
+Auth cấp JWT bearer HS256; request xác minh chữ ký/hết hạn rồi tải User từ database để kiểm tra isActive và role hiện tại. Không tin role tự gửi từ client. Frontend lưu token để khôi phục phiên; đăng xuất xóa token phía client. Chưa có denylist thu hồi JWT trước hạn.
 
-Frontend đã có `services/api.js` và `ConnectionStatus` gọi GET /api/health. Backend ping MongoDB trước khi trả trạng thái thành công. Đây là luồng kiểm tra kết nối ba tầng. Các trang nghiệp vụ vẫn dùng dữ liệu mẫu; không tự fallback sang mock để giả lập lưu thành công khi API lỗi.
+Response thành công gồm success, message, data; lỗi được chuyển qua errorHandler. Mã lỗi: 400 validation, 401 xác thực, 403 quyền, 404 không tìm thấy, 409 duplicate/version/state conflict, 503 database không sẵn sàng. Lỗi bất ngờ không trả stack hoặc secret. Đổi mật khẩu đi qua document save để chạy bcrypt hook.
 
-User trong frontend hiện có tên trường và role khác schema; mỗi API cần DTO mapping. Ví dụ `User.fullName` → tên hiển thị; `_id` → id; role member/trainer/admin → vai trò UI tương ứng. Không dùng ObjectId giả từ mockData khi ghi database.
+## 3. Endpoint hiện có
 
-## 3. Module mục tiêu
+Các path bắt đầu /api. Danh sách dưới đây ghi phương thức đầy đủ, không dùng ký hiệu route đề xuất.
 
-| Module | Trách nhiệm | Model |
-| --- | --- | --- |
-| Auth/User | Tài khoản, phiên, phân quyền, khóa tài khoản | User |
-| Catalog | Gói tập và hồ sơ PT | MembershipPackage, TrainerProfile |
-| Subscription | Đăng ký gói, xác nhận thanh toán, hiệu lực | Subscription |
-| Booking | Đặt/hủy/hoàn thành lịch và xung đột | Booking |
-| Training | Giáo án và tiến độ | WorkoutPlan, ProgressLog |
-| Review | Đánh giá và điểm tổng hợp | Review, TrainerProfile |
-| Reporting | Dashboard và doanh thu | Các model trên |
+| Nhóm | Phương thức và path | Quyền / nội dung |
+|---|---|---|
+| Health | GET /health | Công khai; ping MongoDB |
+| Auth | POST /auth/register; POST /auth/login | Công khai; đăng ký chỉ tạo Member |
+| Auth | POST /auth/logout; GET /auth/me | Đã đăng nhập; logout trả kết quả, client xóa token |
+| Profile | GET /profile/me; PATCH /profile/me; POST /profile/change-password | Tài khoản đã đăng nhập, dữ liệu của mình |
+| Profile PT | PATCH /profile/trainer | PT sửa trường mở rộng được phép |
+| Danh mục gói | GET /member/packages | Công khai; chỉ gói hoạt động |
+| Đăng ký gói | GET /member/subscriptions; POST /member/subscriptions | Member, đúng chủ; server chốt amount/quyền lợi |
+| Danh mục PT | GET /member/trainers | Member; User và TrainerProfile hoạt động |
+| Lịch Member | GET /member/bookings; POST /member/bookings; POST /member/bookings/:id/cancel | Member, đúng chủ |
+| Tiến độ Member | GET /member/progress | Member, chỉ log của mình |
+| Đánh giá Member | GET /member/reviews; POST /member/reviews | Member, completed đã kết thúc, một Review/buổi |
+| Lịch và học viên PT | GET /trainer/schedule; GET /trainer/members | PT, tài nguyên liên quan |
+| Kết quả buổi tập | PATCH /trainer/bookings/:id/status | PT sở hữu, sau giờ kết thúc; completed/no_show |
+| Giáo án PT | GET /trainer/workout-plans; POST /trainer/workout-plans; GET /trainer/workout-plans/:planId; PATCH /trainer/workout-plans/:planId | PT sở hữu; tạo cho học viên liên quan |
+| Giáo án Member | GET /trainer/member/workout-plans | Member, chỉ giáo án giao cho mình |
+| Tiến độ PT | GET /trainer/members/:memberId/progress; POST /trainer/members/:memberId/progress | PT hoạt động, quan hệ lịch chưa hủy; chỉ xem log của mình |
+| Đánh giá PT | GET /trainer/reviews | PT, phản hồi dành cho mình và tổng điểm |
+| Danh mục Admin | GET /admin/packages; POST /admin/packages; PATCH /admin/packages/:id | Admin; tạo/sửa/khóa |
+| Tài khoản Admin | GET /admin/users; GET /admin/users/:id; POST /admin/users; PATCH /admin/users/:id | Admin; Member/PT và soft lock, không tự đổi role qua profile |
+| Lịch Admin | GET /admin/bookings; PATCH /admin/bookings/:id/status | Admin; lọc và chốt kết quả/hủy theo quy tắc |
+| Thanh toán Admin | GET /admin/subscriptions; POST /admin/subscriptions/:id/confirm-payment | Admin; lưu paid/paidAt/active, gọi lặp không tạo khoản thu mới |
+| Báo cáo Admin | GET /admin/reports/revenue; GET /admin/dashboard | Admin; tổng hợp paid theo paidAt |
 
-## 4. API hiện có
+Dashboard Member/PT hiện tổng hợp các API có scope của tài khoản, không có endpoint dashboard riêng cho hai role này.
 
-| Method/path | Hành vi |
-| --- | --- |
-| GET / | Trả thông báo chào |
-| GET /api/health | 200 nếu MongoDB connected và ping thành công; 503 nếu unavailable |
+## 4. Quy tắc dữ liệu và cạnh tranh
 
-Thành công: `{ "success": true, "message": "Success", "data": {} }`. Lỗi: `{ "success": false, "message": "Error message" }`. Route không có trả 404, JSON sai trả 400, body > 1 MB trả 413; lỗi nội bộ trả thông báo chung.
+Đăng ký gói chốt giá/thời hạn/includesPT/sessionLimit tại server, pending/unpaid; Admin xác nhận thủ công. Không có ngân hàng hoặc tự động hoàn tiền. Gói hết ngày bị từ chối dùng dù status chưa được tác vụ đổi thành expired.
 
-## 5. Hợp đồng API đề xuất — chưa triển khai
+Booking mới dùng ca 60 phút bắt đầu giờ tròn 08:00–21:00, ngày YYYY-MM-DD lưu UTC midnight và giờ buổi tập diễn giải tại Việt Nam. Kiểm tra cả PT/Member, gói đúng chủ paid/active và bao phủ toàn bộ buổi. Precheck giao khoảng giờ hỗ trợ lịch cũ giờ lẻ; hai partial unique indexes bảo vệ slot cố định khi ghi đồng thời.
 
-| Method/path | Quyền | Ghi chú |
-| --- | --- | --- |
-| POST /api/auth/register | Khách | Whitelist fullName,email,password,phone; role luôn member |
-| POST /api/auth/login | Khách | Kiểm tra active và mật khẩu |
-| POST /api/auth/logout | Đã đăng nhập | Thu hồi phiên theo cơ chế chọn |
-| GET /api/auth/me | Đã đăng nhập | User an toàn, không password |
-| PATCH /api/users/me | Member/PT/Admin | Profile chung của mình, whitelist; không đổi role/isActive/password |
-| GET /api/packages | Công khai | Chỉ active; phân trang |
-| POST/PATCH /api/packages[/:id] | Admin | Tạo/cập nhật/khóa |
-| GET /api/trainers | Công khai | Profile populate User với trường an toàn |
-| POST/PATCH /api/trainers[/:id] | Admin | Kiểm tra User role trainer |
-| GET/PATCH /api/users[/:id] | Admin | Quản lý tài khoản |
-| POST /api/subscriptions | Member | Lấy member từ phiên, chốt giá tại server |
-| GET /api/subscriptions/me | Member | Chỉ đăng ký của mình |
-| PATCH /api/subscriptions/:id/payment | Admin | Xác nhận paid; đã có paidAt; cần audit |
-| GET /api/bookings | Đã đăng nhập | Lọc theo quyền và khoảng ngày |
-| POST /api/bookings | Member | Kiểm tra gói và khoảng giờ |
-| PATCH /api/bookings/:id/cancel | Owner/Admin | Cập nhật trạng thái, không delete |
-| PATCH /api/bookings/:id/status | PT liên quan/Admin | completed/no_show theo state machine |
-| GET/POST/PATCH /api/workout-plans[/:id] | Owner xem; PT liên quan ghi | Validate items và khoảng ngày |
-| GET/POST /api/progress-logs | Owner xem; PT liên quan ghi | Không công khai chỉ số cơ thể |
-| GET/POST /api/reviews | Xem theo chính sách; member ghi | Booking completed và chưa có Review |
-| GET /api/reports/revenue | Admin | Paid only; phân kỳ theo paidAt |
+Subscription.reservedSessions giữ quota bằng cập nhật có điều kiện nguyên tử; Booking.quotaReserved phân biệt lịch mới và lịch cũ. Lịch booked/completed/no_show chiếm buổi, cancelled giải phóng. Có bù quota khi tạo Booking thất bại. MongoDB standalone không có transaction nhiều document: không bảo đảm nguyên tử giữa counter và Booking qua dừng tiến trình/lỗi kết nối. Cần đối soát sau sự cố bằng db:quota trong chế độ bảo trì; xem [12-member-booking.md](12-member-booking.md).
 
-Ký hiệu `[/:id]` là cách rút gọn trong tài liệu; router thực phải đăng ký riêng từng path. Mã lỗi mục tiêu: 400 dữ liệu lỗi, 401 chưa xác thực, 403 thiếu quyền, 404 không tìm thấy, 409 trùng/xung đột, 503 database không sẵn sàng.
+bookingStatusService dùng chung cho Admin/PT; trạng thái cuối không đổi ngược, lặp cùng trạng thái trả bản hiện có. Member chỉ hủy lịch của mình trước giờ bắt đầu. PT/Admin chỉ chốt completed/no_show sau giờ kết thúc. Optimistic concurrency bảo vệ ghi đồng thời.
 
-## 6. Luồng đặt lịch và cạnh tranh
+Giáo án dùng document save để validate cả khoảng ngày. Form sửa gửi expectedVersion và backend so __v; từ chối bản cũ với 409. Các client cũ chưa gửi expectedVersion vẫn được hỗ trợ. Tiến độ tự đếm buổi hoàn thành tại thời điểm lưu. Review suy ra chủ sở hữu từ Booking; unique booking chống đánh giá lặp, danh sách PT tổng hợp điểm từ Review thật.
 
-1. Lấy User từ phiên; không tin member gửi trong body.
-2. Kiểm tra PT active, Subscription đúng chủ, active/paid và bao phủ ngày hẹn.
-3. Chuẩn hóa ngày theo múi giờ nghiệp vụ; kiểm tra HH:mm, start < end và thời gian tương lai.
-4. Kiểm tra giao nhau của mọi booking booked/completed có liên quan cho PT và hội viên.
-5. Kiểm tra số buổi có thể sử dụng theo chính sách.
-6. Lưu booking và trả kết quả; lỗi unique phải chuyển thành 409.
+## 5. Vận hành và giới hạn
 
-Query kiểm tra trước rồi insert riêng lẻ không đảm bảo an toàn khi hai request đồng thời. Cần chọn cơ chế slot cố định với khóa unique, hoặc document lịch theo PT/ngày được cập nhật nguyên tử/khóa và transaction phù hợp. Partial unique index hiện tại chỉ chặn cùng startTime, không chặn 09:00–10:00 với 09:30–10:30. MongoDB standalone local không hỗ trợ transaction nhiều document; muốn dùng transaction phải cấu hình replica set. Đây là quyết định thiết kế chưa triển khai.
+Runtime kiểm tra cấu hình trước khi mở server; .env không commit. Công cụ additive indexes, backup/restore có bảo vệ và đối soát quota được mô tả trong docs/05, docs/09 và docs/12. Bộ kiểm thử backend/browser dùng database tạm riêng; CI chạy MongoDB service và Chromium Linux.
 
-## 7. Trạng thái
-
-- Subscription: pending → active khi thanh toán và ngày hợp lệ; active → expired khi quá hạn; pending/active → cancelled theo chính sách.
-- Payment: unpaid → paid bởi admin. Hoàn tiền chưa có trạng thái/model.
-- Booking: booked → completed, cancelled hoặc no_show; không chuyển ngược trạng thái kết thúc.
-- WorkoutPlan: active → completed hoặc cancelled.
-
-Enum chỉ giới hạn giá trị, không tự bảo vệ các phép chuyển trạng thái. Service phải kiểm tra trạng thái cũ và xử lý lặp idempotent.
-
-## 8. Bảo mật và vận hành mục tiêu
-
-Chọn phiên cookie HttpOnly/Secure/SameSite hoặc access token với vòng đời và thu hồi rõ ràng. Nếu dùng cookie, bổ sung bảo vệ CSRF và cấu hình credentials phù hợp. Không nhận role, amount, ratingAverage từ public body. Query phải whitelist trường để tránh mass assignment. Validate ObjectId trước query và chuyển lỗi validation/duplicate thành phản hồi rõ ràng.
-
-Mật khẩu hash bằng bcrypt hook `save`; update trực tiếp password qua findOneAndUpdate sẽ không chạy hook này, nên luồng đổi mật khẩu phải xử lý riêng. `.env` không commit. CORS origin cấu hình cụ thể. Thêm rate limit đăng nhập, log hành động admin và sao lưu là yêu cầu triển khai tiếp.
-
-## 9. Bất đồng hiện có cần giải quyết
-
-Frontend có thao tác hội viên tự hoàn thành buổi và hủy bằng cách loại lịch khỏi state, trong khi thiết kế giao quyền hoàn thành cho PT/admin và giữ lịch sử hủy. UI hiển thị chu kỳ tháng/năm nhưng MembershipPackage chỉ có một price và durationDays; cần thống nhất danh mục gói hoặc mở rộng pricing trước khi tích hợp thanh toán. Schema có paidAt nhưng chưa có lịch rảnh PT, phân công hội viên bền vững và model giao dịch thu tiền; không mô tả những phần này là đã triển khai.
+Chưa có rate limiting đăng nhập, thu hồi JWT phía server, audit log bất biến cho thanh toán, lịch rảnh PT, cổng thanh toán, scheduler hết hạn hoặc cập nhật realtime. Không ghi các phần này là đã hoàn thành. Hosting, review chéo và nghiệm thu nhóm cần biên bản riêng.
