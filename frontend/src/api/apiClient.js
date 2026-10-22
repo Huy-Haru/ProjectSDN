@@ -76,6 +76,7 @@ export const profileApi = {
  * Trainer API — A2.2
  */
 export const trainerApi = {
+  setBookingStatus: (id, status) => request('PATCH', `/trainer/bookings/${id}/status`, { status }),
   /** PT xem lịch dạy của mình */
   getSchedule: (params = {}) => {
     const qs = new URLSearchParams(params).toString();

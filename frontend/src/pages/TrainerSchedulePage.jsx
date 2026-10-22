@@ -14,6 +14,10 @@ const STATUS_MAP = {
  * A2.2 — TrainerSchedulePage: PT chỉ thấy lịch liên quan đến mình, dùng API thật.
  */
 const TrainerSchedulePage = () => {
+  const [pending, setPending] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [failure, setFailure] = useState('');
+  const [message, setMessage] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,6 +31,14 @@ const TrainerSchedulePage = () => {
   }, [filterStatus, filterDate]);
   const { data: bookings, loading, error, reload: fetchSchedule } = useApiResource(load, JSON.stringify([filterStatus, filterDate]));
 
+  async function confirmStatus() {
+    setSaving(true); setFailure(''); setMessage('');
+    try {
+      await trainerApi.setBookingStatus(pending.id, pending.status);
+      setPending(null); setMessage('Đã cập nhật buổi tập.'); fetchSchedule();
+    } catch (err) { setFailure(err.message); }
+    finally { setSaving(false); }
+  }
   const filtered = bookings.filter(b => {
     if (!searchTerm) return true;
     const name = b.member?.fullName?.toLowerCase() || '';
@@ -50,6 +62,13 @@ const TrainerSchedulePage = () => {
         </button>
       </div>
 
+      {message && <p role="status">{message}</p>}
+      {failure && <p role="alert">{failure}</p>}
+      {pending && <div role="group" aria-label="Xác nhận buổi tập" className="border rounded-3 p-3 mb-3">
+        <p>Xác nhận {pending.status === 'completed' ? 'hoàn thành' : 'học viên vắng mặt'}: {pending.name}, {pending.date} {pending.time}?</p>
+        <button className="btn btn-success me-2" disabled={saving} onClick={confirmStatus}>Xác nhận buổi tập</button>
+        <button className="btn btn-secondary" disabled={saving} onClick={() => { setPending(null); setFailure(''); }}>Quay lại</button>
+      </div>}
       {/* Filter Bar */}
       <div className="p-3 mb-4 rounded-3 d-flex flex-wrap gap-3 align-items-center" style={{ background: '#0F172A', border: '1px solid #1E293B' }}>
         {/* Search */}
@@ -122,6 +141,7 @@ const TrainerSchedulePage = () => {
                   <th>GÓI TẬP</th>
                   <th>GHI CHÚ</th>
                   <th>TRẠNG THÁI</th>
+                  <th>XÁC NHẬN</th>
                 </tr>
               </thead>
               <tbody>
@@ -147,7 +167,7 @@ const TrainerSchedulePage = () => {
                       </td>
                       <td>
                         <div style={{ color: '#00E676', fontWeight: 600 }}>
-                          {b.date ? new Date(b.date).toLocaleDateString('vi-VN') : '—'}
+                          {b.date ? new Date(b.date).toLocaleDateString('vi-VN', {timeZone:'UTC'}) : '—'}
                         </div>
                         <div className="text-muted small">{b.startTime} – {b.endTime}</div>
                       </td>
@@ -161,6 +181,11 @@ const TrainerSchedulePage = () => {
                       </td>
                       <td>
                         <span className={`badge ${st.badge}`}>{st.label}</span>
+                      </td>
+                      <td>
+                        {b.status === 'booked' && <div className="d-flex gap-2">
+                          {['completed', 'no_show'].map(status => <button key={status} className="btn btn-sm btn-outline-success" disabled={saving} onClick={() => { setFailure(''); setMessage(''); setPending({id:b._id,status,name:b.member?.fullName || 'Hội viên',date:b.date?.slice(0,10),time:b.startTime}); }}>{status === 'completed' ? 'Hoàn thành buổi' : 'Ghi nhận vắng'}</button>)}
+                        </div>}
                       </td>
                     </tr>
                   );
