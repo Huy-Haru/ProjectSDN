@@ -6,7 +6,7 @@
 
 **Phân công đã thống nhất:** Huy phụ trách Admin; Hiếu phụ trách Member; Anh phụ trách PT và nền tài khoản dùng chung.
 
-**Tiến độ cập nhật 23/10:** phần code Admin H1–H3 đã triển khai và có kiểm thử; chi tiết trong [08-admin-implementation.md](08-admin-implementation.md). H4 có build/lint/Admin UAT và hướng dẫn; backup/restore vận hành và review chéo nhóm chưa được ghi là hoàn tất. Các bảng dưới giữ kế hoạch gốc để đối chiếu.
+**Tiến độ cập nhật 23/10:** Code Admin H1–H3 đã triển khai và kiểm thử; H4 bổ sung cấu hình fail-fast, archive/restore BSON/index đã thử trên database tạm, lint/build và CI. Xem [đối chiếu H1–H4](09-admin-release-checklist.md). Review chéo, nghiệm thu toàn nhóm và hosting thật cần biên bản riêng; các bảng dưới giữ kế hoạch gốc.
 
 ## 1. Mục tiêu sau 4 tuần
 

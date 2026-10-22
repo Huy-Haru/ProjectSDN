@@ -13,6 +13,7 @@ Website quản lý phòng tập và huấn luyện viên — SDN302. Phiên bả
 | [05-setup-and-testing.md](05-setup-and-testing.md) | Chạy local, xác minh kết nối và kế hoạch kiểm thử |
 | [06-mongodb-optimization.md](06-mongodb-optimization.md) | Profile ba vai trò, validation, index và migration |
 | [07-work-plan-4-weeks.md](07-work-plan-4-weeks.md) | Kế hoạch 12/10–08/11/2026; Huy–Admin, Hiếu–Member, Anh–PT/Auth |
+| [09-admin-release-checklist.md](09-admin-release-checklist.md) | Đối chiếu H1–H4, release gate, sao lưu/khôi phục đã thử và CI |
 | [08-admin-implementation.md](08-admin-implementation.md) | Phần Admin đã triển khai, API, kiểm thử và hướng dẫn vận hành |
 | [diagram/README.md](diagram/README.md) | Danh mục và cách mở sơ đồ draw.io |
 

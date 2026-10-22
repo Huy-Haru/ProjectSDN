@@ -14,7 +14,7 @@ Ngày cập nhật: 23/10/2026. Nhánh: HuyNHHE190724. Auth/profile/PT được 
 | H3.1 | Dashboard số liệu thật; doanh thu paid theo paidAt, nhóm ngày Việt Nam, từ/đến ngày bao gồm trọn ngày |
 | H3.2 | Whitelist input, kiểm tra ID/trạng thái/ref liên quan; validation=400, duplicate/version conflict=409; không trả password |
 | H4.1 | Unit/HTTP test, integration database tạm và kiểm tra trình duyệt; build và lint file Admin |
-| H4.2 | Script tạo Admin và hướng dẫn vận hành/backup bên dưới; backup/restore vận hành cần MongoDB Database Tools và kiểm chứng riêng |
+| H4.2 | Script tạo Admin, cấu hình fail-fast, archive/restore thử BSON/index và CI; xem runbook H4 |
 
 ## Endpoint
 
@@ -73,7 +73,7 @@ Kết quả ngày 23/10/2026: 16/16 unit/HTTP/model test đạt; verify-admin in
 
 Chạy production với NODE_ENV=production, JWT_SECRET riêng và CORS_ORIGIN đúng frontend; HTTPS do reverse proxy/hosting cấu hình. Chạy script optimize-indexes có kiểm soát trước phát hành, npm run build để tạo frontend/dist. Backend không cung cấp frontend static; cấu hình hosting frontend riêng. Không dùng autoIndex production để thay migration.
 
-Trước migration, cài MongoDB Database Tools và sao lưu local bằng mongodump --db fitmanager --archive=<đường-dẫn-riêng> --gzip. Thử phục hồi sang database **fitmanager_restore_check** bằng mongorestore --archive=<đường-dẫn> --gzip --nsFrom='fitmanager.*' --nsTo='fitmanager_restore_check.*', đối chiếu collection/count/index trước khi sử dụng backup. Không restore đè fitmanager hoặc dùng --drop khi chưa có kế hoạch khôi phục. File backup chứa dữ liệu cá nhân/hash: lưu ngoài Git và giới hạn quyền. Máy hiện chưa có mongodump/mongorestore trong PATH nên chưa ghi nhận backup/restore vận hành đã đạt.
+Trước migration, cài MongoDB Database Tools và sao lưu local bằng mongodump --db fitmanager --archive=<đường-dẫn-riêng> --gzip. Thử phục hồi sang database **fitmanager_restore_check** bằng mongorestore --archive=<đường-dẫn> --gzip --nsFrom='fitmanager.*' --nsTo='fitmanager_restore_check.*', đối chiếu collection/count/index trước khi sử dụng backup. Không restore đè fitmanager hoặc dùng --drop khi chưa có kế hoạch khôi phục. File backup chứa dữ liệu cá nhân/hash: lưu ngoài Git và giới hạn quyền. Đã bổ sung archive BSON/index cho database nhỏ trong maintenance mode và kiểm thử restore trên database tạm; xem [runbook H4](09-admin-release-checklist.md). Database Tools cho backup online/production vẫn cần kiểm chứng riêng.
 
 Rollback code bằng bản release trước; database phải giữ tương thích hoặc dùng migration rollback riêng. Không xóa collection để chữa lỗi schema.
 
