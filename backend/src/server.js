@@ -1,11 +1,12 @@
 const { once } = require('node:events');
-const { loadEnvironment, readEnvironment } = require('./config/environment');
+const { loadEnvironment } = require('./config/environment');
+const { readRuntime } = require('./config/runtime');
 const { connectDB, disconnectDB } = require('./config/database');
 const createApp = require('./app');
 
 async function startServer() {
   loadEnvironment();
-  const env = readEnvironment();
+  const env = readRuntime();
   await connectDB(env.mongoUri);
 
   const app = createApp({ corsOrigin: env.corsOrigin });

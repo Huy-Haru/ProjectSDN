@@ -124,6 +124,8 @@ test('server exits instead of opening HTTP when MongoDB is unreachable', { timeo
       ...process.env,
       MONGO_URI: 'mongodb://127.0.0.1:1/unreachable',
       MONGODB_URI: 'mongodb://127.0.0.1:1/unreachable',
+      JWT_SECRET: 'test-only-secret-not-for-production-0123456789',
+      JWT_EXPIRES_IN: '1h',
       PORT: '5000',
       CORS_ORIGIN: corsOrigin,
     },
