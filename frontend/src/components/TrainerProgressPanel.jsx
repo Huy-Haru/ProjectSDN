@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { progressApi } from '../api/apiClient';
 import { useApiResource } from '../hooks/useApiResource';
 export default function TrainerProgressPanel({ member, onClose }) {
@@ -12,13 +12,28 @@ export default function TrainerProgressPanel({ member, onClose }) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [failure, setFailure] = useState('');
+  const pendingRequest = useRef(null);
+  const inFlight = useRef(false);
   async function submit(e) {
-    e.preventDefault(); setSaving(true); setMessage(''); setFailure('');
+    e.preventDefault();
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setSaving(true); setMessage(''); setFailure('');
     const payload = {date,note};
     for (const [key,value] of Object.entries({weight,height,bodyFat})) if(value !== '') payload[key] = Number(value);
-    try { await progressApi.create(member._id,payload); setWeight(''); setHeight(''); setFat(''); setNote(''); setMessage('Đã lưu tiến độ.'); reload(); }
+    try {
+      const fingerprint = JSON.stringify(payload);
+      if (pendingRequest.current?.fingerprint !== fingerprint) {
+        pendingRequest.current = {fingerprint, requestId: crypto.randomUUID()};
+      }
+      payload.requestId = pendingRequest.current.requestId;
+      await progressApi.create(member._id,payload);
+      pendingRequest.current = null;
+      setWeight(''); setHeight(''); setFat(''); setNote('');
+      setMessage('Đã lưu tiến độ.'); reload();
+    }
     catch(err) { setFailure(err.message); }
-    finally { setSaving(false); }
+    finally { inFlight.current = false; setSaving(false); }
   }
   return <section className="border rounded-3 p-4 mt-4" aria-label="Tiến độ học viên">
     <h3>Tiến độ: {member.fullName}</h3>
