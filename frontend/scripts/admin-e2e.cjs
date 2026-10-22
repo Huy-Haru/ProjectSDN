@@ -560,6 +560,24 @@ async function run() {
   await page.getByRole('button',{name:'Tìm học viên',exact:true}).click();
   await page.getByText('Trang 1/2',{exact:true}).waitFor();
   await page.screenshot({path:path.join(output,'trainer-members-paginated.png'),fullPage:true});
+  for(let i=0;i<11;i++) await models.WorkoutPlan.create({trainer:profile._id,member:member._id,title:'Paged workout '+i,startDate:'2020-01-01',endDate:'2020-02-01',status:'active',items:[]});
+  await page.getByRole('button',{name:'Xem giáo án',exact:true}).first().click();
+  const plansPanel=page.getByRole('region',{name:'Giáo án học viên',exact:true});
+  await plansPanel.getByText('Giáo án: trang 1/3 · 12 kết quả',{exact:true}).waitFor();
+  assert.equal(await plansPanel.getByRole('button',{name:'Sửa giáo án',exact:true}).count(),5);
+  await plansPanel.getByRole('button',{name:'Trang giáo án sau',exact:true}).click();
+  await plansPanel.getByText('Giáo án: trang 2/3 · 12 kết quả',{exact:true}).waitFor();
+  await page.getByLabel('Lọc trạng thái giáo án',{exact:true}).selectOption('completed');
+  await plansPanel.getByText('Giáo án: trang 1/1 · 1 kết quả',{exact:true}).waitFor();
+  await plansPanel.getByRole('button',{name:'Sửa giáo án',exact:true}).click();
+  await page.getByLabel('Trạng thái giáo án',{exact:true}).selectOption('cancelled');
+  await page.getByRole('button',{name:'Lưu giáo án',exact:true}).click();
+  await plansPanel.getByText('Giáo án: trang 1/1 · 0 kết quả',{exact:true}).waitFor();
+  await plansPanel.getByText('Không có giáo án phù hợp ở trang này.',{exact:true}).waitFor();
+  await page.getByLabel('Lọc trạng thái giáo án',{exact:true}).selectOption('cancelled');
+  await plansPanel.getByRole('heading',{name:'Member E2E workout revised',exact:true}).waitFor();
+  await page.screenshot({path:path.join(output,'trainer-plans-paginated.png'),fullPage:true});
+
 
 
 
@@ -630,7 +648,7 @@ async function run() {
   await closeModal();
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: browser regression: live PT member paging/search and total counts, 375px Member/PT pages and keyboard plan form, progress retry after committed response loss, PT plan editing and Member updated content, PT completion/absence to member review, live Member/PT dashboards, completed-session reviews and trainer ratings, PT progress/plan assignment and Member visibility, Member package registration/persistence and PT booking/cancellation, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
+    "PASS: browser regression: PT plan paging/status filters/edit invalidation, live PT member paging/search and total counts, 375px Member/PT pages and keyboard plan form, progress retry after committed response loss, PT plan editing and Member updated content, PT completion/absence to member review, live Member/PT dashboards, completed-session reviews and trainer ratings, PT progress/plan assignment and Member visibility, Member package registration/persistence and PT booking/cancellation, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
   );
 }
 

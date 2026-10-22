@@ -65,3 +65,5 @@ Chưa có rate limiting đăng nhập, thu hồi JWT phía server, audit log b�
 
 
 GET /trainer/members đã phân trang page/limit/search và trả total/pages; dashboard PT dùng total. Chi tiết hợp đồng và truy vấn tổng hợp: [20-trainer-members-pagination.md](20-trainer-members-pagination.md).
+
+GET /trainer/workout-plans hỗ trợ page/limit/memberId/status, giới hạn 100 và metadata tổng; [21-trainer-plans-pagination.md](21-trainer-plans-pagination.md) ghi hợp đồng cùng hành vi lọc/sửa.

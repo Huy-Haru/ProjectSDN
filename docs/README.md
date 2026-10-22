@@ -57,3 +57,5 @@ Nhánh làm việc: `HuyNHHE190724`, tạo từ `origin/main`. Hai nhánh `origi
 [19-member-trainer-mobile.md](19-member-trainer-mobile.md): bố cục mobile ba role, 14 màn Member/PT ở 375px, vùng bấm và điều hướng bàn phím.
 
 [20-trainer-members-pagination.md](20-trainer-members-pagination.md): phân trang/tìm học viên tại backend, thống kê bằng aggregation và tổng số dashboard PT.
+
+[21-trainer-plans-pagination.md](21-trainer-plans-pagination.md): danh sách giáo án PT theo trang/trạng thái và tải lại kết quả sau sửa.

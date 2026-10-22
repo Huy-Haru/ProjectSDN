@@ -130,3 +130,10 @@ Index và validation là cải thiện nền dữ liệu, chưa chứng minh hi�
 - UI có tìm kiếm backend và trước/sau; dashboard lấy total, không lấy độ dài trang đầu. Validation pagination dùng chung PT/Admin, từ chối mảng và offset không an toàn.
 - PASS: test:trainer với 13 học viên, test:integration, backend 17/17, frontend lint/build; Edge UAT hai trang, tìm kiếm/empty/reset, tổng dashboard và mobile/luồng cũ.
 - Hợp đồng và giới hạn: [20-trainer-members-pagination.md](20-trainer-members-pagination.md).
+
+## Phân trang giáo án PT — 23/10/2026
+
+- API giáo án PT có page/limit/memberId/status và total/pages, sort ổn định; tối đa 100, không làm thay đổi endpoint giáo án Member.
+- Panel 5 bản/trang, bộ lọc trạng thái, khóa điều khiển khi sửa; lưu thành công tải lại trang đầu của bộ lọc hiện tại.
+- PASS: test:trainer đa trang và cách ly PT, Edge UAT trang/lọc/sửa trạng thái rời bộ lọc, các luồng cũ và mobile, frontend lint/build.
+- Hợp đồng và giới hạn: [21-trainer-plans-pagination.md](21-trainer-plans-pagination.md).

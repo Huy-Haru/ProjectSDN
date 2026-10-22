@@ -125,10 +125,26 @@ async function run() {
   assert.equal((await call(listPath+'?search=.*','GET',null,200,token)).total,0);
   assert.equal((await call(listPath,'GET',null,200,otherToken)).total,0);
   for(const query of ['limit=101','page=0','page=1&page=2','search=a&search=b','page=90071992547409910','search='+ 'a'.repeat(121)]) await call(listPath+'?'+query,'GET',null,400,token);
+  const WorkoutPlan=require('../src/models/WorkoutPlan');
+  for(let i=0;i<12;i++) await WorkoutPlan.create({trainer:trainer._id,member:member._id,title:'Paged plan '+i,startDate:'2020-01-01',endDate:'2020-02-01',status:'active',items:[]});
+  const otherProfile=await TrainerProfile.findOne({user:otherUser._id});
+  await WorkoutPlan.create({trainer:otherProfile._id,member:member._id,title:'Foreign plan',startDate:'2020-01-01',endDate:'2020-02-01',items:[]});
+  const plansPath='/trainer/workout-plans?memberId='+member._id;
+  const plans1=await call(plansPath+'&limit=5','GET',null,200,token);
+  const plans2=await call(plansPath+'&limit=5&page=2','GET',null,200,token);
+  assert.equal(plans1.total,13);assert.equal(plans1.pages,3);
+  assert.equal(new Set([...plans1.plans,...plans2.plans].map(p=>p._id)).size,10);
+  assert.equal((await call(plansPath+'&limit=5&page=3','GET',null,200,token)).plans.length,3);
+  assert.equal((await call(plansPath+'&limit=5&page=4','GET',null,200,token)).plans.length,0);
+  assert.equal((await call(plansPath+'&status=active','GET',null,200,token)).total,12);
+  const completedPlans=await call(plansPath+'&status=completed','GET',null,200,token);
+  assert.equal(completedPlans.total,1);assert.equal(completedPlans.plans[0]._id,plan._id);
+  assert.equal(completedPlans.plans[0].member.password,undefined);
+  for(const query of ['status=wrong','status=active&status=completed','memberId=bad','limit=101','page=0']) await call('/trainer/workout-plans?'+query,'GET',null,400,token);
   await TrainerProfile.updateOne({_id:trainer._id},{$set:{isActive:false}});
   await call(path,'PATCH',{title:'Locked PT edit'},404,token);
   await call('/trainer/workout-plans','POST',{memberId:member._id,title:'Locked PT plan',startDate:'2026-10-01',endDate:'2026-11-01'},404,token);
-  console.log('PASS: paginated PT members with literal search and aggregate stats, PT plan revision races/items/status, calendar filters, role/ownership isolation, partial-update date validation and member trainer details.');
+  console.log('PASS: paginated/filtered PT plans and paginated PT members with literal search and aggregate stats, PT plan revision races/items/status, calendar filters, role/ownership isolation, partial-update date validation and member trainer details.');
 }
 run()
   .catch((error) => {
