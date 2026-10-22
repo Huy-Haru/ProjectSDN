@@ -38,3 +38,7 @@ Nhánh làm việc: `HuyNHHE190724`, tạo từ `origin/main`. Hai nhánh `origi
 - [12-member-booking.md](12-member-booking.md): đặt/hủy lịch, hạn mức và đối soát.
 - [13-progress-workout-plans.md](13-progress-workout-plans.md): PT ghi tiến độ, Member xem thể trạng và giáo án.
 - Danh mục gói, đăng ký gói và lịch sử đăng ký cũng đã dùng API thật. Màn tổng quan, danh sách PT riêng và đánh giá còn phần dữ liệu mẫu; xem verification.md để biết kết quả kiểm chứng từng đợt.
+
+## Cập nhật đánh giá và tổng quan
+
+[14-reviews-live-dashboards.md](14-reviews-live-dashboards.md) mô tả luồng đánh giá buổi hoàn thành, danh sách PT thật và hai màn tổng quan Member/PT. Các trang chính hiện đã dùng API, thay cho dữ liệu mẫu được ghi trong những mốc lịch sử trước đó. Xem verification.md để đối chiếu kiểm thử từng đợt và giới hạn triển khai.

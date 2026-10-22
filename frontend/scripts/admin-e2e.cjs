@@ -288,6 +288,8 @@ async function run() {
   await page.locator("#login-email").fill("pt-e2e@test.example");
   await page.locator("#login-password").fill(password);
   await page.locator("#login-submit-btn").click();
+  await page.getByRole('heading',{name:'Tổng quan PT',exact:true}).waitFor();
+  await page.locator('article').filter({has:page.getByRole('heading',{name:'Buổi đã hoàn thành',exact:true})}).getByText('1',{exact:true}).waitFor();
   await navigate('Học viên & Giáo án');
   await page.getByRole('button',{name:'Ghi nhận tiến độ',exact:true}).click();
   await page.getByLabel('Cân nặng (kg)',{exact:true}).fill('71.5');
@@ -372,6 +374,9 @@ async function run() {
   await page.locator('#login-password').fill(password);
   await page.locator('#login-submit-btn').click();
   await page.locator('#header-logout-btn').waitFor();
+  await page.getByRole('heading',{name:'Tổng quan hội viên',exact:true}).waitFor();
+  await page.locator('article').filter({has:page.getByRole('heading',{name:'Buổi đã hoàn thành',exact:true})}).getByText('1',{exact:true}).waitFor();
+  await page.getByText(/Cân nặng: 71.5 kg/).waitFor();
   await navigate('Tiến độ & Thể trạng');
   await page.getByText('Progress E2E note',{exact:true}).waitFor();
   await page.getByRole('heading',{name:'Member E2E workout',exact:true}).waitFor();
@@ -407,6 +412,35 @@ async function run() {
   assert.equal(await Booking.countDocuments({member:member._id,status:'cancelled'}),1);
   assert.equal((await Subscription.findById(sub._id)).reservedSessions,0);
   await page.screenshot({path:path.join(output,'member-booking-cancelled.png'),fullPage:true});
+  await navigate('Đánh giá HLV');
+  await page.getByLabel('Buổi tập',{exact:true}).selectOption(String(booking._id));
+  await page.getByLabel('Số sao',{exact:true}).selectOption('4');
+  await page.getByLabel('Nhận xét',{exact:true}).fill('Verified E2E review');
+  await page.getByRole('button',{name:'Gửi đánh giá',exact:true}).click();
+  await page.getByText('Đã gửi đánh giá.',{exact:true}).waitFor();
+  await page.getByText('Verified E2E review',{exact:true}).waitFor();
+  await page.reload();
+  await navigate('Đánh giá HLV');
+  await page.getByText('Verified E2E review',{exact:true}).waitFor();
+  assert.equal(await page.getByLabel('Buổi tập',{exact:true}).count(),0);
+  await navigate('Huấn luyện viên');
+  const ratedTrainer=page.locator('article').filter({has:page.getByRole('heading',{name:'PT E2E',exact:true})});
+  await ratedTrainer.getByText('4/5 sao · 1 đánh giá',{exact:true}).waitFor();
+  await ratedTrainer.getByRole('button',{name:'Đặt lịch với PT này',exact:true}).click();
+  assert.equal(await page.getByLabel('Huấn luyện viên',{exact:true}).inputValue(),String(profile._id));
+  await page.locator('#header-logout-btn').click();
+  await page.getByRole('button',{name:'Đăng nhập',exact:true}).click();
+  await page.locator('#login-email').fill('pt-e2e@test.example');
+  await page.locator('#login-password').fill(password);
+  await page.locator('#login-submit-btn').click();
+  await page.locator('#header-logout-btn').waitFor();
+  await page.getByRole('heading',{name:'Tổng quan PT',exact:true}).waitFor();
+  await page.getByText('4/5 sao · 1 đánh giá',{exact:true}).waitFor();
+  await navigate('Đánh giá từ Học viên');
+  await page.getByText('Verified E2E review',{exact:true}).waitFor();
+  await page.getByText('1 đánh giá · 4/5 sao',{exact:true}).waitFor();
+  await page.screenshot({path:path.join(output,'trainer-verified-reviews.png'),fullPage:true});
+
 
   await page.locator('#header-logout-btn').click();
   await page.getByRole('button', { name: 'Đăng nhập', exact: true }).waitFor();
@@ -474,7 +508,7 @@ async function run() {
   await closeModal();
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: browser regression: PT progress/plan assignment and Member visibility, Member package registration/persistence and PT booking/cancellation, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
+    "PASS: browser regression: live Member/PT dashboards, completed-session reviews and trainer ratings, PT progress/plan assignment and Member visibility, Member package registration/persistence and PT booking/cancellation, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
   );
 }
 

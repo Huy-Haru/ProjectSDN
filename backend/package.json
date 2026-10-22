@@ -22,7 +22,8 @@
     "test:member": "node scripts/verify-member.js",
     "test:booking": "node scripts/verify-booking.js",
     "db:quota": "node scripts/reconcile-booking-quota.js",
-    "test:progress": "node scripts/verify-progress.js"
+    "test:progress": "node scripts/verify-progress.js",
+    "test:review": "node scripts/verify-review.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

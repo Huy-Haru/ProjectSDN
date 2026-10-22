@@ -79,3 +79,11 @@ Index và validation là cải thiện nền dữ liệu, chưa chứng minh hi�
 - Form tạo giáo án được khởi tạo lại khi mở mới; tránh lưu bản nháp/trạng thái thành công cũ.
 - PASS: test:progress, test:trainer, backend 17/17, frontend lint/build, Edge UAT PT ghi tiến độ/giao giáo án → Member xem dữ liệu thật cùng các luồng cũ.
 - Chi tiết: [13-progress-workout-plans.md](13-progress-workout-plans.md).
+
+## Đánh giá PT và tổng quan — 2026-10-23
+
+- API đánh giá chỉ nhận buổi hoàn thành đã kết thúc của Member hiện tại, một đánh giá/buổi bằng unique index; PT xem phản hồi riêng.
+- Danh sách PT thật với tổng điểm tổng hợp từ Review và chọn sẵn PT khi mở đặt lịch.
+- Tổng quan Member/PT dùng API; loại bỏ import mockData/useSchedule/useProgress khỏi App và các trang chính.
+- PASS: test:review, test:booking, test:progress, backend 17/17, frontend lint/build, Edge UAT tổng quan → đánh giá → tải lại → PT xem phản hồi, cùng luồng cũ.
+- Chi tiết: [14-reviews-live-dashboards.md](14-reviews-live-dashboards.md).
