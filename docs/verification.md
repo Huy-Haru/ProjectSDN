@@ -71,3 +71,11 @@ Index và validation là cải thiện nền dữ liệu, chưa chứng minh hi�
 - Bổ sung đối soát hạn mức với chế độ mặc định chỉ đọc và cờ xác nhận dừng writers trước khi áp dụng.
 - Quy tắc, API, giới hạn transaction trên MongoDB standalone và cách khôi phục: [12-member-booking.md](12-member-booking.md).
 - Các màn tổng quan, danh sách PT riêng, tiến độ và đánh giá vẫn còn phần dữ liệu mẫu cần nối tiếp.
+
+## Tiến độ và giáo án — 2026-10-23
+
+- PT ghi nhận chỉ số/nhận xét cho học viên có quan hệ lịch tập hợp lệ; Member xem lịch sử riêng và giáo án thật.
+- Không nhận chủ sở hữu và số buổi hoàn thành từ client. Kiểm tra ngày Việt Nam, số liệu và quan hệ tài khoản.
+- Form tạo giáo án được khởi tạo lại khi mở mới; tránh lưu bản nháp/trạng thái thành công cũ.
+- PASS: test:progress, test:trainer, backend 17/17, frontend lint/build, Edge UAT PT ghi tiến độ/giao giáo án → Member xem dữ liệu thật cùng các luồng cũ.
+- Chi tiết: [13-progress-workout-plans.md](13-progress-workout-plans.md).

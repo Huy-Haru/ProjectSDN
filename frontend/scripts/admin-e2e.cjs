@@ -288,6 +288,26 @@ async function run() {
   await page.locator("#login-email").fill("pt-e2e@test.example");
   await page.locator("#login-password").fill(password);
   await page.locator("#login-submit-btn").click();
+  await navigate('Học viên & Giáo án');
+  await page.getByRole('button',{name:'Ghi nhận tiến độ',exact:true}).click();
+  await page.getByLabel('Cân nặng (kg)',{exact:true}).fill('71.5');
+  await page.getByLabel('Tỷ lệ mỡ (%)',{exact:true}).fill('19.2');
+  await page.getByLabel('Nhận xét tiến độ',{exact:true}).fill('Progress E2E note');
+  await page.getByRole('button',{name:'Lưu tiến độ',exact:true}).click();
+  await page.getByText('Đã lưu tiến độ.',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Đóng tiến độ',exact:true}).click();
+  await page.getByRole('button',{name:'Tạo Giáo Án',exact:true}).click();
+  await page.getByPlaceholder('VD: Giảm mỡ - Tháng 1').fill('Member E2E workout');
+  await page.locator('.modal input[type=date]').nth(1).fill(new Date(Date.now()+7*86400000).toISOString().slice(0,10));
+  await page.getByPlaceholder('Push-up, Squat...').fill('Squat E2E');
+  await page.locator('.modal input[type=number]').fill('3');
+  await page.getByPlaceholder('12 hoặc 8-12').fill('10');
+  await page.locator('#create-plan-submit-btn').click();
+  await page.getByRole('dialog').waitFor({state:'hidden'});
+  // Reopening a submitted plan must have a clean draft.
+  await page.getByRole('button',{name:'Tạo Giáo Án',exact:true}).click();
+  assert.equal(await page.getByPlaceholder('VD: Giảm mỡ - Tháng 1').inputValue(),'');
+  await page.locator('.modal .btn-close').click();
   await navigate("Lịch dạy của tôi");
   await page.getByText("Member E2E", { exact: true }).waitFor();
   let finishOld;
@@ -352,6 +372,11 @@ async function run() {
   await page.locator('#login-password').fill(password);
   await page.locator('#login-submit-btn').click();
   await page.locator('#header-logout-btn').waitFor();
+  await navigate('Tiến độ & Thể trạng');
+  await page.getByText('Progress E2E note',{exact:true}).waitFor();
+  await page.getByRole('heading',{name:'Member E2E workout',exact:true}).waitFor();
+  await page.getByText(/Squat E2E/).waitFor();
+  await page.screenshot({path:path.join(output,'member-progress-plans.png'),fullPage:true});
   await navigate('Danh sách gói tập');
   await page.getByRole('button', { name: 'Đăng ký Seed E2E', exact: true }).click();
   await page.getByLabel('Ngày bắt đầu', { exact: true }).waitFor();
@@ -449,7 +474,7 @@ async function run() {
   await closeModal();
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: browser regression: Member package registration/persistence and PT booking/cancellation, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
+    "PASS: browser regression: PT progress/plan assignment and Member visibility, Member package registration/persistence and PT booking/cancellation, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
   );
 }
 

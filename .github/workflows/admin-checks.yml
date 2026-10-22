@@ -31,6 +31,7 @@ jobs:
       - run: npm run test:trainer
       - run: npm run test:member
       - run: npm run test:booking
+      - run: npm run test:progress
       - run: npm run test:archive
   admin-frontend:
     runs-on: ubuntu-latest

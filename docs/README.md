@@ -32,3 +32,9 @@ Tài liệu ban đầu ngày 11/10 ghi hiện trạng tại thời điểm đó.
 `frontend/src/App.jsx`, `frontend/src/pages/`, `frontend/src/hooks/`, `frontend/src/data/mockData.js`, `backend/src/models/`, `backend/src/constants/`, `backend/src/routes/index.js`, `backend/test/backend.test.js`.
 
 Nhánh làm việc: `HuyNHHE190724`, tạo từ `origin/main`. Hai nhánh `origin/anhnthe194418` (backend/model) và `origin/hieunhhe187023` (frontend) đã là tổ tiên của nhánh này; kiểm tra merge trả về `Already up to date` cho cả hai. Không cần tạo commit merge rỗng.
+
+## Luồng Member/PT đã nối thêm
+
+- [12-member-booking.md](12-member-booking.md): đặt/hủy lịch, hạn mức và đối soát.
+- [13-progress-workout-plans.md](13-progress-workout-plans.md): PT ghi tiến độ, Member xem thể trạng và giáo án.
+- Danh mục gói, đăng ký gói và lịch sử đăng ký cũng đã dùng API thật. Màn tổng quan, danh sách PT riêng và đánh giá còn phần dữ liệu mẫu; xem verification.md để biết kết quả kiểm chứng từng đợt.
