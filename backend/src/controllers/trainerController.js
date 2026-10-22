@@ -24,17 +24,22 @@ async function getTrainerSchedule(req, res) {
   const filter = { trainer: trainerProfile._id };
 
   // Lọc theo status nếu có
-  if (req.query.status && Object.values(BOOKING_STATUS).includes(req.query.status)) {
+  if (req.query.status && !Object.values(BOOKING_STATUS).includes(req.query.status)) {
+    throw new AppError('Trạng thái lịch tập không hợp lệ.', 400);
+  }
+  if (req.query.status) {
     filter.status = req.query.status;
   }
 
   // Lọc theo ngày nếu có
   if (req.query.date) {
-    const startOfDay = new Date(req.query.date);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(req.query.date);
-    endOfDay.setHours(23, 59, 59, 999);
-    filter.date = { $gte: startOfDay, $lte: endOfDay };
+    const date = req.query.date;
+    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+        Number.isNaN(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date) {
+      throw new AppError('Ngày phải hợp lệ và có định dạng YYYY-MM-DD.', 400);
+    }
+    // Booking stores a calendar date at UTC midnight, independent of server timezone.
+    filter.date = new Date(date + 'T00:00:00.000Z');
   }
 
   const bookings = await Booking.find(filter)
@@ -202,16 +207,17 @@ async function updateWorkoutPlan(req, res) {
     throw new AppError('Không có trường hợp lệ để cập nhật.', 400);
   }
 
-  const plan = await WorkoutPlan.findOneAndUpdate(
-    { _id: req.params.planId, trainer: trainerProfile._id },
-    { $set: updateData },
-    { new: true, runValidators: true }
-  ).populate('member', 'fullName email phone avatar');
+  const plan = await WorkoutPlan.findOne({
+    _id: req.params.planId, trainer: trainerProfile._id
+  });
 
   if (!plan) {
     throw new AppError('Giáo án không tồn tại hoặc bạn không có quyền chỉnh sửa.', 404);
   }
 
+  Object.assign(plan, updateData);
+  await plan.save(); // Document validation checks both dates and optimistic concurrency.
+  await plan.populate('member', 'fullName email phone avatar');
   return sendSuccess(res, { plan }, 'Cập nhật giáo án thành công!');
 }
 
@@ -223,17 +229,15 @@ async function getMemberWorkoutPlans(req, res) {
   const user = req.user;
 
   const plans = await WorkoutPlan.find({ member: user._id })
-    .populate('trainer', 'specialties bio pricePerSession ratingAverage')
+    .populate({
+      path: 'trainer',
+      select: 'user specialties bio pricePerSession ratingAverage',
+      populate: { path: 'user', select: 'fullName avatar email' }
+    })
     .sort({ createdAt: -1 });
 
-  // Populate thêm thông tin user của trainer
-  const plansWithTrainerUser = await Promise.all(plans.map(async (plan) => {
-    const planObj = plan.toObject();
-    if (plan.trainer) {
-      const trainerUser = await User.findById(plan.trainer.user).select('fullName avatar email');
-      planObj.trainerUser = trainerUser || null;
-    }
-    return planObj;
+  const plansWithTrainerUser = plans.map(plan => ({
+    ...plan.toObject(), trainerUser: plan.trainer?.user || null
   }));
 
   return sendSuccess(res, { plans: plansWithTrainerUser });
