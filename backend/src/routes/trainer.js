@@ -7,6 +7,8 @@ const { ROLES } = require('../constants/roles');
 const router = express.Router();
 const progressService = require('../services/progressService');
 const { sendSuccess } = require('../utils/response');
+router.get('/reviews', authenticate, authorize(ROLES.TRAINER), asyncHandler(async (req, res) =>
+  sendSuccess(res, await require('../services/reviewService').trainerReviews(req.user._id))));
 router.get('/members/:memberId/progress', authenticate, authorize(ROLES.TRAINER), asyncHandler(async (req, res) =>
   sendSuccess(res, { logs: await progressService.listForTrainer(req.user._id, req.params.memberId) })));
 router.post('/members/:memberId/progress', authenticate, authorize(ROLES.TRAINER), asyncHandler(async (req, res) =>

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { User, TrainerProfile, Subscription, Booking } = require('../models');
+const { User, TrainerProfile, Subscription, Booking, Review } = require('../models');
 const AppError = require('../utils/AppError');
 
 function id(value) {
@@ -8,8 +8,18 @@ function id(value) {
 }
 async function trainers() {
   const users = await User.find({ role: 'trainer', isActive: true }).distinct('_id');
-  return TrainerProfile.find({ isActive: true, user: { $in: users } })
-    .populate('user', 'fullName avatar').sort({ ratingAverage: -1, _id: 1 });
+  const profiles = await TrainerProfile.find({ isActive: true, user: { $in: users } })
+    .populate('user', 'fullName avatar').lean();
+  // Read canonical review totals so concurrent cache refreshes cannot show stale ratings.
+  const stats = await Review.aggregate([
+    { $match: { trainer: { $in: profiles.map(profile => profile._id) } } },
+    { $group: { _id: '$trainer', count: { $sum: 1 }, average: { $avg: '$rating' } } }
+  ]);
+  const byId = new Map(stats.map(stat => [String(stat._id), stat]));
+  return profiles.map(profile => {
+    const stat = byId.get(String(profile._id));
+    return { ...profile, ratingCount: stat?.count || 0, ratingAverage: stat ? Math.round(stat.average * 10) / 10 : 0 };
+  }).sort((a, b) => b.ratingAverage - a.ratingAverage || String(a._id).localeCompare(String(b._id)));
 }
 async function bookings(member) {
   return Booking.find({ member }).populate({ path: 'trainer', select: 'user', populate: { path: 'user', select: 'fullName' } })
