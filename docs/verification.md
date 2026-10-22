@@ -63,3 +63,11 @@ Index và validation là cải thiện nền dữ liệu, chưa chứng minh hi�
 - Giao diện Gói tập và Gói tập của tôi dùng API thật, có tải dữ liệu, lỗi/thử lại, danh sách trống, xác nhận trước khi gửi và khóa nút khi gửi. Loại bỏ luồng đăng ký gói giả khỏi App.
 - PASS: npm run test:member (MongoDB tạm riêng), frontend lint/build, kiểm thử Edge đăng ký và tải lại trang cùng các luồng Admin/PT hiện có.
 - Chưa hỗ trợ thanh toán online. Thành viên thanh toán tại quầy, Admin xác nhận trên màn hiện có. Các màn đặt lịch, tiến độ và đánh giá Member vẫn cần nối API.
+
+## Đặt lịch PT Member — 2026-10-23
+
+- Hoàn thiện API và giao diện đặt lịch/lịch tập Member với MongoDB, thay dữ liệu mẫu ở hai màn này.
+- PASS: test:booking (cả cạnh tranh quota và ca PT), test:member, test:integration, backend 17/17, frontend lint/build, Edge UAT đặt/hủy và các luồng cũ.
+- Bổ sung đối soát hạn mức với chế độ mặc định chỉ đọc và cờ xác nhận dừng writers trước khi áp dụng.
+- Quy tắc, API, giới hạn transaction trên MongoDB standalone và cách khôi phục: [12-member-booking.md](12-member-booking.md).
+- Các màn tổng quan, danh sách PT riêng, tiến độ và đánh giá vẫn còn phần dữ liệu mẫu cần nối tiếp.

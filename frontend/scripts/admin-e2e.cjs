@@ -101,6 +101,8 @@ async function run() {
   });
   const pkg = await MembershipPackage.create({
     name: "Seed E2E",
+    includesPT: true,
+    sessionLimit: 2,
     durationDays: 30,
     price: 700000,
   });
@@ -365,6 +367,22 @@ async function run() {
   await navigate('Gói tập của tôi');
   await page.locator('article').filter({hasText:'Chờ xác nhận'}).waitFor();
   await page.screenshot({path:path.join(output,'member-subscriptions.png'),fullPage:true});
+  await navigate('Đặt lịch PT');
+  await page.getByLabel('Gói tập', {exact:true}).selectOption(String(sub._id));
+  await page.getByLabel('Huấn luyện viên', {exact:true}).selectOption(String(profile._id));
+  await page.getByLabel('Ngày tập', {exact:true}).fill(new Date(Date.now()+2*86400000).toISOString().slice(0,10));
+  await page.getByRole('button', {name:'Xác nhận đặt lịch',exact:true}).click();
+  await page.getByRole('heading', {name:'Lịch tập của tôi',exact:true}).waitFor();
+  await page.getByRole('button', {name:'Hủy lịch',exact:true}).waitFor();
+  await page.reload();
+  await navigate('Lịch tập');
+  await page.getByRole('button', {name:'Hủy lịch',exact:true}).click();
+  await page.getByRole('button', {name:'Xác nhận hủy',exact:true}).click();
+  await page.locator('article').filter({hasText:'Đã hủy'}).waitFor();
+  assert.equal(await Booking.countDocuments({member:member._id,status:'cancelled'}),1);
+  assert.equal((await Subscription.findById(sub._id)).reservedSessions,0);
+  await page.screenshot({path:path.join(output,'member-booking-cancelled.png'),fullPage:true});
+
   await page.locator('#header-logout-btn').click();
   await page.getByRole('button', { name: 'Đăng nhập', exact: true }).waitFor();
   const mountModal = async (kind, props = {}) =>
@@ -431,7 +449,7 @@ async function run() {
   await closeModal();
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: browser regression: Member package registration/persistence, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
+    "PASS: browser regression: Member package registration/persistence and PT booking/cancellation, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
   );
 }
 

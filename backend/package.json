@@ -19,7 +19,9 @@
     "admin:create": "node scripts/create-admin.js",
     "db:indexes": "node scripts/optimize-indexes.js",
     "test:trainer": "node scripts/verify-trainer.js",
-    "test:member": "node scripts/verify-member.js"
+    "test:member": "node scripts/verify-member.js",
+    "test:booking": "node scripts/verify-booking.js",
+    "db:quota": "node scripts/reconcile-booking-quota.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
