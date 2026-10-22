@@ -10,7 +10,14 @@
   "scripts": {
     "dev": "nodemon --watch src --watch .env --ext js,json,env src/server.js",
     "start": "node src/server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "test:integration": "node scripts/verify-admin.js",
+    "test:archive": "node scripts/verify-archive.js",
+    "check:config": "node scripts/check-config.js",
+    "db:backup": "node scripts/database-archive.js backup",
+    "db:restore": "node scripts/database-archive.js restore",
+    "admin:create": "node scripts/create-admin.js",
+    "db:indexes": "node scripts/optimize-indexes.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

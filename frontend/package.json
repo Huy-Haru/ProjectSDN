@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint:admin": "eslint src/components/admin src/api/adminApi.js src/pages/Admin*.jsx src/App.jsx src/components/Sidebar.jsx src/components/ConnectionStatus.jsx"
   },
   "dependencies": {
     "bootstrap": "^5.3.8",
