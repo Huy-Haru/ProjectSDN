@@ -274,11 +274,140 @@ async function run() {
     .waitFor();
   await page.getByLabel("Từ ngày", { exact: true }).fill("2099-01-01");
   await page.getByText("Chưa có khoản thu trong khoảng ngày này").waitFor();
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await navigate("Hồ sơ của tôi");
+  await page.getByRole("heading", { name: "Hồ Sơ Của Tôi" }).waitFor();
+  assert.equal(await page.locator('input[value="Admin E2E"]').count(), 1);
   await page.locator("#header-logout-btn").click();
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).waitFor();
+
+  // Verify the shared query lifecycle does not let a slower old filter overwrite a newer result.
+  await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
+  await page.locator("#login-email").fill("pt-e2e@test.example");
+  await page.locator("#login-password").fill(password);
+  await page.locator("#login-submit-btn").click();
+  await navigate("Lịch dạy của tôi");
+  await page.getByText("Member E2E", { exact: true }).waitFor();
+  let finishOld;
+  const oldFinished = new Promise((resolve) => {
+    finishOld = resolve;
+  });
+  await page.route("**/trainer/schedule*", async (route) => {
+    const status = new URL(route.request().url()).searchParams.get("status");
+    if (status === "booked")
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        success: true,
+        data: {
+          bookings: [
+            {
+              _id: status,
+              member: {
+                fullName:
+                  status === "booked"
+                    ? "Old Filter Result"
+                    : "Current Filter Result",
+              },
+              date: "2020-01-01",
+              startTime: "09:00",
+              endTime: "10:00",
+              status,
+            },
+          ],
+        },
+      }),
+    });
+    if (status === "booked") finishOld();
+  });
+  const oldRequest = page.waitForRequest((r) =>
+    r.url().includes("/trainer/schedule?status=booked"),
+  );
+  await page.locator("select").first().selectOption("booked");
+  await oldRequest;
+  await page.locator("select").first().selectOption("completed");
+  await page.getByText("Current Filter Result", { exact: true }).waitFor();
+  await oldFinished;
+  await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      ),
+  );
+  assert.equal(
+    await page.getByText("Old Filter Result", { exact: true }).count(),
+    0,
+  );
+  await page.getByText("Current Filter Result", { exact: true }).waitFor();
+  await page.locator("#header-logout-btn").click();
+  await page.getByRole("button", { name: "Đăng nhập", exact: true }).waitFor();
+  const mountModal = async (kind, props = {}) =>
+    page.evaluate(
+      async ({ kind, props }) => {
+        const harness = await import("/tests/modal-harness.jsx");
+        harness.mountModal(kind, props);
+      },
+      { kind, props },
+    );
+  const closeModal = async () => {
+    await page.locator(".modal .btn-close").click();
+    await page.getByRole("dialog").waitFor({ state: "hidden" });
+  };
+  await mountModal("package", {
+    packageToEdit: {
+      id: "p1",
+      name: "Original Package",
+      priceYear: "100",
+      priceMonth: "10",
+    },
+  });
+  await page.getByRole("dialog").waitFor();
+  await page.locator(".modal input").first().fill("Unsaved Package");
+  await closeModal();
+  await mountModal("package");
+  assert.equal(await page.locator(".modal input").first().inputValue(), "");
+  await closeModal();
+  await mountModal("trainer", {
+    trainerToEdit: { id: "pt1", name: "Original Trainer" },
+  });
+  await page.getByRole("dialog").waitFor();
+  assert.equal(
+    await page.locator(".modal input").first().inputValue(),
+    "Original Trainer",
+  );
+  await mountModal("trainer", {
+    trainerToEdit: { id: "pt2", name: "Next Trainer" },
+  });
+  await page.locator('.modal input[value="Next Trainer"]').waitFor();
+  await closeModal();
+  await mountModal("review", { trainerIndex: 0 });
+  await page.getByRole("dialog").waitFor();
+  const firstTrainer = await page.locator(".modal select").inputValue();
+  await closeModal();
+  await mountModal("review", { trainerIndex: 1 });
+  await page.getByRole("dialog").waitFor();
+  assert.notEqual(
+    await page.locator(".modal select").inputValue(),
+    firstTrainer,
+  );
+  await closeModal();
+  await mountModal("progress", {
+    student: { id: "s1", name: "Member One", currentWeight: 72, bodyFat: 18 },
+  });
+  await page.getByRole("dialog").waitFor();
+  await page.locator(".modal input").first().fill("99");
+  await closeModal();
+  await mountModal("progress", {
+    student: { id: "s2", name: "Member Two", currentWeight: 65, bodyFat: 15 },
+  });
+  await page.getByRole("dialog").waitFor();
+  assert.equal(await page.locator(".modal input").first().inputValue(), "65");
+  await closeModal();
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: repeatable Admin browser UAT: login/session reload, package create/edit/lock/search, PT creation, Member/PT lists, booking completion, payment, revenue/error/retry/empty, 390px and logout.",
+    "PASS: browser regression: Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
   );
 }
 
