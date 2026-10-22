@@ -4,13 +4,13 @@ import ConnectionStatus from './components/ConnectionStatus';
 import { useAuth } from './hooks/useAuth';
 import { useSchedule } from './hooks/useSchedule';
 import { useProgress } from './hooks/useProgress';
+import { myPackageInfo } from './data/mockData';
 
 // Components
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import LoginModal from './components/LoginModal';
 import SignUpModal from './components/SignUpModal';
-import RateTrainerModal from './components/RateTrainerModal';
 
 // Pages - Student
 import PackagesPage from './pages/PackagesPage';
@@ -39,24 +39,21 @@ import AdminPaymentsPage from './pages/AdminPaymentsPage';
 // A2.1 — Profile cho cả 3 role
 import ProfilePage from './pages/ProfilePage';
 
-import { initialReviews, myPackageInfo } from './data/mockData';
 
 function App() {
   // Custom Hooks — auth thật từ server
   const { user, loading: authLoading, login, logout, register, role } = useAuth();
+
   const { schedules } = useSchedule();
   const { progress } = useProgress();
+  const [myPackage] = useState(myPackageInfo);
 
   // App Level State
   const [activeMenu, setActiveMenu] = useState('packages');
-  const [reviews, setReviews] = useState(initialReviews);
-  const [myPackage] = useState(myPackageInfo);
 
   // Modals & Navigation State
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [trainerToReview, setTrainerToReview] = useState(null);
 
   // Tự redirect theo role server sau khi đăng nhập/phục hồi phiên
   const redirectByRole = (userRole) => {
@@ -86,18 +83,11 @@ function App() {
   };
 
   // Handlers
-  const handleSelectPtForBooking = () => {
+  const [selectedTrainerId, setSelectedTrainerId] = useState('');
+  const handleSelectPtForBooking = (id) => {
+    setSelectedTrainerId(id);
 
     setActiveMenu('booking');
-  };
-
-  const handleOpenReviewModal = (pt) => {
-    setTrainerToReview(pt);
-    setShowReviewModal(true);
-  };
-
-  const handleSubmitReview = (newReview) => {
-    setReviews([newReview, ...reviews]);
   };
 
   // Render Current Page Based on Role and activeMenu
@@ -136,7 +126,7 @@ function App() {
         case 'trainer-students':
           return <TrainerStudentsPage user={user} />;
         case 'trainer-reviews':
-          return <ReviewsPage reviews={reviews} onOpenReviewModal={handleOpenReviewModal} />;
+          return <ReviewsPage key="trainer-reviews" role="trainer" />;
         case 'trainer-dashboard':
         default:
           return <TrainerDashboardPage user={user} />;
@@ -160,13 +150,12 @@ function App() {
         return (
           <TrainersPage
             onSelectPtForBooking={handleSelectPtForBooking}
-            onOpenReviewModal={handleOpenReviewModal}
           />
         );
 
       case 'booking':
         return (
-          <BookingPage onBooked={() => setActiveMenu('schedule')} />
+          <BookingPage preSelectedTrainerId={selectedTrainerId} onBooked={() => setActiveMenu('schedule')} />
         );
 
       case 'schedule':
@@ -179,10 +168,7 @@ function App() {
 
       case 'reviews':
         return (
-          <ReviewsPage
-            reviews={reviews}
-            onOpenReviewModal={handleOpenReviewModal}
-          />
+          <ReviewsPage key="member-reviews" />
         );
 
       case 'my-packages':
@@ -251,12 +237,7 @@ function App() {
         onRegisterSuccess={handleRegisterSuccess}
       />
 
-      <RateTrainerModal
-        show={showReviewModal}
-        onHide={() => setShowReviewModal(false)}
-        trainerToReview={trainerToReview}
-        onSubmitReview={handleSubmitReview}
-      />
+
     </div>
   );
 }

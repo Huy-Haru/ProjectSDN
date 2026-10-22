@@ -5,9 +5,9 @@ const load = async () => {
   const [a, b] = await Promise.all([bookingApi.trainers(), memberApi.subscriptions()]);
   return { trainers: a.data.trainers, subscriptions: b.data.subscriptions.filter(s => s.status === 'active' && s.paymentStatus === 'paid' && new Date(s.endDate) > new Date() && (s.includesPT ?? s.package?.includesPT)) };
 };
-export default function BookingPage({ onBooked }) {
+export default function BookingPage({ onBooked, preSelectedTrainerId = '' }) {
   const { data, loading, error, reload } = useApiResource(load, 'booking-options');
-  const [trainerId, setTrainer] = useState('');
+  const [trainerId, setTrainer] = useState(preSelectedTrainerId);
   const [subscriptionId, setSubscription] = useState('');
   const [date, setDate] = useState('');
   const [startTime, setTime] = useState('09:00');

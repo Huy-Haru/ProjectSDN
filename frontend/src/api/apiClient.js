@@ -120,3 +120,8 @@ export const progressApi = {
   forMember: id => request('GET', `/trainer/members/${id}/progress`),
   create: (id, data) => request('POST', `/trainer/members/${id}/progress`, data)
 };
+export const reviewApi = {
+  mine: () => request('GET', '/member/reviews'),
+  create: data => request('POST', '/member/reviews', data),
+  forTrainer: () => request('GET', '/trainer/reviews')
+};
