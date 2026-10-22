@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FaUser, FaDumbbell, FaLock, FaCheckCircle, FaExclamationCircle, FaSave, FaEnvelope, FaPhone, FaCalendarAlt } from 'react-icons/fa';
 import { profileApi } from '../api/apiClient';
 
@@ -8,7 +8,7 @@ import { profileApi } from '../api/apiClient';
  * - Đổi mật khẩu qua luồng riêng
  * - Trainer thấy thêm tab TrainerProfile
  */
-const ProfilePage = ({ user }) => {
+const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('info');
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -31,37 +31,20 @@ const ProfilePage = ({ user }) => {
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  async function fetchProfile() {
-    setLoading(true);
-    try {
-      const res = await profileApi.getMyProfile();
+    let active = true;
+    profileApi.getMyProfile().then(res => {
+      if (!active) return;
       const data = res.data;
       setProfile(data);
-      setForm({
-        fullName: data.fullName || '',
-        phone: data.phone || '',
-        gender: data.gender || '',
-        dateOfBirth: data.dateOfBirth ? data.dateOfBirth.split('T')[0] : ''
-      });
+      setForm({ fullName: data.fullName || '', phone: data.phone || '', gender: data.gender || '', dateOfBirth: data.dateOfBirth ? data.dateOfBirth.split('T')[0] : '' });
       if (data.trainerProfile) {
         const tp = data.trainerProfile;
-        setTrainerForm({
-          specialties: (tp.specialties || []).join(', '),
-          experienceYears: tp.experienceYears ?? '',
-          bio: tp.bio || '',
-          certificates: (tp.certificates || []).join(', '),
-          pricePerSession: tp.pricePerSession ?? ''
-        });
+        setTrainerForm({ specialties: (tp.specialties || []).join(', '), experienceYears: tp.experienceYears ?? '', bio: tp.bio || '', certificates: (tp.certificates || []).join(', '), pricePerSession: tp.pricePerSession ?? '' });
       }
-    } catch (err) {
-      setAlert({ type: 'error', msg: err.message });
-    } finally {
-      setLoading(false);
-    }
-  }
+    }).catch(error => { if (active) setAlert({ type: 'error', msg: error.message }); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
 
   function showAlert(type, msg) {
     setAlert({ type, msg });

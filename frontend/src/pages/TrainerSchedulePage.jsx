@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { FaCalendarCheck, FaCheckCircle, FaSearch, FaFilter, FaExclamationCircle, FaSyncAlt } from 'react-icons/fa';
+import { useState, useCallback } from 'react';
+import { FaCalendarCheck, FaSearch, FaFilter, FaExclamationCircle, FaSyncAlt } from 'react-icons/fa';
 import { trainerApi } from '../api/apiClient';
+import { useApiResource } from '../hooks/useApiResource';
 
 const STATUS_MAP = {
   booked: { label: 'Chờ dạy', badge: 'bg-warning text-dark' },
@@ -12,33 +13,19 @@ const STATUS_MAP = {
 /**
  * A2.2 — TrainerSchedulePage: PT chỉ thấy lịch liên quan đến mình, dùng API thật.
  */
-const TrainerSchedulePage = ({ user }) => {
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+const TrainerSchedulePage = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const fetchSchedule = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const params = {};
-      if (filterStatus) params.status = filterStatus;
-      if (filterDate) params.date = filterDate;
-      const res = await trainerApi.getSchedule(params);
-      setBookings(res.data.bookings || []);
-    } catch (err) {
-      setError(err.message || 'Không thể tải lịch dạy.');
-    } finally {
-      setLoading(false);
-    }
+  const load = useCallback(async () => {
+    const params = {};
+    if (filterStatus) params.status = filterStatus;
+    if (filterDate) params.date = filterDate;
+    const res = await trainerApi.getSchedule(params);
+    return res.data.bookings || [];
   }, [filterStatus, filterDate]);
-
-  useEffect(() => {
-    fetchSchedule();
-  }, [fetchSchedule]);
+  const { data: bookings, loading, error, reload: fetchSchedule } = useApiResource(load, JSON.stringify([filterStatus, filterDate]));
 
   const filtered = bookings.filter(b => {
     if (!searchTerm) return true;
