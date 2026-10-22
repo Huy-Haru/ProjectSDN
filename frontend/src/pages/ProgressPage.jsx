@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Form, Modal } from 'react-bootstrap';
 import { FaWeight, FaFire, FaPlus, FaPercentage, FaDumbbell } from 'react-icons/fa';
 import { initialProgress } from '../data/mockData';

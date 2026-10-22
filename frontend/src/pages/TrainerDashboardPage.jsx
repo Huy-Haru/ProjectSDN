@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { FaCalendarCheck, FaUserFriends, FaStar, FaDollarSign, FaCheckCircle, FaCommentMedical, FaClock } from 'react-icons/fa';
 import { initialSchedules } from '../data/mockData';
 

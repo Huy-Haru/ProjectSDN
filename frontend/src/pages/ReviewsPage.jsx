@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { FaStar, FaPlus, FaQuoteLeft } from 'react-icons/fa';
 
 const ReviewsPage = ({ reviews, onOpenReviewModal }) => {

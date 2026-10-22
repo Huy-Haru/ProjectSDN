@@ -1,4 +1,4 @@
-import React from 'react';
+import 'react';
 import { FaCheckCircle } from 'react-icons/fa';
 import { comparisonFeatures } from '../data/mockData';
 

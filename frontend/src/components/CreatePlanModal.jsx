@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Modal, Form, Row, Col, Spinner } from 'react-bootstrap';
 import { FaDumbbell, FaPlus, FaTrash, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { trainerApi } from '../api/apiClient';

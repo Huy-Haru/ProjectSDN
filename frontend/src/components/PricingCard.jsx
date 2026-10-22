@@ -1,4 +1,4 @@
-import React from 'react';
+import 'react';
 import { FaCheckCircle, FaCrown, FaExpandAlt, FaRibbon } from 'react-icons/fa';
 
 const PricingCard = ({ pkg, isYearly, onSelectPackage }) => {

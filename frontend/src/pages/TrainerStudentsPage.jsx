@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FaUserFriends, FaDumbbell, FaPlus, FaSearch, FaExclamationCircle, FaSyncAlt, FaBookOpen } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { FaUserFriends, FaDumbbell, FaSearch, FaExclamationCircle, FaSyncAlt } from 'react-icons/fa';
 import { trainerApi } from '../api/apiClient';
 import CreatePlanModal from '../components/CreatePlanModal';
 
@@ -7,7 +7,7 @@ import CreatePlanModal from '../components/CreatePlanModal';
  * A2.2 — TrainerStudentsPage: PT chỉ thấy hội viên liên quan (có booking với mình), dùng API thật.
  * Cho phép tạo giáo án qua modal kết nối API.
  */
-const TrainerStudentsPage = ({ user }) => {
+const TrainerStudentsPage = () => {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

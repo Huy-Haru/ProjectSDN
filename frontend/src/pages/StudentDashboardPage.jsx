@@ -1,4 +1,4 @@
-import React from 'react';
+import 'react';
 import { FaCalendarPlus, FaWeight, FaChevronRight } from 'react-icons/fa';
 
 const StudentDashboardPage = ({ user, schedules, progress, myPackage, onNavigate }) => {

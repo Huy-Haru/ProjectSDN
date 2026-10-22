@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { FaStar, FaSearch, FaCalendarPlus, FaCommentAlt, FaAward, FaUserCheck } from 'react-icons/fa';
 import { trainersData } from '../data/mockData';
 

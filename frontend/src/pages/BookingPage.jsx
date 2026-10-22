@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Form, Alert } from 'react-bootstrap';
 import { FaCalendarPlus, FaClock, FaUserCheck, FaDumbbell, FaCheckCircle, FaMapMarkerAlt } from 'react-icons/fa';
 import { trainersData } from '../data/mockData';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Modal, Form } from 'react-bootstrap';
 import { FaCheckCircle, FaCreditCard, FaUser, FaPhoneAlt, FaCalendarAlt } from 'react-icons/fa';
 
