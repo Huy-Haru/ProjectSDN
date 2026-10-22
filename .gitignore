@@ -19,3 +19,5 @@ Thumbs.db
 # Database archives contain private data and password hashes
 *.ejson.gz
 backups/
+test-results/
+playwright-report/
