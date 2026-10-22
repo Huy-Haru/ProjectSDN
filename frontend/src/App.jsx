@@ -2,9 +2,6 @@ import { useState } from 'react';
 import ConnectionStatus from './components/ConnectionStatus';
 // Hooks
 import { useAuth } from './hooks/useAuth';
-import { useSchedule } from './hooks/useSchedule';
-import { useProgress } from './hooks/useProgress';
-import { myPackageInfo } from './data/mockData';
 
 // Components
 import Sidebar from './components/Sidebar';
@@ -43,10 +40,6 @@ import ProfilePage from './pages/ProfilePage';
 function App() {
   // Custom Hooks — auth thật từ server
   const { user, loading: authLoading, login, logout, register, role } = useAuth();
-
-  const { schedules } = useSchedule();
-  const { progress } = useProgress();
-  const [myPackage] = useState(myPackageInfo);
 
   // App Level State
   const [activeMenu, setActiveMenu] = useState('packages');
@@ -139,9 +132,6 @@ function App() {
         return (
           <StudentDashboardPage
             user={user}
-            schedules={schedules}
-            progress={progress}
-            myPackage={myPackage}
             onNavigate={(menuId) => setActiveMenu(menuId)}
           />
         );
