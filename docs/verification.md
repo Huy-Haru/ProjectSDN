@@ -46,3 +46,11 @@ Backend và Vite dùng trong kiểm thử trình duyệt là tiến trình tạm
 8 collection nghiệp vụ: users, trainerprofiles, membershippackages, subscriptions, bookings, workoutplans, progresslogs, reviews. Collection user cũ rỗng được giữ nguyên. Không seed dữ liệu nghiệp vụ vào fitmanager. Dữ liệu kiểm thử được ghi vào database tên ngẫu nhiên fitmanager_verification_... và dọn đúng database đó.
 
 Index và validation là cải thiện nền dữ liệu, chưa chứng minh hiệu năng tải thực và chưa giải quyết mọi khoảng giờ chồng nhau. React nghiệp vụ vẫn dùng dữ liệu mẫu; ảnh kết nối không phải bằng chứng CRUD đã hoạt động.
+
+## PT và giáo án — 2026-10-23
+
+- Lịch PT lọc ngày theo UTC midnight đúng quy ước Booking; từ chối ngày không tồn tại và trạng thái sai.
+- Cập nhật giáo án dùng document save để kiểm tra cặp ngày và optimistic concurrency; chỉ PT sở hữu được sửa.
+- Member nhận thông tin PT qua nested populate, giữ trường trainerUser tương thích giao diện.
+- `npm run test:trainer` (backend): PASS trên MongoDB local, database tạm riêng tự xóa; kiểm tra phân quyền, ngày, sửa một trường, chống đổi chủ và thông tin PT. CI chạy bổ sung suite này.
+- Đây là bước sửa API PT; các màn Member còn dùng dữ liệu mẫu cần được nối API ở các bước tiếp theo.

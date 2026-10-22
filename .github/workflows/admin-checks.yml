@@ -28,6 +28,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run test:integration
+      - run: npm run test:trainer
       - run: npm run test:archive
   admin-frontend:
     runs-on: ubuntu-latest
