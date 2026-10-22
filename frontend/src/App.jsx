@@ -35,6 +35,7 @@ import AdminTrainersPage from './pages/AdminTrainersPage';
 import AdminStudentsPage from './pages/AdminStudentsPage';
 import AdminSchedulesPage from './pages/AdminSchedulesPage';
 import AdminRevenuePage from './pages/AdminRevenuePage';
+import AdminPaymentsPage from './pages/AdminPaymentsPage';
 
 // A2.1 — Profile cho cả 3 role
 import ProfilePage from './pages/ProfilePage';
@@ -126,6 +127,8 @@ function App() {
           return <AdminStudentsPage />;
         case 'admin-schedules':
           return <AdminSchedulesPage />;
+        case 'admin-payments':
+          return <AdminPaymentsPage />;
         case 'admin-revenue':
           return <AdminRevenuePage />;
         case 'admin-dashboard':
@@ -230,7 +233,7 @@ function App() {
   }
 
   return (
-    <div className="app-container">
+    <div className={"app-container" + (role === "admin" ? " admin-layout" : "")}>
       {/* Sidebar Navigation */}
       <Sidebar user={user} activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
 

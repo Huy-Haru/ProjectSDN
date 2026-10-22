@@ -1,93 +1,157 @@
-import React, { useState } from 'react';
-import { FaCalendarAlt, FaSearch, FaClock, FaCheckCircle } from 'react-icons/fa';
-import { initialSchedules } from '../data/mockData';
-
-const AdminSchedulesPage = () => {
-  const [masterSchedules, setMasterSchedules] = useState(initialSchedules);
-  const [filterStatus, setFilterStatus] = useState('Tất cả');
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const filtered = masterSchedules.filter(s => {
-    const matchesStatus = filterStatus === 'Tất cả' || s.status === filterStatus;
-    const matchesSearch = s.studentName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          s.trainerName.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
-
+import { useState } from "react";
+import { adminRequest, queryString } from "../api/adminApi";
+import {
+  AdminShell,
+  DataState,
+  Feedback,
+  Pager,
+  Status,
+} from "../components/admin/AdminUI";
+import { date, useAdminData } from "../components/admin/adminHooks";
+export default function AdminSchedulesPage() {
+  const [filters, setFilters] = useState({ status: "", from: "", to: "" }),
+    [page, setPage] = useState(1),
+    [error, setError] = useState(""),
+    [success, setSuccess] = useState(""),
+    [busy, setBusy] = useState(false);
+  const state = useAdminData("/bookings" + queryString({ ...filters, page }));
+  const change = (e) => {
+    setFilters((s) => ({ ...s, [e.target.name]: e.target.value }));
+    setPage(1);
+  };
+  const update = async (item, status) => {
+    if (!window.confirm("Xác nhận cập nhật trạng thái buổi tập?")) return;
+    setBusy(true);
+    setError("");
+    setSuccess("");
+    try {
+      await adminRequest("/bookings/" + item._id + "/status", "PATCH", {
+        status,
+      });
+      setSuccess("Đã cập nhật lịch");
+      state.reload();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
-    <div className="admin-schedules-page">
-      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <div>
-          <span className="section-tag">QUẢN LÝ LỊCH TẬP TOÀN HỆ THỐNG (ADMIN)</span>
-          <h2 className="section-header-title">Tổng Quan Lịch Tập PT & Học Viên</h2>
-          <p className="text-muted mb-0">Giám sát các ca dạy 1:1, kiểm tra trùng lịch và tỷ lệ hoàn thành ca tập.</p>
-        </div>
-
-        <div className="billing-toggle-container m-0">
-          {['Tất cả', 'Sắp diễn ra', 'Đã xác nhận', 'Hoàn thành'].map(st => (
-            <button
-              key={st}
-              className={`toggle-btn ${filterStatus === st ? 'active' : ''}`}
-              onClick={() => setFilterStatus(st)}
-            >
-              {st}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="p-3 mb-4 rounded-3 d-flex justify-content-between align-items-center flex-wrap gap-3" style={{ background: '#0F172A', border: '1px solid #1E293B' }}>
-        <div className="search-box position-relative" style={{ width: '340px' }}>
-          <FaSearch className="search-icon" />
-          <input 
-            type="text" 
-            className="search-input" 
-            placeholder="Tìm theo học viên hoặc tên PT..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+    <AdminShell
+      title="Quản lý lịch tập"
+      description="Giữ lịch sử khi hủy. Trạng thái kết thúc không được chuyển ngược."
+    >
+      <Feedback error={error} success={success} />
+      <div className="d-flex flex-wrap gap-3 mb-4">
+        <label>
+          Trạng thái
+          <select
+            className="form-select"
+            name="status"
+            value={filters.status}
+            onChange={change}
+          >
+            <option value="">Tất cả</option>
+            {["booked", "completed", "cancelled", "no_show"].map((s) => (
+              <option value={s} key={s}>
+                {
+                  {
+                    booked: "Đã đặt",
+                    completed: "Hoàn thành",
+                    cancelled: "Đã hủy",
+                    no_show: "Vắng mặt",
+                  }[s]
+                }
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Từ ngày
+          <input
+            className="form-control"
+            type="date"
+            name="from"
+            value={filters.from}
+            onChange={change}
           />
-        </div>
-        <div className="text-muted small">
-          Tổng số ca tập ghi nhận: <strong className="text-white">{filtered.length} ca tập</strong>
-        </div>
+        </label>
+        <label>
+          Đến ngày
+          <input
+            className="form-control"
+            type="date"
+            name="to"
+            value={filters.to}
+            onChange={change}
+          />
+        </label>
       </div>
-
-      <div className="p-4 rounded-4" style={{ background: '#0F172A', border: '1px solid #1E293B' }}>
+      <DataState state={state}>
         <div className="table-responsive">
-          <table className="table-custom">
+          <table className="table table-dark align-middle">
             <thead>
               <tr>
-                <th>HỌC VIÊN</th>
-                <th>HUẤN LUYỆN VIÊN (PT)</th>
-                <th>NGÀY & GIỜ TẬP</th>
-                <th>NỘI DUNG BUỔI TẬP</th>
-                <th>KHU VỰC TẬP</th>
-                <th>TRẠNG THÁI</th>
+                <th>Hội viên</th>
+                <th>PT</th>
+                <th>Ngày / giờ</th>
+                <th>Gói</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((s) => (
-                <tr key={s.id}>
-                  <td className="fw-bold text-white">{s.studentName}</td>
-                  <td style={{ color: '#00E676', fontWeight: 600 }}>{s.trainerName}</td>
-                  <td>{s.date} ({s.time})</td>
-                  <td>{s.workoutType}</td>
-                  <td>{s.location}</td>
+              {state.data?.items.map((item) => (
+                <tr key={item._id}>
                   <td>
-                    <span className={`badge px-2.5 py-1 ${
-                      s.status === 'Hoàn thành' || s.status === 'Đã dạy xong' ? 'bg-success' : 'bg-warning text-dark'
-                    }`}>
-                      {s.status}
-                    </span>
+                    {item.member?.fullName || "Tài khoản không còn tồn tại"}
+                  </td>
+                  <td>{item.trainer?.user?.fullName || "—"}</td>
+                  <td>
+                    {date(item.date)}
+                    <br />
+                    {item.startTime}–{item.endTime}
+                  </td>
+                  <td>{item.subscription?.package?.name || "—"}</td>
+                  <td>
+                    <Status value={item.status} />
+                  </td>
+                  <td>
+                    {item.status === "booked" && (
+                      <div className="d-flex flex-wrap gap-2">
+                        {["completed", "no_show", "cancelled"].map((s) => (
+                          <button
+                            key={s}
+                            disabled={busy}
+                            className="btn btn-sm btn-outline-light"
+                            onClick={() => update(item, s)}
+                          >
+                            {
+                              {
+                                completed: "Hoàn thành",
+                                no_show: "Vắng mặt",
+                                cancelled: "Hủy",
+                              }[s]
+                            }
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
+              {state.data?.items.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="text-center py-5">
+                    Chưa có lịch phù hợp
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
+        <Pager data={state.data} setPage={setPage} />
+      </DataState>
+    </AdminShell>
   );
-};
-
-export default AdminSchedulesPage;
+}

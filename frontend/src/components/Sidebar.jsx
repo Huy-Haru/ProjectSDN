@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   FaDumbbell,
   FaChartPie,
@@ -50,6 +49,7 @@ const Sidebar = ({ user, activeMenu, setActiveMenu }) => {
     { id: 'admin-trainers', label: 'Quản lý PT', icon: <FaUserFriends /> },
     { id: 'admin-students', label: 'Quản lý Học viên', icon: <FaUsers /> },
     { id: 'admin-schedules', label: 'Quản lý Lịch tập', icon: <FaCalendarCheck /> },
+    { id: 'admin-payments', label: 'Xác nhận Thanh toán', icon: <FaCreditCard /> },
     { id: 'admin-revenue', label: 'Thống kê Doanh thu', icon: <FaDollarSign /> },
   ];
 
