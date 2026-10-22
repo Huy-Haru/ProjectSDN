@@ -33,6 +33,7 @@ jobs:
       - run: npm run test:booking
       - run: npm run test:progress
       - run: npm run test:review
+      - run: npm run test:attendance
       - run: npm run test:archive
   admin-frontend:
     runs-on: ubuntu-latest

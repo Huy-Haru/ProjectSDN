@@ -42,3 +42,5 @@ Nhánh làm việc: `HuyNHHE190724`, tạo từ `origin/main`. Hai nhánh `origi
 ## Cập nhật đánh giá và tổng quan
 
 [14-reviews-live-dashboards.md](14-reviews-live-dashboards.md) mô tả luồng đánh giá buổi hoàn thành, danh sách PT thật và hai màn tổng quan Member/PT. Các trang chính hiện đã dùng API, thay cho dữ liệu mẫu được ghi trong những mốc lịch sử trước đó. Xem verification.md để đối chiếu kiểm thử từng đợt và giới hạn triển khai.
+
+[15-trainer-attendance.md](15-trainer-attendance.md): PT xác nhận hoàn thành/vắng mặt và liên kết với tiến độ, đánh giá Member.

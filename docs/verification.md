@@ -87,3 +87,10 @@ Index và validation là cải thiện nền dữ liệu, chưa chứng minh hi�
 - Tổng quan Member/PT dùng API; loại bỏ import mockData/useSchedule/useProgress khỏi App và các trang chính.
 - PASS: test:review, test:booking, test:progress, backend 17/17, frontend lint/build, Edge UAT tổng quan → đánh giá → tải lại → PT xem phản hồi, cùng luồng cũ.
 - Chi tiết: [14-reviews-live-dashboards.md](14-reviews-live-dashboards.md).
+
+## PT xác nhận buổi tập — 2026-10-23
+
+- Bổ sung endpoint riêng cho PT chốt completed/no_show sau giờ kết thúc của lịch mình; dùng chung quy tắc trạng thái với Admin.
+- Giao diện lịch PT có bước xác nhận tên học viên, ngày và giờ; thông báo lỗi/thành công và khóa thao tác khi gửi.
+- PASS: test:attendance, test:integration, test:booking, backend 17/17, frontend lint/build, Edge UAT PT xác nhận → Member đánh giá và dữ liệu tiến độ.
+- Chi tiết: [15-trainer-attendance.md](15-trainer-attendance.md).
