@@ -3,6 +3,9 @@ const { integer, dateRange } = require('../utils/schemaRules');
 const { SUBSCRIPTION_STATUS, PAYMENT_STATUS } = require('../constants/statuses');
 
 const subscriptionSchema = new mongoose.Schema({
+  includesPT: { type: Boolean },
+  sessionLimit: { type: Number, min: 1, validate: { validator: value => value == null || Number.isInteger(value), message: 'Hạn mức phải là số nguyên' } },
+  reservedSessions: { type: Number, min: 0, validate: integer },
   member: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

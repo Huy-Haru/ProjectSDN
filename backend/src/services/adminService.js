@@ -244,7 +244,9 @@ async function setBookingStatus(id, status) {
   if (status !== "cancelled" && end > new Date())
     fail("Chưa đến giờ kết thúc buổi tập", 409);
   doc.status = status;
-  return doc.save();
+  await doc.save();
+  if (status === "cancelled") await require("./memberBookingService").releaseQuota(doc);
+  return doc;
 }
 async function subscriptions(query) {
   const filter = {};

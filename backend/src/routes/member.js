@@ -38,9 +38,16 @@ router.post('/subscriptions', asyncHandler(async (req, res) => {
   if (Number.isNaN(endDate.getTime())) throw new AppError('Thời hạn gói không hợp lệ.', 400);
   const subscription = await Subscription.create({
     member: req.user._id, package: pkg._id, startDate, endDate,
-    amount: pkg.price, status: 'pending', paymentStatus: 'unpaid'
+    amount: pkg.price, status: 'pending', paymentStatus: 'unpaid',
+    includesPT: pkg.includesPT, sessionLimit: pkg.sessionLimit, reservedSessions: 0
   });
   return sendSuccess(res, { subscription }, 'Đã gửi đăng ký. Vui lòng thanh toán tại quầy để Admin xác nhận.', 201);
 }));
+
+const bookingService = require('../services/memberBookingService');
+router.get('/trainers', asyncHandler(async (req, res) => sendSuccess(res, { trainers: await bookingService.trainers() })));
+router.get('/bookings', asyncHandler(async (req, res) => sendSuccess(res, { bookings: await bookingService.bookings(req.user._id) })));
+router.post('/bookings', asyncHandler(async (req, res) => sendSuccess(res, { booking: await bookingService.create(req.user._id, req.body) }, 'Đặt lịch thành công.', 201)));
+router.post('/bookings/:id/cancel', asyncHandler(async (req, res) => sendSuccess(res, { booking: await bookingService.cancel(req.user._id, req.params.id) })));
 
 module.exports = router;

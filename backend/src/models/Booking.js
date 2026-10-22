@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { BOOKING_STATUS } = require('../constants/statuses');
 
 const bookingSchema = new mongoose.Schema({
+  quotaReserved: { type: Boolean, default: false },
   member: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
