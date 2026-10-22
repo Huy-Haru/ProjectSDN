@@ -486,6 +486,50 @@ async function run() {
   await page.getByText('Verified E2E review',{exact:true}).waitFor();
   await page.getByText('1 đánh giá · 4/5 sao',{exact:true}).waitFor();
   await page.screenshot({path:path.join(output,'trainer-verified-reviews.png'),fullPage:true});
+  async function assertMobileLayout(label) {
+    await page.waitForLoadState('networkidle');
+    const sizes=await page.evaluate(()=>{
+      const main=document.querySelector('.main-content'),body=document.querySelector('.page-body');
+      return {viewport:innerWidth,root:document.documentElement.scrollWidth,main:main.clientWidth,mainScroll:main.scrollWidth,body:body.clientWidth,bodyScroll:body.scrollWidth};
+    });
+    assert.ok(sizes.root<=sizes.viewport+1,label+': root overflow '+JSON.stringify(sizes));
+    assert.ok(sizes.main>=sizes.viewport-2,label+': content squeezed by sidebar '+JSON.stringify(sizes));
+    assert.ok(sizes.mainScroll<=sizes.main+1,label+': main overflow '+JSON.stringify(sizes));
+    assert.ok(sizes.bodyScroll<=sizes.body+1,label+': body overflow '+JSON.stringify(sizes));
+    assert.equal(await page.locator('.sidebar [aria-current=page]').count(),1,label+': active navigation semantics');
+    assert.ok(await page.locator('.sidebar .nav-item-btn').first().evaluate(el=>el.getBoundingClientRect().height>=44),label+': navigation touch target');
+    const muted=page.locator('.page-body .text-muted').first();
+    if(await muted.count()) assert.equal(await muted.evaluate(el=>getComputedStyle(el).color),'rgb(148, 163, 184)',label+': muted text contrast color');
+  }
+  await page.setViewportSize({width:375,height:812});
+  for(const menu of ['Tổng quan HLV','Lịch dạy của tôi','Học viên & Giáo án','Đánh giá từ Học viên','Hồ sơ của tôi']) {
+    await navigate(menu);await assertMobileLayout('PT '+menu);
+  }
+  await navigate('Học viên & Giáo án');
+  await page.getByRole('button',{name:'Xem giáo án',exact:true}).click();
+  await page.getByRole('button',{name:'Sửa giáo án',exact:true}).click();
+  await assertMobileLayout('PT plan editor');
+  await page.getByLabel('Tên giáo án',{exact:true}).focus();
+  await page.keyboard.press('Tab');
+  assert.equal(await page.locator('#plan-goal').evaluate(el=>el===document.activeElement),true);
+  await page.screenshot({path:path.join(output,'trainer-plan-mobile-375.png'),fullPage:true});
+  await page.getByRole('button',{name:'Bỏ thay đổi',exact:true}).click();
+  await page.locator('#header-logout-btn').click();
+  await page.getByRole('button',{name:'Đăng nhập',exact:true}).click();
+  await page.locator('#login-email').fill('member-e2e@test.example');
+  await page.locator('#login-password').fill(password);
+  await page.locator('#login-submit-btn').click();
+  await page.getByRole('heading',{name:'Tổng quan hội viên',exact:true}).waitFor();
+  for(const menu of ['Tổng quan','Danh sách gói tập','Gói tập của tôi','Đặt lịch PT','Huấn luyện viên','Lịch tập','Tiến độ & Thể trạng','Đánh giá HLV','Hồ sơ của tôi']) {
+    await navigate(menu);await assertMobileLayout('Member '+menu);
+  }
+  await navigate('Đặt lịch PT');
+  await page.getByLabel('Gói tập',{exact:true}).selectOption(String(sub._id));
+  await page.getByLabel('Huấn luyện viên',{exact:true}).selectOption(String(profile._id));
+  await page.screenshot({path:path.join(output,'member-booking-mobile-375.png'),fullPage:true});
+  await assertMobileLayout('Member booking inputs');
+  await page.setViewportSize({width:1440,height:1000});
+
 
 
   await page.locator('#header-logout-btn').click();
@@ -554,7 +598,7 @@ async function run() {
   await closeModal();
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: browser regression: progress retry after committed response loss, PT plan editing and Member updated content, PT completion/absence to member review, live Member/PT dashboards, completed-session reviews and trainer ratings, PT progress/plan assignment and Member visibility, Member package registration/persistence and PT booking/cancellation, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
+    "PASS: browser regression: 375px Member/PT pages and keyboard plan form, progress retry after committed response loss, PT plan editing and Member updated content, PT completion/absence to member review, live Member/PT dashboards, completed-session reviews and trainer ratings, PT progress/plan assignment and Member visibility, Member package registration/persistence and PT booking/cancellation, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
   );
 }
 

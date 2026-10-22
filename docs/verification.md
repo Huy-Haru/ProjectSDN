@@ -116,3 +116,10 @@ Index và validation là cải thiện nền dữ liệu, chưa chứng minh hi�
 - Form giữ mã khi gửi lại cùng nội dung trong phiên mở, tạo mã mới sau thành công; có chặn gửi đồng thời ngay trong handler.
 - PASS: test:progress, backend 17/17, test:archive, frontend lint/build và Edge UAT mô phỏng server lưu xong nhưng phản hồi lỗi, retry vẫn chỉ một document.
 - Database diagram/từ điển đã bổ sung metadata; giới hạn không lưu bản nháp qua reload nêu tại [18-progress-idempotency.md](18-progress-idempotency.md).
+
+## Mobile Member/PT — 23/10/2026
+
+- Dùng chung bố cục mobile cho ba role; không ép nội dung Member/PT bằng sidebar desktop. Bảng lịch cuộn riêng, nút học viên xuống dòng và profile/header không tràn.
+- Chỉnh tương phản chữ phụ trên nền tối, input mobile 16px, nút tối thiểu 44px và menu có aria-current/focus.
+- PASS: Edge browser UAT 14 màn Member/PT ở 375×812, kiểm tra document/main/page-body không tràn, menu không ép hẹp, màu chữ/vùng bấm và Tab trong form giáo án; các luồng cũ và Admin 390px vẫn đạt. Frontend lint/build đạt.
+- Minh chứng ảnh và giới hạn nghiệm thu thiết bị thật: [19-member-trainer-mobile.md](19-member-trainer-mobile.md).

@@ -14,7 +14,7 @@ Cập nhật 23/10/2026, nhánh tích hợp HuyNHHE190724. Phân công gốc gi�
 | M1.1/M1.2/M1.3 | Danh mục thật; đăng ký pending/unpaid; chính sách slot/quota và client | test:member, docs/12, docs/14 |
 | M2.1/M3.2 | Đặt/hủy/xem lịch đúng chủ, hiệu lực, cạnh tranh ca/quota | test:booking; đối soát sau sự cố standalone |
 | M3.1 | Tổng quan, giáo án, tiến độ, Review dùng API; Member không tự completed | browser UAT; docs/13–15 |
-| M4.1 | Reload/loading/error/empty và luồng Member đã tự động kiểm tra | Browser UAT; kiểm tra mobile 390px hiện chủ yếu Admin, chưa nghiệm thu đủ Member/PT/375px |
+| M4.1 | Reload/loading/error/empty và luồng Member đã tự động kiểm tra | Browser UAT: Admin 390px, 14 màn Member/PT 375px và form bàn phím; còn nghiệm thu thiết bị thật/trình đọc màn hình |
 | M4.2 | Context/use case/swimlane cập nhật API; PNG/SVG/drawio đồng bộ | Kiểm tra XML và xem ảnh; kịch bản demo ở mục 3 |
 | A1.1/A1.2/A2.1 | Auth/RBAC/profile ba role và phiên UI thật | Bộ backend, test:integration, browser; JWT logout phía client |
 | A2.2 | Lịch/học viên liên quan, tạo/xem/sửa giáo án; Member xem đúng của mình | test:trainer, browser; expectedVersion chống bản nháp cũ |
@@ -42,7 +42,7 @@ Backend có 17 bài nền và các integration suite theo chức năng: test:int
 
 ## 4. Việc còn lại trước nghiệm thu chính thức
 
-- Review chéo theo phân công gốc, biên bản UAT thủ công đủ Member/PT/Admin, mobile và bàn phím.
+- Review chéo theo phân công gốc, biên bản UAT thủ công đủ Member/PT/Admin, thiết bị mobile thật và bàn phím toàn hệ thống.
 - Đo NFR hiệu năng p95 với bộ dữ liệu/mức đồng thời đã định; chưa có số liệu đo để kết luận đạt.
 - Phân trang các danh sách Member/PT hiện trả toàn bộ; giới hạn 100 hiện áp dụng cho danh sách Admin, chưa đáp ứng NFR-05 toàn hệ thống.
 - Nếu cần đảm bảo qua sự cố: replica set + transaction cho quota/Booking; standalone hiện có đối soát bảo trì, không bảo đảm nguyên tử nhiều document.
