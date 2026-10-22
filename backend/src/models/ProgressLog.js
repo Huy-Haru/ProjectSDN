@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const { integer } = require('../utils/schemaRules');
 
 const progressLogSchema = new mongoose.Schema({
+  requestId: { type: String, immutable: true },
+  requestHash: { type: String, immutable: true, select: false },
   member: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -46,6 +48,10 @@ const progressLogSchema = new mongoose.Schema({
 
 progressLogSchema.index({ member: 1, date: -1 });
 progressLogSchema.index({ trainer: 1, member: 1, date: -1 });
+progressLogSchema.index({ trainer: 1, member: 1, requestId: 1 }, {
+  unique: true, name: 'progress_request_unique', partialFilterExpression: { requestId: { $type: 'string' } }
+});
+progressLogSchema.set('toJSON', { transform(doc, ret) { delete ret.requestHash; delete ret.requestId; return ret; } });
 const ProgressLog = mongoose.model('ProgressLog', progressLogSchema);
 
 module.exports = ProgressLog;

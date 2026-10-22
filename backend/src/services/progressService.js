@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const crypto = require('node:crypto');
 const { TrainerProfile, User, Booking, ProgressLog } = require('../models');
 const AppError = require('../utils/AppError');
 
@@ -38,7 +39,30 @@ async function create(userId, memberId, body) {
   data.note = body.note?.trim() || '';
   if (!['weight', 'height', 'bodyFat'].some(field => data[field] !== undefined) && !data.note)
     throw new AppError('Nhập ít nhất một chỉ số hoặc ghi chú.', 400);
+  let requestQuery;
+  if (body.requestId !== undefined) {
+    if (typeof body.requestId !== 'string' || !/^[a-zA-Z0-9_-]{16,100}$/.test(body.requestId))
+      throw new AppError('Mã yêu cầu không hợp lệ.', 400);
+    data.requestId = body.requestId;
+    data.requestHash = crypto.createHash('sha256').update(JSON.stringify([
+      date, data.weight ?? null, data.height ?? null, data.bodyFat ?? null, data.note
+    ])).digest('hex');
+    requestQuery = { trainer: trainer._id, member: memberId, requestId: data.requestId };
+    const existing = await ProgressLog.findOne(requestQuery).select('+requestHash');
+    if (existing) return replay(existing, data.requestHash);
+  }
   data.attendedSessions = await Booking.countDocuments({ member: memberId, trainer: trainer._id, status: 'completed', date: { $lte: new Date(date + 'T00:00:00Z') } });
-  return ProgressLog.create(data);
+  try { return await ProgressLog.create(data); }
+  catch (error) {
+    if (error.code === 11000 && requestQuery) {
+      const existing = await ProgressLog.findOne(requestQuery).select('+requestHash');
+      if (existing) return replay(existing, data.requestHash);
+    }
+    throw error;
+  }
+}
+function replay(existing, hash) {
+  if (existing.requestHash !== hash) throw new AppError('Mã yêu cầu đã dùng cho nội dung khác.', 409);
+  return existing;
 }
 module.exports = { listForTrainer, listForMember, create };
