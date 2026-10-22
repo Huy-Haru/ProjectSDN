@@ -84,7 +84,7 @@ export const trainerApi = {
   },
 
   /** PT xem danh sách hội viên liên quan */
-  getMembers: () => request('GET', '/trainer/members'),
+  getMembers: (params = {}) => request('GET', '/trainer/members?' + new URLSearchParams(params)),
 
   /** Tạo giáo án */
   createWorkoutPlan: (data) => request('POST', '/trainer/workout-plans', data),
