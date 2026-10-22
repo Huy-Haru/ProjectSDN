@@ -140,6 +140,13 @@ async function createWorkoutPlan(req, res) {
  */
 async function getWorkoutPlans(req, res) {
   const user = req.user;
+  const { page, limit, skip } = require('../utils/pagination')(req.query);
+  if (req.query.status !== undefined && !['active', 'completed', 'cancelled'].includes(req.query.status)) {
+    throw new AppError('Trạng thái giáo án không hợp lệ.', 400);
+  }
+  if (req.query.memberId !== undefined && (typeof req.query.memberId !== 'string' || !require('mongoose').isObjectIdOrHexString(req.query.memberId))) {
+    throw new AppError('ID học viên không hợp lệ.', 400);
+  }
 
   const trainerProfile = await TrainerProfile.findOne({ user: user._id });
   if (!trainerProfile) {
@@ -150,11 +157,13 @@ async function getWorkoutPlans(req, res) {
   if (req.query.memberId) filter.member = req.query.memberId;
   if (req.query.status) filter.status = req.query.status;
 
-  const plans = await WorkoutPlan.find(filter)
-    .populate('member', 'fullName email phone avatar')
-    .sort({ createdAt: -1 });
+  const [plans, total] = await Promise.all([
+    WorkoutPlan.find(filter).populate('member', 'fullName email phone avatar')
+      .sort({ createdAt: -1, _id: -1 }).skip(skip).limit(limit),
+    WorkoutPlan.countDocuments(filter)
+  ]);
 
-  return sendSuccess(res, { plans });
+  return sendSuccess(res, { plans, total, page, limit, pages: Math.ceil(total / limit) });
 }
 
 /**
