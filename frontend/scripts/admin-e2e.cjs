@@ -304,11 +304,29 @@ async function run() {
   assert.equal((await Booking.findById(attendanceBooking._id)).status,'completed');
   await navigate('Học viên & Giáo án');
   await page.getByRole('button',{name:'Ghi nhận tiến độ',exact:true}).click();
+  const progressRequestIds=[];
+  let loseProgressResponse=true;
+  await page.route('**/trainer/members/*/progress',async route=>{
+    if(route.request().method()!=='POST') {await route.continue();return;}
+    progressRequestIds.push(route.request().postDataJSON().requestId);
+    if(loseProgressResponse){
+      loseProgressResponse=false;
+      const saved=await route.fetch();
+      assert.equal(saved.status(),201);
+      await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({success:false,message:'Mất phản hồi sau khi lưu'})});
+    } else await route.continue();
+  });
   await page.getByLabel('Cân nặng (kg)',{exact:true}).fill('71.5');
   await page.getByLabel('Tỷ lệ mỡ (%)',{exact:true}).fill('19.2');
   await page.getByLabel('Nhận xét tiến độ',{exact:true}).fill('Progress E2E note');
   await page.getByRole('button',{name:'Lưu tiến độ',exact:true}).click();
+  await page.getByRole('alert').filter({hasText:'Mất phản hồi sau khi lưu'}).waitFor();
+  assert.equal(await models.ProgressLog.countDocuments({member:member._id}),1);
+  await page.getByRole('button',{name:'Lưu tiến độ',exact:true}).click();
   await page.getByText('Đã lưu tiến độ.',{exact:true}).waitFor();
+  assert.equal(progressRequestIds.length,2);assert.ok(progressRequestIds[0]);assert.equal(progressRequestIds[0],progressRequestIds[1]);
+  assert.equal(await models.ProgressLog.countDocuments({member:member._id}),1);
+  await page.unroute('**/trainer/members/*/progress');
   await page.getByRole('button',{name:'Đóng tiến độ',exact:true}).click();
   await page.getByRole('button',{name:'Tạo Giáo Án',exact:true}).click();
   await page.getByPlaceholder('VD: Giảm mỡ - Tháng 1').fill('Member E2E workout');
@@ -536,7 +554,7 @@ async function run() {
   await closeModal();
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: browser regression: PT plan editing and Member updated content, PT completion/absence to member review, live Member/PT dashboards, completed-session reviews and trainer ratings, PT progress/plan assignment and Member visibility, Member package registration/persistence and PT booking/cancellation, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
+    "PASS: browser regression: progress retry after committed response loss, PT plan editing and Member updated content, PT completion/absence to member review, live Member/PT dashboards, completed-session reviews and trainer ratings, PT progress/plan assignment and Member visibility, Member package registration/persistence and PT booking/cancellation, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
   );
 }
 

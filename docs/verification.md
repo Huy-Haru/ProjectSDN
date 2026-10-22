@@ -109,3 +109,10 @@ Index và validation là cải thiện nền dữ liệu, chưa chứng minh hi�
 - Cập nhật báo cáo/SRS/thiết kế API/database theo bản triển khai; đủ 42 route nghiệp vụ Auth/Profile/Member/PT/Admin được đối chiếu và 50 link nội bộ không hỏng ở thời điểm kiểm tra.
 - Sơ đồ draw.io/SVG/PNG cập nhật snapshot quyền lợi, quota, chính sách no_show, hủy và quyền Guest; 11 XML hợp lệ, source/target tồn tại; ERD/database nối đủ 8 entity/13 quan hệ. Đã xem ảnh database và swimlane đặt lịch sau render.
 - Bảng tiến độ kỹ thuật, demo và hạn chế cần nghiệm thu: [17-mvp-acceptance.md](17-mvp-acceptance.md). Không ghi nhận review nhóm, NFR tải/mobile toàn hệ thống hoặc hosting là đã hoàn tất.
+
+## Chống gửi trùng ProgressLog — 23/10/2026
+
+- Unique partial index theo PT/Member/requestId, hash nội dung chuẩn hóa, replay cùng _id và 409 nếu cùng mã đổi nội dung. Client cũ không gửi mã vẫn hoạt động theo cơ chế append.
+- Form giữ mã khi gửi lại cùng nội dung trong phiên mở, tạo mã mới sau thành công; có chặn gửi đồng thời ngay trong handler.
+- PASS: test:progress, backend 17/17, test:archive, frontend lint/build và Edge UAT mô phỏng server lưu xong nhưng phản hồi lỗi, retry vẫn chỉ một document.
+- Database diagram/từ điển đã bổ sung metadata; giới hạn không lưu bản nháp qua reload nêu tại [18-progress-idempotency.md](18-progress-idempotency.md).

@@ -120,7 +120,7 @@ const entityFields={
  sub:['Subscription / subscriptions','_id: ObjectId [PK]','member: ref User; package: ref Package','startDate, endDate, amount, paidAt','status: pending / active / expired / cancelled','paymentStatus: unpaid / paid','includesPT, sessionLimit; reservedSessions'],
  booking:['Booking / bookings','_id: ObjectId [PK]','member: ref User; trainer: ref TrainerProfile','subscription: ref Subscription','date, startTime, endTime, note','quotaReserved: Boolean','status: booked / completed / cancelled / no_show'],
  plan:['WorkoutPlan / workoutplans','_id: ObjectId [PK]','member: ref User; trainer: ref TrainerProfile','title, goal, startDate, endDate, status','items[]: embedded exercises / sets / reps'],
- progress:['ProgressLog / progresslogs','_id: ObjectId [PK]','member: ref User; trainer?: ref TrainerProfile','date, weight, bodyFat, height','attendedSessions, note'],
+ progress:['ProgressLog / progresslogs','_id: ObjectId [PK]','member: ref User; trainer?: ref TrainerProfile','date, weight, bodyFat, height','attendedSessions, note','requestId [idempotency], requestHash [hidden]'],
  review:['Review / reviews','_id: ObjectId [PK]','member: ref User; trainer: ref TrainerProfile','booking: ref Booking [unique]','rating: integer 1–5; comment'],
 };
 function erd(physical){

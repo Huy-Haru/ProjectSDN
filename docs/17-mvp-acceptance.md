@@ -18,7 +18,7 @@ Cập nhật 23/10/2026, nhánh tích hợp HuyNHHE190724. Phân công gốc gi�
 | M4.2 | Context/use case/swimlane cập nhật API; PNG/SVG/drawio đồng bộ | Kiểm tra XML và xem ảnh; kịch bản demo ở mục 3 |
 | A1.1/A1.2/A2.1 | Auth/RBAC/profile ba role và phiên UI thật | Bộ backend, test:integration, browser; JWT logout phía client |
 | A2.2 | Lịch/học viên liên quan, tạo/xem/sửa giáo án; Member xem đúng của mình | test:trainer, browser; expectedVersion chống bản nháp cũ |
-| A3.1 | PT chốt completed/no_show; ghi và xem tiến độ có quyền | test:attendance, test:progress; ProgressLog là lịch sử append, chưa có idempotency key cho gửi lại POST sau lỗi kết nối |
+| A3.1 | PT chốt completed/no_show; ghi và xem tiến độ có quyền | test:attendance, test:progress; ProgressLog hỗ trợ requestId và replay an toàn; form giữ mã khi gửi lại cùng nội dung trong phiên mở |
 | A3.2 | Review completed, unique booking, điểm tổng hợp và tổng quan PT | test:review và browser |
 | A4.1 | Kiểm thử role/ownership/dữ liệu lỗi tự động | Các integration suite; không thay kiểm thử bảo mật độc lập |
 | A4.2 | API/từ điển/ERD đã cập nhật, kết quả kiểm thử ghi lại | docs/02–04, diagram, verification.md; nghiệm thu nhóm còn riêng |
@@ -46,7 +46,7 @@ Backend có 17 bài nền và các integration suite theo chức năng: test:int
 - Đo NFR hiệu năng p95 với bộ dữ liệu/mức đồng thời đã định; chưa có số liệu đo để kết luận đạt.
 - Phân trang các danh sách Member/PT hiện trả toàn bộ; giới hạn 100 hiện áp dụng cho danh sách Admin, chưa đáp ứng NFR-05 toàn hệ thống.
 - Nếu cần đảm bảo qua sự cố: replica set + transaction cho quota/Booking; standalone hiện có đối soát bảo trì, không bảo đảm nguyên tử nhiều document.
-- Bổ sung idempotency key cho ProgressLog nếu cần giữ tiêu chí không trùng khi client retry POST sau lỗi mạng.
+- Idempotency ProgressLog đã bổ sung: client mới gửi requestId; client cũ không gửi mã vẫn tạo mới mỗi POST. Form chưa lưu mã/bản nháp qua đóng hoặc tải lại trang; xem docs/18.
 - Chuẩn bị hosting/TLS, secret riêng và backup/restore trên môi trường triển khai. Không coi CI Linux là hosting.
 
 Ngoài MVP hiện có: thanh toán online/hoàn tiền tự động, nhiều chi nhánh, scheduler hết hạn, lịch rảnh PT, realtime, rate limit đăng nhập, denylist JWT và audit bất biến. Không đánh dấu các mục này hoàn thành chỉ vì form/API hiện có.

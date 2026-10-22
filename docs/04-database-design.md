@@ -114,6 +114,8 @@ Mỗi items gồm dayOfWeek (String), exerciseName (String bắt buộc), sets (
 
 attendedSessions tại một log không phải bộ đếm gói hoặc sổ tiêu thụ buổi đáng tin cậy. Cần quy định đây là snapshot hay số buổi cộng dồn để tránh cộng lặp.
 
+ProgressLog bổ sung requestId (String, bất biến) và requestHash (String, bất biến, select:false). Unique partial index trainer/member/requestId chỉ áp dụng khi requestId là string; dữ liệu cũ không có mã không xung đột. Hash và mã yêu cầu bị loại khỏi response JSON. Xem [chống gửi trùng](18-progress-idempotency.md).
+
 ### Review → reviews
 
 | Trường | Kiểu | Ràng buộc hiện có |

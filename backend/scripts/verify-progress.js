@@ -97,9 +97,24 @@ async function run() {
   await Booking.create({member:other._id,trainer:trainer._id,subscription:sub._id,date:'2020-01-03',startTime:'09:00',endTime:'10:00',status:'cancelled'});
   await call('/trainer/members/'+other._id+'/progress','POST',{weight:70},403,ptToken);
   assert.equal((await call(path,'GET',null,200,ptToken)).logs.length,2);
+  const payload={date:'2020-01-02',weight:72,note:'Retry safe',requestId:crypto.randomUUID()};
+  const first=await call(path,'POST',payload,201,ptToken);
+  await Booking.create({member:member._id,trainer:trainer._id,subscription:sub._id,date:'2020-01-02',startTime:'11:00',endTime:'12:00',status:'completed'});
+  const again=await call(path,'POST',payload,201,ptToken);
+  assert.equal(again.log.attendedSessions,1);
+  assert.equal(first.log._id,again.log._id);
+  assert.equal(again.log.requestHash,undefined);assert.equal(again.log.requestId,undefined);
+  await call(path,'POST',{...payload,weight:73},409,ptToken);
+  await call(path,'POST',{...payload,requestId:'bad'},400,ptToken);
+  const concurrent={...payload,requestId:crypto.randomUUID()};
+  const responses=await Promise.all([1,2].map(()=>fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+ptToken},body:JSON.stringify(concurrent)})));
+  assert.deepEqual(responses.map(r=>r.status),[201,201]);
+  const bodies=await Promise.all(responses.map(r=>r.json()));
+  assert.equal(bodies[0].data.log._id,bodies[1].data.log._id);
+  assert.equal(await require('../src/models').ProgressLog.countDocuments({requestId:concurrent.requestId}),1);
   await TrainerProfile.updateOne({_id:trainer._id},{$set:{isActive:false}});
   await call(path,'POST',{weight:71},403,ptToken);
-  console.log('PASS: PT/member progress isolation, related active trainer, measurements/date validation and server-derived attendance.');
+  console.log('PASS: PT/member progress isolation, related active trainer, measurements/date validation, server-derived attendance and idempotent concurrent retries.');
 }
 run()
   .catch((error) => {

@@ -51,3 +51,5 @@ Nhánh làm việc: `HuyNHHE190724`, tạo từ `origin/main`. Hai nhánh `origi
 ## Bản đối chiếu hiện tại
 
 [17-mvp-acceptance.md](17-mvp-acceptance.md) tổng hợp mã kế hoạch, bằng chứng CI, kịch bản demo và phần còn thiếu trước nghiệm thu. SRS, thiết kế API, từ điển database và sơ đồ đã cập nhật theo code ngày 23/10; các ghi chú cũ theo ngày chỉ là lịch sử.
+
+[18-progress-idempotency.md](18-progress-idempotency.md): chống lưu trùng tiến độ khi PT gửi lại sau lỗi mạng; unique index, retry UI và giới hạn tương thích.
