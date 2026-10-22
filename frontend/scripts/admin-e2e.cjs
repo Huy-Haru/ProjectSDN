@@ -343,6 +343,30 @@ async function run() {
   await page.getByText("Current Filter Result", { exact: true }).waitFor();
   await page.locator("#header-logout-btn").click();
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).waitFor();
+  // Real member catalog and registration, persisted across a browser reload.
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
+  await page.locator('#login-email').fill('member-e2e@test.example');
+  await page.locator('#login-password').fill(password);
+  await page.locator('#login-submit-btn').click();
+  await page.locator('#header-logout-btn').waitFor();
+  await navigate('Danh sách gói tập');
+  await page.getByRole('button', { name: 'Đăng ký Seed E2E', exact: true }).click();
+  await page.getByLabel('Ngày bắt đầu', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Gửi đăng ký', exact: true }).click();
+  await page.getByRole('heading', { name: 'Gói tập của tôi', exact: true }).waitFor();
+  const pendingArticle = page.locator('article').filter({hasText:'Chờ xác nhận'});
+  await pendingArticle.getByText('Chưa thanh toán', {exact:false}).waitFor();
+  const subscriptions = await Subscription.find({member:member._id}).sort({createdAt:-1});
+  assert.equal(subscriptions.length,2);
+  assert.equal(subscriptions[0].amount,700000);
+  assert.equal(subscriptions[0].paymentStatus,'unpaid');
+  await page.reload();
+  await navigate('Gói tập của tôi');
+  await page.locator('article').filter({hasText:'Chờ xác nhận'}).waitFor();
+  await page.screenshot({path:path.join(output,'member-subscriptions.png'),fullPage:true});
+  await page.locator('#header-logout-btn').click();
+  await page.getByRole('button', { name: 'Đăng nhập', exact: true }).waitFor();
   const mountModal = async (kind, props = {}) =>
     page.evaluate(
       async ({ kind, props }) => {
@@ -407,7 +431,7 @@ async function run() {
   await closeModal();
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: browser regression: Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
+    "PASS: browser regression: Member package registration/persistence, Admin CRUD/payment/revenue, session/profile, API error/retry/empty, 390px, stale filter response protection and four shared modal reset/switch flows.",
   );
 }
 

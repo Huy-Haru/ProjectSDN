@@ -54,3 +54,12 @@ Index và validation là cải thiện nền dữ liệu, chưa chứng minh hi�
 - Member nhận thông tin PT qua nested populate, giữ trường trainerUser tương thích giao diện.
 - `npm run test:trainer` (backend): PASS trên MongoDB local, database tạm riêng tự xóa; kiểm tra phân quyền, ngày, sửa một trường, chống đổi chủ và thông tin PT. CI chạy bổ sung suite này.
 - Đây là bước sửa API PT; các màn Member còn dùng dữ liệu mẫu cần được nối API ở các bước tiếp theo.
+
+## Đăng ký gói Member — 2026-10-23
+
+- Danh mục công khai chỉ trả gói đang hoạt động: GET /api/member/packages.
+- Member xem riêng lịch sử đăng ký: GET /api/member/subscriptions; gửi đăng ký qua POST cùng đường dẫn với packageId và startDate (YYYY-MM-DD, không trước hôm nay theo giờ Việt Nam).
+- Backend lấy giá và thời hạn từ MongoDB, cố định amount trên đăng ký; không nhận chủ sở hữu, trạng thái hoặc xác nhận thanh toán từ client. Ngày hết hạn là mốc kết thúc sau durationDays ngày tính từ 00:00 giờ Việt Nam.
+- Giao diện Gói tập và Gói tập của tôi dùng API thật, có tải dữ liệu, lỗi/thử lại, danh sách trống, xác nhận trước khi gửi và khóa nút khi gửi. Loại bỏ luồng đăng ký gói giả khỏi App.
+- PASS: npm run test:member (MongoDB tạm riêng), frontend lint/build, kiểm thử Edge đăng ký và tải lại trang cùng các luồng Admin/PT hiện có.
+- Chưa hỗ trợ thanh toán online. Thành viên thanh toán tại quầy, Admin xác nhận trên màn hiện có. Các màn đặt lịch, tiến độ và đánh giá Member vẫn cần nối API.

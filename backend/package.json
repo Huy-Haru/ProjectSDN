@@ -18,7 +18,8 @@
     "db:restore": "node scripts/database-archive.js restore",
     "admin:create": "node scripts/create-admin.js",
     "db:indexes": "node scripts/optimize-indexes.js",
-    "test:trainer": "node scripts/verify-trainer.js"
+    "test:trainer": "node scripts/verify-trainer.js",
+    "test:member": "node scripts/verify-member.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
