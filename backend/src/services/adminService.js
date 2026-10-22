@@ -227,26 +227,7 @@ async function bookings(query) {
   ]);
 }
 async function setBookingStatus(id, status) {
-  if (!["completed", "cancelled", "no_show"].includes(status))
-    fail("Trạng thái đích không hợp lệ");
-  const doc = await find(Booking, id);
-  if (doc.status === status) return doc;
-  if (doc.status !== "booked")
-    fail("Không thể thay đổi trạng thái đã kết thúc", 409);
-  const start = new Date(
-    doc.date.toISOString().slice(0, 10) + "T" + doc.startTime + ":00+07:00",
-  );
-  const end = new Date(
-    doc.date.toISOString().slice(0, 10) + "T" + doc.endTime + ":00+07:00",
-  );
-  if (status === "cancelled" && start <= new Date())
-    fail("Chỉ hủy trước giờ bắt đầu", 409);
-  if (status !== "cancelled" && end > new Date())
-    fail("Chưa đến giờ kết thúc buổi tập", 409);
-  doc.status = status;
-  await doc.save();
-  if (status === "cancelled") await require("./memberBookingService").releaseQuota(doc);
-  return doc;
+  return require('./bookingStatusService').transition(await find(Booking, id), status);
 }
 async function subscriptions(query) {
   const filter = {};

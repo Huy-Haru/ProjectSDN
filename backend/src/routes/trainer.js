@@ -7,6 +7,18 @@ const { ROLES } = require('../constants/roles');
 const router = express.Router();
 const progressService = require('../services/progressService');
 const { sendSuccess } = require('../utils/response');
+router.patch('/bookings/:id/status', authenticate, authorize(ROLES.TRAINER), asyncHandler(async (req, res) => {
+  const mongoose = require('mongoose');
+  const AppError = require('../utils/AppError');
+  const { TrainerProfile, Booking } = require('../models');
+  if (!['completed', 'no_show'].includes(req.body.status)) throw new AppError('PT chỉ xác nhận hoàn thành hoặc vắng mặt.', 400);
+  if (!mongoose.isObjectIdOrHexString(req.params.id)) throw new AppError('ID lịch tập không hợp lệ.', 400);
+  const trainer = await TrainerProfile.findOne({ user: req.user._id, isActive: true });
+  if (!trainer) throw new AppError('Hồ sơ PT không hoạt động.', 403);
+  const booking = await Booking.findOne({ _id: req.params.id, trainer: trainer._id });
+  if (!booking) throw new AppError('Không tìm thấy lịch dạy của bạn.', 404);
+  return sendSuccess(res, { booking: await require('../services/bookingStatusService').transition(booking, req.body.status) });
+}));
 router.get('/reviews', authenticate, authorize(ROLES.TRAINER), asyncHandler(async (req, res) =>
   sendSuccess(res, await require('../services/reviewService').trainerReviews(req.user._id))));
 router.get('/members/:memberId/progress', authenticate, authorize(ROLES.TRAINER), asyncHandler(async (req, res) =>
