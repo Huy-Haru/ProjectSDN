@@ -102,3 +102,10 @@ Index và validation là cải thiện nền dữ liệu, chưa chứng minh hi�
 - Chặn tạo/sửa khi TrainerProfile khóa; trả lỗi 400 với title/goal sai kiểu khi tạo.
 - PASS: test:trainer (gồm hai yêu cầu cạnh tranh), frontend lint/build và Edge UAT PT sửa → Member xem nội dung mới, cùng các luồng cũ.
 - Chi tiết: [16-trainer-plan-management.md](16-trainer-plan-management.md).
+
+## Đối chiếu kế hoạch, API và sơ đồ — 23/10/2026
+
+- CI bản code 81b848c: backend, admin-frontend và admin-browser đều success tại GitHub Actions run 39872068984.
+- Cập nhật báo cáo/SRS/thiết kế API/database theo bản triển khai; đủ 42 route nghiệp vụ Auth/Profile/Member/PT/Admin được đối chiếu và 50 link nội bộ không hỏng ở thời điểm kiểm tra.
+- Sơ đồ draw.io/SVG/PNG cập nhật snapshot quyền lợi, quota, chính sách no_show, hủy và quyền Guest; 11 XML hợp lệ, source/target tồn tại; ERD/database nối đủ 8 entity/13 quan hệ. Đã xem ảnh database và swimlane đặt lịch sau render.
+- Bảng tiến độ kỹ thuật, demo và hạn chế cần nghiệm thu: [17-mvp-acceptance.md](17-mvp-acceptance.md). Không ghi nhận review nhóm, NFR tải/mobile toàn hệ thống hoặc hosting là đã hoàn tất.

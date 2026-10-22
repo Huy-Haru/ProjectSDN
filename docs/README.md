@@ -46,3 +46,8 @@ Nhánh làm việc: `HuyNHHE190724`, tạo từ `origin/main`. Hai nhánh `origi
 [15-trainer-attendance.md](15-trainer-attendance.md): PT xác nhận hoàn thành/vắng mặt và liên kết với tiến độ, đánh giá Member.
 
 [16-trainer-plan-management.md](16-trainer-plan-management.md): PT xem/sửa giáo án, xử lý phiên bản cũ và Member nhận nội dung mới.
+
+
+## Bản đối chiếu hiện tại
+
+[17-mvp-acceptance.md](17-mvp-acceptance.md) tổng hợp mã kế hoạch, bằng chứng CI, kịch bản demo và phần còn thiếu trước nghiệm thu. SRS, thiết kế API, từ điển database và sơ đồ đã cập nhật theo code ngày 23/10; các ghi chú cũ theo ngày chỉ là lịch sử.
