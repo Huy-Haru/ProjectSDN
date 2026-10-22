@@ -45,22 +45,34 @@ function PlanEditor({plan,onSaved,onCancel}) {
   </form>;
 }
 export default function TrainerPlansPanel({member,onClose}) {
-  const load = useCallback(()=>trainerApi.getWorkoutPlans({memberId:member._id}).then(r=>r.data.plans),[member._id]);
-  const {data,loading,error,reload} = useApiResource(load,member._id);
+  const [page,setPage] = useState(1);
+  const [status,setStatus] = useState('');
+  const load = useCallback(()=>trainerApi.getWorkoutPlans({memberId:member._id,page,limit:5,...(status ? {status} : {})}).then(r=>r.data),[member._id,page,status]);
+  const {data,loading,error,reload} = useApiResource(load,JSON.stringify([member._id,page,status]));
+  const plans = data.plans || [];
   const [editing,setEditing] = useState(null);
   const [message,setMessage] = useState('');
   return <section className="border rounded-3 p-4 mt-4" aria-label="Giáo án học viên"><h3>Giáo án: {member.fullName}</h3>
     <button className="btn btn-secondary me-2 mb-3" disabled={!!editing} onClick={onClose}>Đóng giáo án</button>
     <button className="btn btn-secondary mb-3" disabled={!!editing || loading} onClick={reload}>Tải lại giáo án</button>
+    <label htmlFor="plans-status-filter">Lọc trạng thái giáo án</label>
+    <select id="plans-status-filter" className="form-select mb-3" disabled={!!editing} value={status} onChange={e=>{setStatus(e.target.value);setPage(1);setMessage('');}}>
+      <option value="">Tất cả</option>{Object.entries(labels).map(([k,v])=><option key={k} value={k}>{v}</option>)}
+    </select>
+    {!error && <nav aria-label="Phân trang giáo án" className="d-flex flex-wrap align-items-center gap-2 mb-3">
+      <button className="btn btn-secondary" disabled={!!editing || loading || page<=1} onClick={()=>setPage(n=>n-1)}>Trang giáo án trước</button>
+      <span>{loading ? 'Đang tải trang...' : `Giáo án: trang ${page}/${Math.max(1,data.pages || 0)} · ${data.total || 0} kết quả`}</span>
+      <button className="btn btn-secondary" disabled={!!editing || loading || page>=Math.max(1,data.pages || 0)} onClick={()=>setPage(n=>n+1)}>Trang giáo án sau</button>
+    </nav>}
     {message && <p role="status">{message}</p>}
     {loading && <p role="status">Đang tải giáo án...</p>}
     {error && <div role="alert">{error} <button onClick={reload}>Thử lại</button></div>}
-    {!loading && !error && !data.length && <p>Bạn chưa tạo giáo án cho học viên này.</p>}
-    {!editing && data.map(plan=><article className="border rounded-3 p-3 mb-3" key={plan._id}>
+    {!loading && !error && !plans.length && <p>Không có giáo án phù hợp ở trang này.</p>}
+    {!editing && plans.map(plan=><article className="border rounded-3 p-3 mb-3" key={plan._id}>
       <h4>{plan.title}</h4><p>{labels[plan.status]} · {plan.startDate.slice(0,10)} – {plan.endDate.slice(0,10)}</p><p>{plan.goal}</p>
       <ul>{plan.items.map(item=><li key={item._id}>{item.dayOfWeek}: {item.exerciseName} · {item.sets} hiệp × {item.reps} lần {item.note && `· ${item.note}`}</li>)}</ul>
       <button className="btn btn-success" onClick={()=>{setMessage('');setEditing(plan);}}>Sửa giáo án</button>
     </article>)}
-    {editing && <PlanEditor key={editing._id} plan={editing} onCancel={()=>setEditing(null)} onSaved={()=>{setEditing(null);setMessage('Đã cập nhật giáo án.');reload();}} />}
+    {editing && <PlanEditor key={editing._id} plan={editing} onCancel={()=>setEditing(null)} onSaved={()=>{setEditing(null);setMessage('Đã cập nhật giáo án.');setPage(1);reload();}} />}
   </section>;
 }
