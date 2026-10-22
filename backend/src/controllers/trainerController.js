@@ -55,45 +55,35 @@ async function getTrainerSchedule(req, res) {
  * PT xem danh sách hội viên liên quan (đã từng/đang có booking với mình)
  */
 async function getTrainerMembers(req, res) {
-  const user = req.user;
-
-  const trainerProfile = await TrainerProfile.findOne({ user: user._id });
-  if (!trainerProfile) {
-    throw new AppError('Hồ sơ huấn luyện viên không tồn tại.', 404);
-  }
-
-  // Lấy distinct members từ bookings của trainer này
-  const memberIds = await Booking.distinct('member', { trainer: trainerProfile._id });
-
-  const members = await User.find({ _id: { $in: memberIds }, role: ROLES.MEMBER })
-    .select('fullName email phone avatar createdAt');
-
-  // Với mỗi member, đếm số buổi và lấy lịch gần nhất
-  const membersWithStats = await Promise.all(members.map(async (member) => {
-    const totalBookings = await Booking.countDocuments({ trainer: trainerProfile._id, member: member._id });
-    const completedBookings = await Booking.countDocuments({
-      trainer: trainerProfile._id,
-      member: member._id,
-      status: BOOKING_STATUS.COMPLETED
-    });
-    const latestBooking = await Booking.findOne({
-      trainer: trainerProfile._id,
-      member: member._id
-    }).sort({ date: -1 }).select('date startTime status');
-
-    return {
-      _id: member._id,
-      fullName: member.fullName,
-      email: member.email,
-      phone: member.phone || null,
-      avatar: member.avatar || null,
-      totalBookings,
-      completedBookings,
-      latestBooking: latestBooking || null
-    };
-  }));
-
-  return sendSuccess(res, { members: membersWithStats, trainerProfileId: trainerProfile._id });
+  const { page, limit, skip } = require('../utils/pagination')(req.query);
+  const trainerProfile = await TrainerProfile.findOne({ user: req.user._id });
+  if (!trainerProfile) throw new AppError('Hồ sơ huấn luyện viên không tồn tại.', 404);
+  const search = req.query.search ?? '';
+  if (typeof search !== 'string' || search.length > 120) throw new AppError('Tìm kiếm không hợp lệ.', 400);
+  const escaped = [...search.trim()].map(c => '.*+?^${}()|[]\\'.includes(c) ? '\\' + c : c).join('');
+  const pipeline = [
+    { $match: { trainer: trainerProfile._id } },
+    { $sort: { date: -1, startTime: -1, _id: -1 } },
+    { $group: {
+      _id: '$member', totalBookings: { $sum: 1 },
+      completedBookings: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
+      latestBooking: { $first: { date: '$date', startTime: '$startTime', status: '$status' } }
+    } },
+    { $lookup: { from: User.collection.name, localField: '_id', foreignField: '_id', as: 'user' } },
+    { $unwind: '$user' },
+    { $match: { 'user.role': ROLES.MEMBER } }
+  ];
+  if (escaped) pipeline.push({ $match: { $or: ['fullName', 'email'].map(field => ({ ['user.' + field]: { $regex: escaped, $options: 'i' } })) } });
+  pipeline.push({ $sort: { 'user.fullName': 1, _id: 1 } }, { $facet: {
+    members: [{ $skip: skip }, { $limit: limit }, { $project: {
+      _id: 1, fullName: '$user.fullName', email: '$user.email', phone: { $ifNull: ['$user.phone', null] },
+      avatar: { $ifNull: ['$user.avatar', null] }, createdAt: '$user.createdAt', totalBookings: 1, completedBookings: 1, latestBooking: 1
+    } }],
+    count: [{ $count: 'total' }]
+  } });
+  const [result] = await Booking.aggregate(pipeline);
+  const total = result.count[0]?.total || 0;
+  return sendSuccess(res, { members: result.members, total, page, limit, pages: Math.ceil(total / limit), trainerProfileId: trainerProfile._id });
 }
 
 /**

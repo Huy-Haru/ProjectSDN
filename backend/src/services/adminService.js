@@ -18,19 +18,7 @@ function objectId(value) {
     fail("ID không hợp lệ");
   return value;
 }
-function pagination(query) {
-  const page = Number(query.page || 1),
-    limit = Number(query.limit || 10);
-  if (
-    !Number.isInteger(page) ||
-    page < 1 ||
-    !Number.isInteger(limit) ||
-    limit < 1 ||
-    limit > 100
-  )
-    fail("Phân trang không hợp lệ");
-  return { page, limit, skip: (page - 1) * limit };
-}
+const pagination = require('../utils/pagination');
 function textFilter(query, keys) {
   if (!query.search) return {};
   if (typeof query.search !== "string" || query.search.length > 120)
