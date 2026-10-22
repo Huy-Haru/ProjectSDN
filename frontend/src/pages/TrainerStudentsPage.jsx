@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { FaUserFriends, FaDumbbell, FaSearch, FaExclamationCircle, FaSyncAlt } from 'react-icons/fa';
 import { trainerApi } from '../api/apiClient';
 import CreatePlanModal from '../components/CreatePlanModal';
+import TrainerProgressPanel from '../components/TrainerProgressPanel';
 
 /**
  * A2.2 — TrainerStudentsPage: PT chỉ thấy hội viên liên quan (có booking với mình), dùng API thật.
  * Cho phép tạo giáo án qua modal kết nối API.
  */
 const TrainerStudentsPage = () => {
+  const [progressMember, setProgressMember] = useState(null);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -167,6 +169,7 @@ const TrainerStudentsPage = () => {
                   >
                     <FaDumbbell className="me-1" /> Tạo Giáo Án
                   </button>
+                  <button className="btn btn-success" onClick={() => setProgressMember(member)}>Ghi nhận tiến độ</button>
                 </div>
               </div>
             </div>
@@ -174,14 +177,17 @@ const TrainerStudentsPage = () => {
         </div>
       )}
 
+      {progressMember && <TrainerProgressPanel key={progressMember._id} member={progressMember} onClose={() => setProgressMember(null)} />}
+
       {/* Create Workout Plan Modal */}
-      <CreatePlanModal
+      {showPlanModal && <CreatePlanModal
+        key={selectedMember?._id}
         show={showPlanModal}
         onHide={() => setShowPlanModal(false)}
         student={selectedMember}
         onSubmitPlan={handlePlanCreated}
         useApi={true}
-      />
+      />}
     </div>
   );
 };

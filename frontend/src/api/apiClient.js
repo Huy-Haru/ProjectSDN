@@ -115,3 +115,8 @@ export const bookingApi = {
   create: data => request('POST', '/member/bookings', data),
   cancel: id => request('POST', `/member/bookings/${id}/cancel`)
 };
+export const progressApi = {
+  mine: () => request('GET', '/member/progress'),
+  forMember: id => request('GET', `/trainer/members/${id}/progress`),
+  create: (id, data) => request('POST', `/trainer/members/${id}/progress`, data)
+};
