@@ -1,26 +1,50 @@
 import React, { useState } from 'react';
-import { Modal, Form } from 'react-bootstrap';
+import { Modal, Form, Alert, Spinner } from 'react-bootstrap';
 import { FaCheckCircle, FaCreditCard, FaUser, FaPhoneAlt, FaCalendarAlt } from 'react-icons/fa';
+import { subscriptionApi, tokenStorage } from '../api/apiClient';
 
-const RegisterModal = ({ show, onHide, selectedPackage, isYearly }) => {
+const RegisterModal = ({ show, onHide, selectedPackage, isYearly, onSubscribeSuccess }) => {
   const [name, setName] = useState('Nguyễn Văn An');
   const [phone, setPhone] = useState('0987654321');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState('qr');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   if (!selectedPackage) return null;
 
   const price = isYearly ? selectedPackage.priceYear : selectedPackage.priceMonth;
   const cycleText = isYearly ? '12 tháng (Theo năm)' : '1 tháng (Theo tháng)';
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSuccess(true);
+    setErrorMsg('');
+
+    const token = tokenStorage.get();
+    const pkgId = selectedPackage._id || selectedPackage.id;
+
+    // Nếu có token và có packageId hợp lệ từ DB
+    if (token && pkgId && !['basic', 'premium', 'vip'].includes(pkgId)) {
+      try {
+        setLoading(true);
+        await subscriptionApi.subscribe(pkgId, startDate);
+        setIsSuccess(true);
+        if (onSubscribeSuccess) onSubscribeSuccess();
+      } catch (err) {
+        setErrorMsg(err.message || 'Đăng ký gói tập thất bại.');
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Chế độ demo
+      setIsSuccess(true);
+    }
   };
 
   const handleClose = () => {
     setIsSuccess(false);
+    setErrorMsg('');
     onHide();
   };
 
@@ -53,6 +77,12 @@ const RegisterModal = ({ show, onHide, selectedPackage, isYearly }) => {
           </div>
         ) : (
           <Form onSubmit={handleSubmit}>
+            {errorMsg && (
+              <Alert variant="danger" className="py-2 mb-3" style={{ fontSize: '0.88rem' }}>
+                {errorMsg}
+              </Alert>
+            )}
+
             {/* Package Summary Box */}
             <div 
               className="p-3 mb-4 rounded-3 d-flex justify-content-between align-items-center"
@@ -147,7 +177,9 @@ const RegisterModal = ({ show, onHide, selectedPackage, isYearly }) => {
                 type="submit" 
                 className="btn-card-action btn-green px-5" 
                 style={{ width: 'auto' }}
+                disabled={loading}
               >
+                {loading && <Spinner animation="border" size="sm" className="me-2" />}
                 Xác nhận Đăng ký
               </button>
             </div>

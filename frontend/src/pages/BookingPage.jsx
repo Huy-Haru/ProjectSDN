@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { Form, Alert } from 'react-bootstrap';
-import { FaCalendarPlus, FaClock, FaUserCheck, FaDumbbell, FaCheckCircle, FaMapMarkerAlt } from 'react-icons/fa';
+import { Form, Alert, Spinner } from 'react-bootstrap';
+import { FaCalendarPlus, FaClock, FaUserCheck, FaDumbbell, FaCheckCircle, FaMapMarkerAlt, FaExclamationTriangle } from 'react-icons/fa';
 import { trainersData } from '../data/mockData';
 
 const BookingPage = ({ preSelectedTrainer, onAddScheduleSuccess }) => {
   const [selectedPtId, setSelectedPtId] = useState(preSelectedTrainer ? preSelectedTrainer.id : trainersData[0].id);
-  const [bookingDate, setBookingDate] = useState('2026-10-09');
+  const [bookingDate, setBookingDate] = useState(new Date().toISOString().split('T')[0]);
   const [timeSlot, setTimeSlot] = useState('09:00 - 10:00');
   const [workoutType, setWorkoutType] = useState('Tập Ngực & Tay Sau (Upper Body)');
   const [location, setLocation] = useState('Khu A - Máy cơ Technogym');
   const [note, setNote] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const availableTimeSlots = [
     '08:00 - 09:00',
@@ -32,8 +34,11 @@ const BookingPage = ({ preSelectedTrainer, onAddScheduleSuccess }) => {
 
   const currentTrainer = trainersData.find(pt => pt.id === selectedPtId) || trainersData[0];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg('');
+
+    const [start, end] = timeSlot.split('-').map(s => s.trim());
     const newSession = {
       id: `sch_${Date.now()}`,
       trainerId: currentTrainer.id,
@@ -41,15 +46,24 @@ const BookingPage = ({ preSelectedTrainer, onAddScheduleSuccess }) => {
       trainerAvatar: currentTrainer.avatar,
       date: bookingDate,
       time: timeSlot,
+      startTime: start,
+      endTime: end,
       workoutType: workoutType,
       location: location,
       status: 'Sắp diễn ra',
       note: note || 'Không có ghi chú thêm'
     };
 
-    onAddScheduleSuccess(newSession);
-    setIsSuccess(true);
-    setTimeout(() => setIsSuccess(false), 5000);
+    try {
+      setLoading(true);
+      await onAddScheduleSuccess(newSession);
+      setIsSuccess(true);
+      setTimeout(() => setIsSuccess(false), 5000);
+    } catch (err) {
+      setErrorMsg(err.message || 'Đặt lịch tập không thành công.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -68,6 +82,16 @@ const BookingPage = ({ preSelectedTrainer, onAddScheduleSuccess }) => {
             <span style={{ fontSize: '0.85rem' }}>
               Buổi tập với <strong>{currentTrainer.name}</strong> vào ngày <strong>{bookingDate} ({timeSlot})</strong> đã được thêm vào Lịch tập cá nhân.
             </span>
+          </div>
+        </Alert>
+      )}
+
+      {errorMsg && (
+        <Alert variant="danger" className="d-flex align-items-center gap-3 py-2">
+          <FaExclamationTriangle className="fs-4 text-danger flex-shrink-0" />
+          <div>
+            <strong className="d-block">Không thể đặt lịch:</strong>
+            <span style={{ fontSize: '0.85rem' }}>{errorMsg}</span>
           </div>
         </Alert>
       )}
@@ -180,7 +204,12 @@ const BookingPage = ({ preSelectedTrainer, onAddScheduleSuccess }) => {
                 />
               </Form.Group>
 
-              <button type="submit" className="btn-card-action btn-green w-100 py-3 fs-6">
+              <button 
+                type="submit" 
+                className="btn-card-action btn-green w-100 py-3 fs-6 d-flex align-items-center justify-content-center gap-2"
+                disabled={loading}
+              >
+                {loading && <Spinner animation="border" size="sm" />}
                 Xác nhận Đặt Lịch Tập
               </button>
             </Form>

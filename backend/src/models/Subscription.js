@@ -40,6 +40,9 @@ const subscriptionSchema = new mongoose.Schema({
     type: Number,
     required: [true, 'Số tiền là bắt buộc'],
     min: [0, 'Số tiền không hợp lệ']
+  },
+  paidAt: {
+    type: Date
   }
 }, {
   timestamps: true

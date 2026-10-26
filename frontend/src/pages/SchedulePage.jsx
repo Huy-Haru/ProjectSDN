@@ -20,7 +20,7 @@ const SchedulePage = ({ schedules, onCancelSchedule, onCompleteSchedule }) => {
 
         {/* Status Filter Tabs */}
         <div className="billing-toggle-container m-0">
-          {['Tất cả', 'Sắp diễn ra', 'Hoàn thành'].map(st => (
+          {['Tất cả', 'Sắp diễn ra', 'Hoàn thành', 'Đã hủy'].map(st => (
             <button
               key={st}
               className={`toggle-btn ${filterStatus === st ? 'active' : ''}`}
@@ -47,7 +47,7 @@ const SchedulePage = ({ schedules, onCancelSchedule, onCompleteSchedule }) => {
               style={{ 
                 background: '#0F172A', 
                 border: '1px solid #1E293B',
-                borderLeft: sch.status === 'Sắp diễn ra' ? '4px solid #00E676' : '4px solid #64748B'
+                borderLeft: sch.status === 'Sắp diễn ra' ? '4px solid #00E676' : sch.status === 'Hoàn thành' ? '4px solid #3B82F6' : '4px solid #EF4444'
               }}
             >
               <div className="d-flex align-items-center gap-3">
@@ -59,7 +59,7 @@ const SchedulePage = ({ schedules, onCancelSchedule, onCompleteSchedule }) => {
                 <div>
                   <div className="d-flex align-items-center gap-2 mb-1">
                     <span 
-                      className={`badge px-2.5 py-1 ${sch.status === 'Sắp diễn ra' ? 'bg-success' : 'bg-secondary'}`}
+                      className={`badge px-2.5 py-1 ${sch.status === 'Sắp diễn ra' ? 'bg-success' : sch.status === 'Hoàn thành' ? 'bg-primary' : 'bg-danger'}`}
                       style={{ fontSize: '0.7rem' }}
                     >
                       {sch.status}
@@ -95,7 +95,11 @@ const SchedulePage = ({ schedules, onCancelSchedule, onCompleteSchedule }) => {
                     <button 
                       className="btn-card-action px-3 py-2 text-danger border-danger"
                       style={{ fontSize: '0.82rem', width: 'auto', background: 'transparent' }}
-                      onClick={() => onCancelSchedule(sch.id)}
+                      onClick={() => {
+                        if (window.confirm('Bạn có chắc chắn muốn hủy buổi tập này không?')) {
+                          onCancelSchedule(sch.id);
+                        }
+                      }}
                     >
                       <FaTimesCircle className="me-1" /> Hủy lịch
                     </button>
@@ -104,6 +108,11 @@ const SchedulePage = ({ schedules, onCancelSchedule, onCompleteSchedule }) => {
                 {sch.status === 'Hoàn thành' && (
                   <span className="text-success fw-bold" style={{ fontSize: '0.85rem' }}>
                     ✓ Đã tập xong
+                  </span>
+                )}
+                {sch.status === 'Đã hủy' && (
+                  <span className="text-danger fw-bold" style={{ fontSize: '0.85rem' }}>
+                    ✕ Đã hủy lịch
                   </span>
                 )}
               </div>

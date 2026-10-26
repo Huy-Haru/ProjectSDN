@@ -104,3 +104,38 @@ export const trainerApi = {
   getMemberWorkoutPlans: () => request('GET', '/trainer/member/workout-plans')
 };
 
+/**
+ * Subscription API — Hiếu (hieunhhe187023)
+ */
+export const subscriptionApi = {
+  /** Member đăng ký gói tập mới */
+  subscribe: (packageId, startDate) => request('POST', '/subscriptions', { packageId, startDate }),
+
+  /** Member xem danh sách gói tập của mình */
+  getMySubscriptions: () => request('GET', '/subscriptions/my'),
+
+  /** Member xem gói tập đang có hiệu lực hiện tại */
+  getActiveSubscription: () => request('GET', '/subscriptions/active'),
+
+  /** Member xem thống kê hạn mức buổi tập của gói hiện tại */
+  getMyUsage: () => request('GET', '/subscriptions/usage')
+};
+
+/**
+ * Booking API — Hiếu (hieunhhe187023)
+ */
+export const bookingApi = {
+  /** Member đặt lịch tập mới với PT */
+  createBooking: (data) => request('POST', '/bookings', data),
+
+  /** Member xem danh sách lịch tập của mình */
+  getMyBookings: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request('GET', `/bookings/my${qs ? '?' + qs : ''}`);
+  },
+
+  /** Member hủy lịch tập */
+  cancelBooking: (bookingId, reason) => request('PATCH', `/bookings/${bookingId}/cancel`, { reason })
+};
+
+

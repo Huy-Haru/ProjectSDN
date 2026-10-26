@@ -1,8 +1,60 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaCheckCircle, FaCrown } from 'react-icons/fa';
 import { myPackageInfo } from '../data/mockData';
+import { subscriptionApi, tokenStorage } from '../api/apiClient';
 
 const MyPackagePage = ({ onNavigateToPackages }) => {
+  const [packageData, setPackageData] = useState(myPackageInfo);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function loadActivePackage() {
+      const token = tokenStorage.get();
+      if (!token) return;
+
+      try {
+        setLoading(true);
+        const [subRes, usageRes] = await Promise.allSettled([
+          subscriptionApi.getActiveSubscription(),
+          subscriptionApi.getMyUsage()
+        ]);
+
+        if (subRes.status === 'fulfilled' && subRes.value?.data) {
+          const sub = subRes.value.data;
+          const pkg = sub.package || {};
+          const usage = (usageRes.status === 'fulfilled' && usageRes.value?.data) || {};
+
+          const end = new Date(sub.endDate);
+          const now = new Date();
+          const daysLeft = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
+
+          setPackageData({
+            packageName: pkg.name || 'Gói tập Hội viên',
+            status: sub.status === 'active' ? 'Đang hoạt động' : sub.status,
+            startDate: sub.startDate ? new Date(sub.startDate).toLocaleDateString('vi-VN') : '',
+            endDate: sub.endDate ? new Date(sub.endDate).toLocaleDateString('vi-VN') : '',
+            daysRemaining: daysLeft,
+            remainingPtSessions: usage.remainingSessions !== undefined ? usage.remainingSessions : (pkg.sessionLimit || '∞'),
+            totalPtSessions: pkg.sessionLimit ? `${pkg.sessionLimit} buổi` : 'Không giới hạn',
+            inbodyScansUsed: 1,
+            privileges: [
+              'Tập luyện không giới hạn trong thời hạn gói',
+              pkg.includesPT ? 'Bao gồm quyền lợi hướng dẫn cùng Huấn luyện viên PT 1:1' : 'Tự do tập luyện tại phòng gym',
+              'Sử dụng phòng tắm, tủ đồ locker và tiện ích chuẩn 5 sao',
+              'Được tư vấn lộ trình tập luyện cá nhân hóa'
+            ]
+          });
+        }
+      } catch (err) {
+        console.warn('Không tải được gói từ API, dùng dữ liệu mẫu:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadActivePackage();
+  }, []);
+
   return (
     <div className="my-package-page">
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
@@ -26,17 +78,17 @@ const MyPackagePage = ({ onNavigateToPackages }) => {
         <div className="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
           <div>
             <span className="badge px-3 py-1.5 mb-2" style={{ background: '#00E676', color: '#080D16', fontWeight: 800 }}>
-              <FaCheckCircle className="me-1" /> {myPackageInfo.status}
+              <FaCheckCircle className="me-1" /> {packageData.status}
             </span>
-            <h2 className="text-white fw-bold display-6 mb-1">{myPackageInfo.packageName}</h2>
+            <h2 className="text-white fw-bold display-6 mb-1">{packageData.packageName}</h2>
             <div className="text-muted" style={{ fontSize: '0.85rem' }}>
-              Thời hạn gói: <strong className="text-white">{myPackageInfo.startDate}</strong> đến <strong className="text-white">{myPackageInfo.endDate}</strong>
+              Thời hạn gói: <strong className="text-white">{packageData.startDate}</strong> đến <strong className="text-white">{packageData.endDate}</strong>
             </div>
           </div>
 
           <div className="text-end">
             <div className="fs-1 fw-bold" style={{ color: '#00E676' }}>
-              {myPackageInfo.daysRemaining} <span className="fs-6 text-muted font-normal">ngày còn lại</span>
+              {packageData.daysRemaining} <span className="fs-6 text-muted font-normal">ngày còn lại</span>
             </div>
           </div>
         </div>
@@ -47,7 +99,7 @@ const MyPackagePage = ({ onNavigateToPackages }) => {
             <div className="p-3 rounded-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid #1E293B' }}>
               <div className="text-muted style-sm mb-1">BUỔI PT 1:1 CÒN LẠI</div>
               <div className="fs-3 fw-bold text-white">
-                {myPackageInfo.remainingPtSessions} <span className="fs-6 text-muted">/ {myPackageInfo.totalPtSessions} buổi</span>
+                {packageData.remainingPtSessions} <span className="fs-6 text-muted">/ {packageData.totalPtSessions}</span>
               </div>
             </div>
           </div>
@@ -56,7 +108,7 @@ const MyPackagePage = ({ onNavigateToPackages }) => {
             <div className="p-3 rounded-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid #1E293B' }}>
               <div className="text-muted style-sm mb-1">LẦN ĐO INBODY ĐÃ DÙNG</div>
               <div className="fs-3 fw-bold text-white">
-                {myPackageInfo.inbodyScansUsed} <span className="fs-6 text-muted">lần</span>
+                {packageData.inbodyScansUsed} <span className="fs-6 text-muted">lần</span>
               </div>
             </div>
           </div>
@@ -76,7 +128,7 @@ const MyPackagePage = ({ onNavigateToPackages }) => {
       <div className="p-4 rounded-4" style={{ background: '#0F172A', border: '1px solid #1E293B' }}>
         <h5 className="text-white fw-bold mb-3">Đặc Quyền Hội Viên Được Kích Hoạt</h5>
         <div className="row g-3">
-          {myPackageInfo.privileges.map((priv, idx) => (
+          {packageData.privileges.map((priv, idx) => (
             <div key={idx} className="col-md-6">
               <div className="d-flex align-items-center gap-3 p-3 rounded-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid #1E293B' }}>
                 <FaCheckCircle className="text-success fs-5" />
