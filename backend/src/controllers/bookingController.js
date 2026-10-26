@@ -57,8 +57,21 @@ async function cancelBooking(req, res) {
   return sendSuccess(res, result, 'Hủy lịch tập thành công.');
 }
 
+/**
+ * GET /api/bookings/:id
+ * Xem chi tiết 1 buổi tập
+ */
+async function getBookingById(req, res) {
+  const memberId = req.user._id;
+  const bookingId = req.params.id;
+
+  const booking = await bookingService.getBookingById(memberId, bookingId);
+  return sendSuccess(res, booking, 'Lấy thông tin lịch tập thành công.');
+}
+
 module.exports = {
   createBooking,
+  getBookingById,
   getMyBookings,
   cancelBooking
 };

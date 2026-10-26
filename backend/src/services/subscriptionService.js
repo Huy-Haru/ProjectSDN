@@ -187,12 +187,68 @@ async function validateSubscriptionForBooking(memberId) {
   return { subscription: activeSub, usage };
 }
 
+/**
+ * Lấy chi tiết 1 gói đăng ký theo ID
+ * @param {string} memberId
+ * @param {string} subscriptionId
+ * @returns {Promise<Object>}
+ */
+async function getSubscriptionById(memberId, subscriptionId) {
+  if (!subscriptionId || !mongoose.Types.ObjectId.isValid(subscriptionId)) {
+    throw new AppError('Mã gói đăng ký không hợp lệ.', 400);
+  }
+
+  const subscription = await Subscription.findById(subscriptionId).populate('package');
+  if (!subscription) {
+    throw new AppError('Không tìm thấy thông tin gói đăng ký.', 404);
+  }
+
+  if (subscription.member.toString() !== memberId.toString()) {
+    throw new AppError('Bạn không có quyền xem thông tin gói của người khác.', 403);
+  }
+
+  return subscription;
+}
+
+/**
+ * Hủy yêu cầu đăng ký gói khi chưa thanh toán (chỉ áp dụng khi status: pending)
+ * @param {string} memberId
+ * @param {string} subscriptionId
+ * @returns {Promise<Object>}
+ */
+async function cancelSubscription(memberId, subscriptionId) {
+  if (!subscriptionId || !mongoose.Types.ObjectId.isValid(subscriptionId)) {
+    throw new AppError('Mã gói đăng ký không hợp lệ.', 400);
+  }
+
+  const subscription = await Subscription.findById(subscriptionId);
+  if (!subscription) {
+    throw new AppError('Không tìm thấy thông tin đăng ký gói.', 404);
+  }
+
+  if (subscription.member.toString() !== memberId.toString()) {
+    throw new AppError('Bạn không có quyền hủy gói đăng ký của người khác.', 403);
+  }
+
+  if (subscription.status !== SUBSCRIPTION_STATUS.PENDING) {
+    throw new AppError('Chỉ có thể hủy yêu cầu đăng ký gói đang ở trạng thái chờ thanh toán.', 400);
+  }
+
+  subscription.status = SUBSCRIPTION_STATUS.CANCELLED;
+  await subscription.save();
+
+  return subscription;
+}
+
 module.exports = {
   createSubscription,
   getMySubscriptions,
   getActiveSubscription,
+  getSubscriptionById,
   getSubscriptionUsage,
-  validateSubscriptionForBooking
+  validateSubscriptionForBooking,
+  cancelSubscription
 };
+
 
 

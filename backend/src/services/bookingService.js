@@ -112,17 +112,25 @@ async function createBooking({ memberId, trainerId, date, startTime, endTime, no
     throw new AppError('Bạn đã có một lịch tập khác trùng vào khung giờ này.', 409);
   }
 
-  // 6. Tạo Booking
-  const booking = await Booking.create({
-    member: memberId,
-    trainer: trainerId,
-    subscription: subscription._id,
-    date: bookingDate,
-    startTime,
-    endTime,
-    note: note ? note.trim() : '',
-    status: BOOKING_STATUS.BOOKED
-  });
+  // 6. Tạo Booking (xử lý race condition duplicate key trả 409 theo yêu cầu TC-09)
+  let booking;
+  try {
+    booking = await Booking.create({
+      member: memberId,
+      trainer: trainerId,
+      subscription: subscription._id,
+      date: bookingDate,
+      startTime,
+      endTime,
+      note: note ? note.trim() : '',
+      status: BOOKING_STATUS.BOOKED
+    });
+  } catch (err) {
+    if (err.code === 11000) {
+      throw new AppError('Khung giờ này vừa có người đặt hoặc bạn đã có lịch trùng giờ. Vui lòng chọn khung giờ khác.', 409);
+    }
+    throw err;
+  }
 
   // 7. Populate dữ liệu liên quan
   await booking.populate([
@@ -144,6 +152,39 @@ async function createBooking({ memberId, trainerId, date, startTime, endTime, no
     remainingSessions: updatedUsage.remainingSessions,
     usedSessions: updatedUsage.usedSessions
   };
+}
+
+/**
+ * Lấy chi tiết 1 buổi tập theo ID (kiểm tra quyền sở hữu)
+ * @param {string} memberId
+ * @param {string} bookingId
+ * @returns {Promise<Object>}
+ */
+async function getBookingById(memberId, bookingId) {
+  if (!bookingId || !mongoose.Types.ObjectId.isValid(bookingId)) {
+    throw new AppError('Mã lịch tập không hợp lệ.', 400);
+  }
+
+  const booking = await Booking.findById(bookingId).populate([
+    {
+      path: 'trainer',
+      populate: { path: 'user', select: 'fullName email phone avatar' }
+    },
+    {
+      path: 'subscription',
+      populate: { path: 'package', select: 'name sessionLimit includesPT' }
+    }
+  ]);
+
+  if (!booking) {
+    throw new AppError('Không tìm thấy thông tin lịch tập.', 404);
+  }
+
+  if (booking.member.toString() !== memberId.toString()) {
+    throw new AppError('Bạn không có quyền xem thông tin lịch tập này.', 403);
+  }
+
+  return booking;
 }
 
 /**
@@ -259,6 +300,7 @@ async function cancelBooking({ memberId, bookingId, reason }) {
 
 module.exports = {
   createBooking,
+  getBookingById,
   getMyBookings,
   cancelBooking
 };

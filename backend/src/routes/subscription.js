@@ -49,4 +49,26 @@ router.get(
   asyncHandler(subscriptionController.getMySubscriptionUsage)
 );
 
+/**
+ * GET /api/subscriptions/:id
+ * Xem chi tiết 1 gói đăng ký
+ */
+router.get(
+  '/:id',
+  authenticate,
+  authorize(ROLES.MEMBER),
+  asyncHandler(subscriptionController.getSubscriptionById)
+);
+
+/**
+ * PATCH /api/subscriptions/:id/cancel
+ * Member hủy yêu cầu đăng ký gói chưa thanh toán
+ */
+router.patch(
+  '/:id/cancel',
+  authenticate,
+  authorize(ROLES.MEMBER),
+  asyncHandler(subscriptionController.cancelSubscription)
+);
+
 module.exports = router;

@@ -57,9 +57,35 @@ async function getMySubscriptionUsage(req, res) {
   return sendSuccess(res, usage, 'Lấy thông tin hạn mức buổi tập thành công.');
 }
 
+/**
+ * GET /api/subscriptions/:id
+ * Lấy chi tiết 1 gói đăng ký
+ */
+async function getSubscriptionById(req, res) {
+  const memberId = req.user._id;
+  const subscriptionId = req.params.id;
+
+  const subscription = await subscriptionService.getSubscriptionById(memberId, subscriptionId);
+  return sendSuccess(res, subscription, 'Lấy thông tin gói đăng ký thành công.');
+}
+
+/**
+ * PATCH /api/subscriptions/:id/cancel
+ * Member tự hủy yêu cầu đăng ký gói chưa thanh toán (pending)
+ */
+async function cancelSubscription(req, res) {
+  const memberId = req.user._id;
+  const subscriptionId = req.params.id;
+
+  const subscription = await subscriptionService.cancelSubscription(memberId, subscriptionId);
+  return sendSuccess(res, subscription, 'Hủy yêu cầu đăng ký gói tập thành công.');
+}
+
 module.exports = {
   createSubscription,
   getMySubscriptions,
   getActiveSubscription,
-  getMySubscriptionUsage
+  getMySubscriptionUsage,
+  getSubscriptionById,
+  cancelSubscription
 };

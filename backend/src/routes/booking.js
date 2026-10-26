@@ -17,14 +17,32 @@ router.post(
 );
 
 /**
- * GET /api/bookings/my
+ * GET /api/bookings và GET /api/bookings/my
  * Xem danh sách lịch tập của Member
  */
+router.get(
+  '/',
+  authenticate,
+  authorize(ROLES.MEMBER),
+  asyncHandler(bookingController.getMyBookings)
+);
+
 router.get(
   '/my',
   authenticate,
   authorize(ROLES.MEMBER),
   asyncHandler(bookingController.getMyBookings)
+);
+
+/**
+ * GET /api/bookings/:id
+ * Xem chi tiết 1 buổi tập
+ */
+router.get(
+  '/:id',
+  authenticate,
+  authorize(ROLES.MEMBER),
+  asyncHandler(bookingController.getBookingById)
 );
 
 /**
