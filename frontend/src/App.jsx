@@ -141,7 +141,7 @@ function App() {
         case 'trainer-students':
           return <TrainerStudentsPage user={user} />;
         case 'trainer-reviews':
-          return <ReviewsPage reviews={reviews} onOpenReviewModal={handleOpenReviewModal} />;
+          return <ReviewsPage role="trainer" />;
         case 'trainer-dashboard':
         default:
           return <TrainerDashboardPage user={user} />;
@@ -187,7 +187,7 @@ function App() {
         );
 
       case 'progress':
-        return <ProgressPage />;
+        return <ProgressPage user={user} />;
 
       case 'reviews':
         return (

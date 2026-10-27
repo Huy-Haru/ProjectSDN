@@ -104,3 +104,44 @@ export const trainerApi = {
   getMemberWorkoutPlans: () => request('GET', '/trainer/member/workout-plans')
 };
 
+/**
+ * Booking API — A3.1
+ */
+export const bookingApi = {
+  /** PT/Admin xác nhận kết quả buổi tập (completed | no_show) */
+  confirmResult: (bookingId, data) => request('PATCH', `/bookings/${bookingId}/result`, data),
+
+  /** Chi tiết một booking */
+  getById: (bookingId) => request('GET', `/bookings/${bookingId}`)
+};
+
+/**
+ * Progress API — A3.1
+ */
+export const progressApi = {
+  /** Xem ProgressLog (Member: của mình; PT: hội viên liên quan; Admin: tất cả) */
+  getLogs: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request('GET', `/progress${qs ? '?' + qs : ''}`);
+  },
+
+  /** PT/Admin ghi ProgressLog cho member */
+  createLog: (data) => request('POST', '/progress', data)
+};
+
+/**
+ * Review API — A3.2
+ */
+export const reviewApi = {
+  /** Member gửi đánh giá (booking completed + unique) */
+  create: (data) => request('POST', '/reviews', data),
+
+  /** PT xem tất cả reviews của mình (kèm điểm tổng hợp) */
+  getMyTrainerReviews: () => request('GET', '/reviews/my-trainer-reviews'),
+
+  /** Review của một booking cụ thể */
+  getBookingReview: (bookingId) => request('GET', `/reviews/booking/${bookingId}`),
+
+  /** Danh sách reviews + điểm tổng hợp của PT theo trainerId (public) */
+  getTrainerReviews: (trainerId) => request('GET', `/reviews/trainer/${trainerId}`)
+};
