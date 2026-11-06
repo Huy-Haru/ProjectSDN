@@ -6,6 +6,8 @@ Website quản lý phòng tập và huấn luyện viên. Frontend React + Vite;
 
 Xem [hồ sơ dự án](docs/README.md): báo cáo, SRS, thiết kế hệ thống, thiết kế database, hướng dẫn kiểm thử và tối ưu MongoDB. [Sơ đồ draw.io](docs/diagram/README.md) gồm context, use case cho các role, workflow, ERD và database diagram.
 
+Tài liệu theo cấu trúc template: [SRS](docs/srs-fitmanager.md), [SDS](docs/sds-fitmanager.md). Slide nhóm: [FitManager-3-member-presentation.pptx](docs/FitManager-3-member-presentation.pptx).
+
 ## Chạy local
 
 Yêu cầu Node.js >= 22.12.0 và MongoDB server tại 127.0.0.1:27017.

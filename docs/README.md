@@ -18,6 +18,9 @@ Website quản lý phòng tập và huấn luyện viên — SDN302. Phiên bả
 | [11-frontend-quality.md](11-frontend-quality.md) | Full lint, vòng đời form/profile và regression phản hồi lọc cũ |
 | [08-admin-implementation.md](08-admin-implementation.md) | Phần Admin đã triển khai, API, kiểm thử và hướng dẫn vận hành |
 | [diagram/README.md](diagram/README.md) | Danh mục và cách mở sơ đồ draw.io |
+| [srs-fitmanager.md](srs-fitmanager.md) | SRS theo template: overview, screen flow, phân quyền, ERD và yêu cầu chức năng |
+| [sds-fitmanager.md](sds-fitmanager.md) | SDS theo template: package, database schema, sequence và queries |
+| [FitManager-3-member-presentation.pptx](FitManager-3-member-presentation.pptx) | Slide thuyết trình 9 trang cho Huy, Hiếu và Anh |
 
 ## Cách đọc trạng thái
 
@@ -31,7 +34,7 @@ Tài liệu ban đầu ngày 11/10 ghi hiện trạng tại thời điểm đó.
 
 `frontend/src/App.jsx`, `frontend/src/pages/`, `frontend/src/hooks/`, `frontend/src/data/mockData.js`, `backend/src/models/`, `backend/src/constants/`, `backend/src/routes/index.js`, `backend/test/backend.test.js`.
 
-Nhánh làm việc: `HuyNHHE190724`, tạo từ `origin/main`. Hai nhánh `origin/anhnthe194418` (backend/model) và `origin/hieunhhe187023` (frontend) đã là tổ tiên của nhánh này; kiểm tra merge trả về `Already up to date` cho cả hai. Không cần tạo commit merge rỗng.
+Nhánh `main` đã hợp nhất các PR thành viên từ `origin/main` và chuỗi hoàn thiện trainer từ `origin/HuyNHHE190724` bằng merge commit `d871aa5`. Hai nhánh `origin/anhnthe194418` (backend/model) và `origin/hieunhhe187023` (frontend) được giữ trong lịch sử merge.
 
 ## Luồng Member/PT đã nối thêm
 
