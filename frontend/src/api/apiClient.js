@@ -103,6 +103,7 @@ export const trainerApi = {
 
   /** Member xem giáo án của mình */
   getMemberWorkoutPlans: () => request('GET', '/trainer/member/workout-plans')
+  ,getMemberWorkoutSubmissions: (memberId) => request('GET', `/trainer/members/${memberId}/workout-submissions`)
 };
 
 export const memberApi = {
@@ -120,6 +121,10 @@ export const progressApi = {
   mine: () => request('GET', '/member/progress'),
   forMember: id => request('GET', `/trainer/members/${id}/progress`),
   create: (id, data) => request('POST', `/trainer/members/${id}/progress`, data)
+};
+export const workoutApi = {
+  submissions: () => request('GET', '/member/workout-submissions'),
+  submitProof: data => request('POST', '/member/workout-submissions', data)
 };
 export const reviewApi = {
   mine: () => request('GET', '/member/reviews'),

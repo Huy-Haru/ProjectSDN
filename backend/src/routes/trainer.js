@@ -7,6 +7,8 @@ const { ROLES } = require('../constants/roles');
 const router = express.Router();
 const progressService = require('../services/progressService');
 const { sendSuccess } = require('../utils/response');
+const { WorkoutPlan, WorkoutSubmission } = require('../models');
+const AppError = require('../utils/AppError');
 router.patch('/bookings/:id/status', authenticate, authorize(ROLES.TRAINER), asyncHandler(async (req, res) => {
   const mongoose = require('mongoose');
   const AppError = require('../utils/AppError');
@@ -25,6 +27,13 @@ router.get('/members/:memberId/progress', authenticate, authorize(ROLES.TRAINER)
   sendSuccess(res, { logs: await progressService.listForTrainer(req.user._id, req.params.memberId) })));
 router.post('/members/:memberId/progress', authenticate, authorize(ROLES.TRAINER), asyncHandler(async (req, res) =>
   sendSuccess(res, { log: await progressService.create(req.user._id, req.params.memberId, req.body) }, 'Đã lưu tiến độ.', 201)));
+router.get('/members/:memberId/workout-submissions', authenticate, authorize(ROLES.TRAINER), asyncHandler(async (req, res) => {
+  const trainerProfile = await require('../models').TrainerProfile.findOne({ user: req.user._id, isActive: true });
+  const hasPlan = await WorkoutPlan.exists({ trainer: trainerProfile?._id, member: req.params.memberId });
+  if (!hasPlan) throw new AppError('Học viên này chưa có giáo án của bạn.', 403);
+  const submissions = await WorkoutSubmission.find({ member: req.params.memberId, plan: { $in: await WorkoutPlan.find({ trainer: trainerProfile._id, member: req.params.memberId }).distinct('_id') } }).sort({ completedOn: -1 });
+  return sendSuccess(res, { submissions });
+}));
 
 // ─── Routes dành riêng cho TRAINER ────────────────────────────────────────────
 

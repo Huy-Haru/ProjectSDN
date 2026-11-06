@@ -1,120 +1,17 @@
-import {
-  FaDumbbell,
-  FaChartPie,
-  FaCalendarAlt,
-  FaIdCard,
-  FaCreditCard,
-  FaUserFriends,
-  FaCalendarCheck,
-  FaChartLine,
-  FaStar,
-  FaUserShield,
-  FaUsers,
-  FaChalkboardTeacher,
-  FaDollarSign,
-  FaUserCircle
-} from 'react-icons/fa';
+import { FaBars, FaCalendarAlt, FaCalendarCheck, FaChartLine, FaChartPie, FaChalkboardTeacher, FaCreditCard, FaDollarSign, FaDumbbell, FaIdCard, FaSignOutAlt, FaStar, FaUserCircle, FaUserFriends, FaUserShield, FaUsers } from 'react-icons/fa';
 
-const Sidebar = ({ user, activeMenu, setActiveMenu }) => {
-  // A1.2: role từ server là lowercase
-  const role = user?.role || null;
-
-  // Menu chung cuối Sidebar: Hồ sơ cá nhân (hiện với mọi role đã đăng nhập)
-  const profileMenu = user
-    ? [{ id: 'profile', label: 'Hồ sơ của tôi', icon: <FaUserCircle /> }]
-    : [];
-
-  // Role-based menu definitions
-  const studentMenus = [
-    { id: 'dashboard', label: 'Tổng quan', icon: <FaChartPie /> },
-    { id: 'packages', label: 'Danh sách gói tập', icon: <FaCreditCard /> },
-    { id: 'my-packages', label: 'Gói tập của tôi', icon: <FaIdCard /> },
-    { id: 'booking', label: 'Đặt lịch PT', icon: <FaCalendarAlt /> },
-    { id: 'trainers', label: 'Huấn luyện viên', icon: <FaUserFriends /> },
-    { id: 'schedule', label: 'Lịch tập', icon: <FaCalendarCheck /> },
-    { id: 'progress', label: 'Tiến độ & Thể trạng', icon: <FaChartLine /> },
-    { id: 'reviews', label: 'Đánh giá HLV', icon: <FaStar /> },
-  ];
-
-  const trainerMenus = [
-    { id: 'trainer-dashboard', label: 'Tổng quan HLV', icon: <FaChalkboardTeacher /> },
-    { id: 'trainer-schedule', label: 'Lịch dạy của tôi', icon: <FaCalendarCheck /> },
-    { id: 'trainer-students', label: 'Học viên & Giáo án', icon: <FaUserFriends /> },
-    { id: 'trainer-reviews', label: 'Đánh giá từ Học viên', icon: <FaStar /> },
-  ];
-
-  const adminMenus = [
-    { id: 'admin-dashboard', label: 'Thống kê Quản trị', icon: <FaUserShield /> },
-    { id: 'admin-packages', label: 'Quản lý Gói tập', icon: <FaCreditCard /> },
-    { id: 'admin-trainers', label: 'Quản lý PT', icon: <FaUserFriends /> },
-    { id: 'admin-students', label: 'Quản lý Học viên', icon: <FaUsers /> },
-    { id: 'admin-schedules', label: 'Quản lý Lịch tập', icon: <FaCalendarCheck /> },
-    { id: 'admin-payments', label: 'Xác nhận Thanh toán', icon: <FaCreditCard /> },
-    { id: 'admin-revenue', label: 'Thống kê Doanh thu', icon: <FaDollarSign /> },
-  ];
-
-  // A1.2: dùng lowercase role từ server
-  let currentMenuList = studentMenus;
-  let roleLabel = 'MỤC HỌC VIÊN';
-
-  if (role === 'trainer') {
-    currentMenuList = trainerMenus;
-    roleLabel = 'PORTAL HUẤN LUYỆN VIÊN';
-  } else if (role === 'admin') {
-    currentMenuList = adminMenus;
-    roleLabel = 'HỆ THỐNG QUẢN TRỊ ADMIN';
-  }
-
-  return (
-    <aside className="sidebar">
-      {/* Brand Header */}
-      <div className="brand-header">
-        <div className="brand-icon">
-          <FaDumbbell />
-        </div>
-        <div>
-          <div className="brand-title">FitManager</div>
-          <div className="brand-subtitle">ATHLETIC CLUB</div>
-        </div>
-      </div>
-
-      {/* Menu Section Label */}
-      <div className="menu-section-label">{roleLabel}</div>
-      <nav className="nav-menu" aria-label="Điều hướng chính">
-        {currentMenuList.map((item) => (
-          <button
-            key={item.id}
-            aria-current={activeMenu === item.id ? 'page' : undefined}
-            className={`nav-item-btn ${activeMenu === item.id ? 'active' : ''}`}
-            onClick={() => setActiveMenu(item.id)}
-          >
-            <span className="nav-item-icon">{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </nav>
-
-      {/* Profile menu — hiện với mọi user đã đăng nhập */}
-      {profileMenu.length > 0 && (
-        <>
-          <div className="menu-section-label mt-3">TÀI KHOẢN</div>
-          <nav className="nav-menu" aria-label="Tài khoản">
-            {profileMenu.map((item) => (
-              <button
-                key={item.id}
-                aria-current={activeMenu === item.id ? 'page' : undefined}
-                className={`nav-item-btn ${activeMenu === item.id ? 'active' : ''}`}
-                onClick={() => setActiveMenu(item.id)}
-              >
-                <span className="nav-item-icon">{item.icon}</span>
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </nav>
-        </>
-      )}
-    </aside>
-  );
+const menus = {
+  member: { label: 'MEMBER WORKSPACE', items: [['dashboard', 'Tổng quan', FaChartPie], ['packages', 'Gói tập', FaCreditCard], ['my-packages', 'Gói của tôi', FaIdCard], ['booking', 'Đặt lịch PT', FaCalendarAlt], ['trainers', 'Huấn luyện viên', FaUserFriends], ['schedule', 'Lịch tập', FaCalendarCheck], ['progress', 'Tiến độ & giáo án', FaChartLine], ['reviews', 'Đánh giá HLV', FaStar]] },
+  trainer: { label: 'TRAINER WORKSPACE', items: [['trainer-dashboard', 'Tổng quan', FaChalkboardTeacher], ['trainer-schedule', 'Lịch dạy', FaCalendarCheck], ['trainer-students', 'Học viên & giáo án', FaUserFriends], ['trainer-reviews', 'Đánh giá từ học viên', FaStar]] },
+  admin: { label: 'ADMIN CONTROL ROOM', items: [['admin-dashboard', 'Tổng quan', FaUserShield], ['admin-packages', 'Quản lý gói tập', FaCreditCard], ['admin-trainers', 'Quản lý PT', FaUserFriends], ['admin-students', 'Quản lý hội viên', FaUsers], ['admin-schedules', 'Quản lý lịch', FaCalendarCheck], ['admin-payments', 'Thanh toán', FaCreditCard], ['admin-revenue', 'Doanh thu', FaDollarSign]] },
 };
 
-export default Sidebar;
+export default function Sidebar({ user, activeMenu, setActiveMenu, collapsed, onToggle, onLogout }) {
+  const config = menus[user?.role] || menus.member;
+  return <aside className={`role-sidebar ${collapsed ? 'is-collapsed' : ''}`}>
+    <div className="sidebar-brand"><span className="brand-mark"><FaDumbbell /></span><div className="sidebar-brand-copy"><strong>FitManager</strong><small>{config.label}</small></div><button className="sidebar-toggle" onClick={onToggle} aria-label={collapsed ? 'Mở thanh bên' : 'Thu gọn thanh bên'}><FaBars /></button></div>
+    <div className="sidebar-role"><span className="sidebar-role-dot" />{config.label}</div>
+    <nav className="role-nav" aria-label="Điều hướng workspace">{config.items.map(([id, label, Icon]) => <button key={id} title={collapsed ? label : undefined} className={`role-nav-item ${activeMenu === id ? 'active' : ''}`} aria-current={activeMenu === id ? 'page' : undefined} onClick={() => setActiveMenu(id)}><Icon /><span>{label}</span></button>)}</nav>
+    <div className="sidebar-bottom"><button title={collapsed ? 'Hồ sơ của tôi' : undefined} className={`role-nav-item ${activeMenu === 'profile' ? 'active' : ''}`} onClick={() => setActiveMenu('profile')}><FaUserCircle /><span>Hồ sơ của tôi</span></button><button className="role-nav-item sidebar-logout" onClick={onLogout}><FaSignOutAlt /><span>Đăng xuất</span></button></div>
+  </aside>;
+}

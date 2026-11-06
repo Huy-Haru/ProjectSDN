@@ -46,9 +46,26 @@ router.post('/subscriptions', asyncHandler(async (req, res) => {
 
 const bookingService = require('../services/memberBookingService');
 const reviewService = require('../services/reviewService');
+const WorkoutPlan = require('../models/WorkoutPlan');
+const WorkoutSubmission = require('../models/WorkoutSubmission');
 router.get('/reviews', asyncHandler(async (req, res) => sendSuccess(res, await reviewService.memberReviews(req.user._id))));
 router.post('/reviews', asyncHandler(async (req, res) => sendSuccess(res, { review: await reviewService.create(req.user._id, req.body) }, 'Đã gửi đánh giá.', 201)));
 router.get('/progress', asyncHandler(async (req, res) => sendSuccess(res, { logs: await require('../services/progressService').listForMember(req.user._id) })));
+router.get('/workout-submissions', asyncHandler(async (req, res) => {
+  const submissions = await WorkoutSubmission.find({ member: req.user._id }).sort({ completedOn: -1, createdAt: -1 });
+  return sendSuccess(res, { submissions });
+}));
+router.post('/workout-submissions', asyncHandler(async (req, res) => {
+  const { planId, exerciseName, completedOn, proofUrl, note } = req.body;
+  if (!planId || !exerciseName || !completedOn || !proofUrl) throw new AppError('Vui lòng chọn bài tập, ngày hoàn thành và đường dẫn bằng chứng.', 400);
+  if (!/^https?:\/\//i.test(proofUrl)) throw new AppError('Đường dẫn bằng chứng phải bắt đầu bằng http:// hoặc https://.', 400);
+  const plan = await WorkoutPlan.findOne({ _id: planId, member: req.user._id });
+  if (!plan) throw new AppError('Giáo án không tồn tại hoặc không thuộc về bạn.', 404);
+  const item = plan.items.find(entry => entry.exerciseName === exerciseName);
+  if (!item) throw new AppError('Bài tập không thuộc giáo án đã chọn.', 400);
+  const submission = await WorkoutSubmission.create({ plan: plan._id, member: req.user._id, exerciseName, completedOn: new Date(completedOn), proofUrl: proofUrl.trim(), note: note?.trim() });
+  return sendSuccess(res, { submission }, 'Đã gửi bằng chứng buổi tập.', 201);
+}));
 router.get('/trainers', asyncHandler(async (req, res) => sendSuccess(res, { trainers: await bookingService.trainers() })));
 router.get('/bookings', asyncHandler(async (req, res) => sendSuccess(res, { bookings: await bookingService.bookings(req.user._id) })));
 router.post('/bookings', asyncHandler(async (req, res) => sendSuccess(res, { booking: await bookingService.create(req.user._id, req.body) }, 'Đặt lịch thành công.', 201)));

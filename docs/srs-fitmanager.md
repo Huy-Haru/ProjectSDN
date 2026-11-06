@@ -125,3 +125,7 @@ Admin tạo/sửa/khóa package, tạo/cập nhật/khóa User trainer/member, x
 - Admin xác nhận thanh toán nhiều lần không tạo doanh thu trùng.
 - Trang chính có loading, error, empty và responsive layout ở mobile.
 - Các diagram trong `docs/diagram` mở được bằng draw.io và khớp API/schema hiện có.
+
+
+## Daily workout proof
+Member selects an exercise from a PT plan and submits an http/https URL to an image or video. The URL is stored in WorkoutSubmission with the member, plan, exercise and completion date.

@@ -6,6 +6,7 @@ const Booking = require('./Booking');
 const WorkoutPlan = require('./WorkoutPlan');
 const ProgressLog = require('./ProgressLog');
 const Review = require('./Review');
+const WorkoutSubmission = require('./WorkoutSubmission');
 
 module.exports = {
   User,
@@ -15,5 +16,6 @@ module.exports = {
   Booking,
   WorkoutPlan,
   ProgressLog,
-  Review
+  Review,
+  WorkoutSubmission
 };

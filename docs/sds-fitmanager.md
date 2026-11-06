@@ -138,3 +138,6 @@ Admin routes gọi `adminService`, dùng aggregation `$match` paid + `paidAt`, `
 - **Responsive UI:** sidebar chuyển thành horizontal nav dưới 768px; cards stack dưới 680px; target touch tối thiểu 44px.
 - **Observability:** health endpoint, normalized error handler, `ConnectionStatus`, loading/error/empty state.
 - **Known limits:** chưa có payment gateway, realtime, rate limit, JWT denylist, scheduler expire subscription hay audit log bất biến.
+
+## WorkoutSubmission design
+WorkoutSubmission stores plan, member, exerciseName, completedOn, proofUrl, note and status. The member route validates ownership and only accepts http/https proof URLs. Binary uploads remain a future storage integration.

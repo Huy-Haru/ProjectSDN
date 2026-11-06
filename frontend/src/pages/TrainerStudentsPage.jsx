@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { FaUserFriends, FaDumbbell, FaSearch, FaExclamationCircle, FaSyncAlt } from 'react-icons/fa';
+import { FaUserFriends, FaDumbbell, FaSearch, FaExclamationCircle, FaSyncAlt, FaExternalLinkAlt } from 'react-icons/fa';
 import { trainerApi } from '../api/apiClient';
 import { useApiResource } from '../hooks/useApiResource';
 import CreatePlanModal from '../components/CreatePlanModal';
@@ -20,6 +20,8 @@ const TrainerStudentsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
+  const [proofMember, setProofMember] = useState(null);
+  const [proofs, setProofs] = useState([]);
 
   const load = useCallback(() => trainerApi.getMembers({page,limit:10,search}).then(res=>res.data), [page,search]);
   const {data,loading,error,reload:fetchMembers} = useApiResource(load,JSON.stringify([page,search]));
@@ -39,6 +41,7 @@ const TrainerStudentsPage = () => {
   const handlePlanCreated = () => {
     setShowPlanModal(false);
   };
+  const loadProofs = async member => { setProofMember(member); try { const response = await trainerApi.getMemberWorkoutSubmissions(member._id); setProofs(response.data.submissions || []); } catch (err) { setProofs([{ _id: 'error', exerciseName: err.message }]); } };
 
   return (
     <div className="trainer-students-page">
@@ -162,6 +165,7 @@ const TrainerStudentsPage = () => {
                   </button>
                   <button className="btn btn-success" onClick={() => {setPlansMember(null);setProgressMember(member);}}>Ghi nhận tiến độ</button>
                   <button className="btn btn-secondary" onClick={() => {setProgressMember(null);setPlansMember(member);}}>Xem giáo án</button>
+                  <button className="btn btn-outline-warning" onClick={() => loadProofs(member)}>Bằng chứng</button>
                 </div>
               </div>
             </div>
@@ -172,6 +176,8 @@ const TrainerStudentsPage = () => {
       {progressMember && <TrainerProgressPanel key={progressMember._id} member={progressMember} onClose={() => setProgressMember(null)} />}
 
       {plansMember && <TrainerPlansPanel key={plansMember._id} member={plansMember} onClose={() => setPlansMember(null)} />}
+
+      {proofMember && <section className="section-card mt-4"><div className="section-card-head"><div><h2>Bằng chứng của {proofMember.fullName}</h2><p>Link ảnh hoặc video hội viên gửi sau từng bài tập.</p></div><button className="btn btn-secondary" onClick={() => setProofMember(null)}>Đóng</button></div>{!proofs.length ? <p className="muted-copy">Chưa có bằng chứng nào.</p> : <div className="submission-list">{proofs.map(proof => <a className="submission-row" key={proof._id} href={proof.proofUrl} target="_blank" rel="noreferrer"><span><strong>{proof.exerciseName}</strong><small>{new Date(proof.completedOn).toLocaleDateString('vi-VN')}{proof.note ? ` · ${proof.note}` : ''}</small></span><FaExternalLinkAlt /></a>)}</div>}</section>}
 
       {/* Create Workout Plan Modal */}
       {showPlanModal && <CreatePlanModal
