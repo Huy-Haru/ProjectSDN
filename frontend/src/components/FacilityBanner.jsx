@@ -1,4 +1,4 @@
-import React from 'react';
+import 'react';
 import { FaTimes } from 'react-icons/fa';
 
 const FacilityBanner = () => {

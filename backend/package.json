@@ -10,7 +10,21 @@
   "scripts": {
     "dev": "nodemon --watch src --watch .env --ext js,json,env src/server.js",
     "start": "node src/server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "test:integration": "node scripts/verify-admin.js",
+    "test:archive": "node scripts/verify-archive.js",
+    "check:config": "node scripts/check-config.js",
+    "db:backup": "node scripts/database-archive.js backup",
+    "db:restore": "node scripts/database-archive.js restore",
+    "admin:create": "node scripts/create-admin.js",
+    "db:indexes": "node scripts/optimize-indexes.js",
+    "test:trainer": "node scripts/verify-trainer.js",
+    "test:member": "node scripts/verify-member.js",
+    "test:booking": "node scripts/verify-booking.js",
+    "db:quota": "node scripts/reconcile-booking-quota.js",
+    "test:progress": "node scripts/verify-progress.js",
+    "test:review": "node scripts/verify-review.js",
+    "test:attendance": "node scripts/verify-attendance.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

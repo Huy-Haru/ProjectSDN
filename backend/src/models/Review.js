@@ -1,40 +1,50 @@
 const mongoose = require('mongoose');
+const { integer } = require('../utils/schemaRules');
 
 const reviewSchema = new mongoose.Schema({
   member: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+    immutable: true,
     required: [true, 'ID học viên là bắt buộc']
   },
   trainer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'TrainerProfile',
+    immutable: true,
     required: [true, 'ID huấn luyện viên là bắt buộc']
   },
   booking: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Booking',
+    immutable: true,
     required: [true, 'ID lịch đặt là bắt buộc'],
     unique: true
   },
   rating: {
     type: Number,
     required: [true, 'Đánh giá là bắt buộc'],
+    validate: integer,
     min: [1, 'Đánh giá tối thiểu là 1'],
     max: [5, 'Đánh giá tối đa là 5']
   },
   comment: {
     type: String,
+    maxlength: 2000,
     trim: true
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  optimisticConcurrency: true
 });
+
+reviewSchema.index({ trainer: 1, createdAt: -1 });
+reviewSchema.index({ member: 1, createdAt: -1 });
 
 // Static method để tính toán average rating của trainer
 reviewSchema.statics.calcAverageRatings = async function(trainerId) {
   const stats = await this.aggregate([
-    { $match: { trainer: trainerId } },
+    { $match: { trainer: new mongoose.Types.ObjectId(String(trainerId)) } },
     {
       $group: {
         _id: '$trainer',
@@ -58,18 +68,21 @@ reviewSchema.statics.calcAverageRatings = async function(trainerId) {
 };
 
 // Chạy sau khi document được lưu (create hoặc save)
-reviewSchema.post('save', function() {
+reviewSchema.post('save', async function() {
   // this trỏ đến document vừa được lưu
-  this.constructor.calcAverageRatings(this.trainer);
+  await this.constructor.calcAverageRatings(this.trainer);
 });
 
 // Chạy sau khi document bị xóa (findByIdAndDelete, findOneAndDelete)
-reviewSchema.post(/^findOneAnd/, async function(doc) {
+reviewSchema.post(['findOneAndUpdate', 'findOneAndDelete'], async function(doc) {
   if (doc) {
-    await doc.constructor.calcAverageRatings(doc.trainer);
+    await this.model.calcAverageRatings(doc.trainer);
   }
 });
 
+reviewSchema.post('deleteOne', { document: true, query: false }, async function() {
+  await this.constructor.calcAverageRatings(this.trainer);
+});
 const Review = mongoose.model('Review', reviewSchema);
 
 module.exports = Review;

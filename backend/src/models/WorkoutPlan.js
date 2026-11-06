@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { integer, dateRange } = require('../utils/schemaRules');
 
 const workoutPlanSchema = new mongoose.Schema({
   trainer: {
@@ -40,7 +41,9 @@ const workoutPlanSchema = new mongoose.Schema({
     },
     sets: {
       type: Number,
-      required: [true, 'Số hiệp là bắt buộc']
+      required: [true, 'Số hiệp là bắt buộc'],
+      min: 1,
+      validate: integer
     },
     reps: {
       type: String, // String để có thể linh hoạt, vd '8-12'
@@ -60,9 +63,13 @@ const workoutPlanSchema = new mongoose.Schema({
     default: 'active'
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  optimisticConcurrency: true
 });
 
+dateRange(workoutPlanSchema);
+workoutPlanSchema.index({ member: 1, status: 1, startDate: -1 });
+workoutPlanSchema.index({ trainer: 1, member: 1, status: 1 });
 const WorkoutPlan = mongoose.model('WorkoutPlan', workoutPlanSchema);
 
 module.exports = WorkoutPlan;

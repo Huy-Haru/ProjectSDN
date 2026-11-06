@@ -1,32 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Modal, Form } from 'react-bootstrap';
-import { FaCreditCard, FaDollarSign } from 'react-icons/fa';
+import { FaCreditCard } from 'react-icons/fa';
 
-const ManagePackageModal = ({ show, onHide, packageToEdit, onSavePackage }) => {
-  const [name, setName] = useState('');
-  const [category, setCategory] = useState('');
-  const [priceYear, setPriceYear] = useState('');
-  const [priceMonth, setPriceMonth] = useState('');
-  const [subtitle, setSubtitle] = useState('');
-  const [isPopular, setIsPopular] = useState(false);
-
-  useEffect(() => {
-    if (packageToEdit) {
-      setName(packageToEdit.name || '');
-      setCategory(packageToEdit.category || 'THỂ HÌNH CAO CẤP');
-      setPriceYear(packageToEdit.priceYear || '');
-      setPriceMonth(packageToEdit.priceMonth || '');
-      setSubtitle(packageToEdit.subtitle || '');
-      setIsPopular(packageToEdit.isPopular || false);
-    } else {
-      setName('');
-      setCategory('THỂ HÌNH CAO CẤP');
-      setPriceYear('3.990.000');
-      setPriceMonth('399.000');
-      setSubtitle('Gói tập đầy đủ tiện ích kèm huấn luyện viên.');
-      setIsPopular(false);
-    }
-  }, [packageToEdit, show]);
+const ManagePackageModalForm = ({ show, onHide, packageToEdit, onSavePackage }) => {
+  const [name, setName] = useState(packageToEdit?.name || '');
+  const [category, setCategory] = useState(packageToEdit?.category || 'THỂ HÌNH CAO CẤP');
+  const [priceYear, setPriceYear] = useState(packageToEdit ? (packageToEdit.priceYear || '') : '3.990.000');
+  const [priceMonth, setPriceMonth] = useState(packageToEdit ? (packageToEdit.priceMonth || '') : '399.000');
+  const [subtitle, setSubtitle] = useState(packageToEdit ? (packageToEdit.subtitle || '') : 'Gói tập đầy đủ tiện ích kèm huấn luyện viên.');
+  const [isPopular, setIsPopular] = useState(packageToEdit?.isPopular || false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -139,4 +121,7 @@ const ManagePackageModal = ({ show, onHide, packageToEdit, onSavePackage }) => {
   );
 };
 
-export default ManagePackageModal;
+export default function ManagePackageModal(props) {
+  if (!props.show) return null;
+  return <ManagePackageModalForm key={props.packageToEdit?.id || 'new'} {...props} />;
+}

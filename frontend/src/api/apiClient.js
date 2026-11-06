@@ -76,6 +76,7 @@ export const profileApi = {
  * Trainer API — A2.2
  */
 export const trainerApi = {
+  setBookingStatus: (id, status) => request('PATCH', `/trainer/bookings/${id}/status`, { status }),
   /** PT xem lịch dạy của mình */
   getSchedule: (params = {}) => {
     const qs = new URLSearchParams(params).toString();
@@ -83,7 +84,7 @@ export const trainerApi = {
   },
 
   /** PT xem danh sách hội viên liên quan */
-  getMembers: () => request('GET', '/trainer/members'),
+  getMembers: (params = {}) => request('GET', '/trainer/members?' + new URLSearchParams(params)),
 
   /** Tạo giáo án */
   createWorkoutPlan: (data) => request('POST', '/trainer/workout-plans', data),
@@ -104,3 +105,24 @@ export const trainerApi = {
   getMemberWorkoutPlans: () => request('GET', '/trainer/member/workout-plans')
 };
 
+export const memberApi = {
+  packages: () => request('GET', '/member/packages'),
+  subscriptions: () => request('GET', '/member/subscriptions'),
+  subscribe: (packageId, startDate) => request('POST', '/member/subscriptions', { packageId, startDate })
+};
+export const bookingApi = {
+  trainers: () => request('GET', '/member/trainers'),
+  bookings: () => request('GET', '/member/bookings'),
+  create: data => request('POST', '/member/bookings', data),
+  cancel: id => request('POST', `/member/bookings/${id}/cancel`)
+};
+export const progressApi = {
+  mine: () => request('GET', '/member/progress'),
+  forMember: id => request('GET', `/trainer/members/${id}/progress`),
+  create: (id, data) => request('POST', `/trainer/members/${id}/progress`, data)
+};
+export const reviewApi = {
+  mine: () => request('GET', '/member/reviews'),
+  create: data => request('POST', '/member/reviews', data),
+  forTrainer: () => request('GET', '/trainer/reviews')
+};

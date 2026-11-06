@@ -6,6 +6,8 @@
 
 **Phân công đã thống nhất:** Huy phụ trách Admin; Hiếu phụ trách Member; Anh phụ trách PT và nền tài khoản dùng chung.
 
+**Tiến độ cập nhật 23/10:** các luồng MVP của ba role đã tích hợp trên HuyNHHE190724 và có kiểm thử tự động. [Bảng đối chiếu và giới hạn](17-mvp-acceptance.md) ghi bằng chứng theo hạng mục, không tự xác nhận nghiệm thu nhóm. Huy vẫn phụ trách Admin theo kế hoạch gốc; tích hợp code trên nhánh này không thay đổi phân công đã thống nhất. Review chéo, UAT thủ công đủ thiết bị và hosting cần biên bản riêng; các bảng dưới giữ kế hoạch gốc.
+
 ## 1. Mục tiêu sau 4 tuần
 
 Hoàn thành phiên bản MVP dùng dữ liệu MongoDB thật: đăng nhập theo ba role, quản lý gói/hội viên/PT, đăng ký gói và xác nhận thanh toán thủ công, đặt/hủy lịch, giáo án, tiến độ, đánh giá PT và báo cáo doanh thu. Các thao tác quan trọng phải giữ dữ liệu sau tải lại trang và được kiểm tra quyền tại backend.
@@ -110,7 +112,7 @@ Tuần 4 giảm tính năng mới để dành thời gian sửa lỗi và nghi�
 | Kết quả buổi tập | PT liên quan hoặc Admin; Member chỉ xem | Anh + Huy |
 | Đánh giá | Booking completed, đúng Member/PT, chưa review; mỗi booking một đánh giá | Anh + Hiếu |
 
-Slot 60 phút và cách tính no_show là **đề xuất nghiệp vụ để chốt**, không phải chức năng đã có. Nếu chọn giờ linh hoạt, nhóm phải giảm hạng mục ít ưu tiên hoặc tăng thời gian kiểm thử; không đánh dấu chống trùng đã hoàn thành chỉ vì cùng startTime bị chặn.
+Bản triển khai hiện dùng slot 60 phút bắt đầu giờ tròn 08:00–21:00; booked/completed/no_show giữ hạn mức, cancelled hoàn buổi. Bảng trên giữ đề xuất lịch sử; chính sách đã hiện thực và giới hạn standalone nằm trong docs/12. Nếu chọn giờ linh hoạt, nhóm phải giảm hạng mục ít ưu tiên hoặc tăng thời gian kiểm thử; không đánh dấu chống trùng đã hoàn thành chỉ vì cùng startTime bị chặn.
 
 ## 8. Phụ thuộc và cách phối hợp
 

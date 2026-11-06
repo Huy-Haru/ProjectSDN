@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { integer, optionalInteger } = require('../utils/schemaRules');
 
 const trainerProfileSchema = new mongoose.Schema({
   user: {
@@ -13,6 +14,7 @@ const trainerProfileSchema = new mongoose.Schema({
   }],
   experienceYears: {
     type: Number,
+    validate: optionalInteger,
     min: [0, 'Năm kinh nghiệm không hợp lệ']
   },
   bio: {
@@ -26,6 +28,7 @@ const trainerProfileSchema = new mongoose.Schema({
   pricePerSession: {
     type: Number,
     required: [true, 'Giá mỗi buổi tập là bắt buộc'],
+    validate: integer,
     min: [0, 'Giá không hợp lệ']
   },
   ratingAverage: {
@@ -37,6 +40,8 @@ const trainerProfileSchema = new mongoose.Schema({
   },
   ratingCount: {
     type: Number,
+    min: 0,
+    validate: integer,
     default: 0
   },
   isActive: {
@@ -44,8 +49,11 @@ const trainerProfileSchema = new mongoose.Schema({
     default: true
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  optimisticConcurrency: true
 });
+
+trainerProfileSchema.index({ isActive: 1, specialties: 1, ratingAverage: -1 });
 
 const TrainerProfile = mongoose.model('TrainerProfile', trainerProfileSchema);
 

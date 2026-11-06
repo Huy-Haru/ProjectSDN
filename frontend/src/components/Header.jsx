@@ -1,4 +1,4 @@
-import React from 'react';
+import 'react';
 import { FaSearch, FaBell, FaUserCircle, FaSignInAlt, FaSignOutAlt, FaUserPlus } from 'react-icons/fa';
 
 /**

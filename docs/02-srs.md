@@ -1,6 +1,6 @@
 # Đặc tả yêu cầu phần mềm (SRS)
 
-Phiên bản 1.0 — FitManager — 11/10/2026. Đây là yêu cầu mục tiêu và các giả định thiết kế cần nhóm xác nhận trước triển khai nghiệp vụ.
+Phiên bản 2.0 — FitManager — cập nhật 23/10/2026 theo mã nguồn trên nhánh HuyNHHE190724. Trạng thái triển khai dưới đây được đối chiếu với API và kiểm thử tự động; không thay thế biên bản nghiệm thu nhóm.
 
 ## 1. Mục đích và thuật ngữ
 
@@ -12,60 +12,62 @@ Hệ thống phục vụ một phòng tập, sử dụng tiền VND và múi gi�
 
 | Tài nguyên/hành động | Khách | Hội viên | PT | Admin |
 | --- | --- | --- | --- | --- |
-| Xem gói tập/PT đang hoạt động | Có | Có | Có | Có |
-| Đăng ký tài khoản hội viên | Có | — | — | Có thể tạo tài khoản theo thiết kế |
+| Xem gói đang hoạt động | Có | Có | Có qua API công khai | Có qua API công khai/quản trị |
+| Xem danh sách PT | Không | Có | Không có route danh mục riêng | Có qua quản trị |
+| Đăng ký tài khoản Member | Có | — | — | Tạo Member/PT qua quản trị |
 | Quản lý gói/PT/hội viên | Không | Không | Không | Có |
-| Đăng ký gói/đặt lịch | Không | Của mình | Không | Hỗ trợ theo quyền quản trị |
-| Xem/hủy lịch | Không | Của mình | Lịch liên quan; hủy cần chính sách | Tất cả |
-| Xác nhận hoàn thành buổi | Không | Không | Buổi của mình | Có |
-| Giáo án/tiến độ | Không | Xem của mình | Tạo/cập nhật cho hội viên liên quan | Giám sát theo quyền |
-| Đánh giá PT | Không | Buổi của mình đã hoàn thành | Xem đánh giá liên quan | Xem/quản lý theo chính sách |
-| Xác nhận thanh toán/doanh thu | Không | Xem trạng thái của mình | Không | Có |
+| Đăng ký gói/đặt lịch | Không | Của mình | Không | Không có route tạo hộ |
+| Xem/hủy lịch | Không | Của mình, trước giờ bắt đầu | Xem lịch của mình, không hủy qua API PT | Xem/lọc và hủy theo quy tắc |
+| Hoàn thành/no_show | Không | Không | Buổi của mình sau giờ kết thúc | Có, cùng quy tắc thời gian |
+| Giáo án/tiến độ | Không | Xem của mình | Tạo/sửa giáo án; ghi/xem tiến độ liên quan | Chưa có API giám sát riêng |
+| Đánh giá PT | Không | Buổi completed đã kết thúc, một lần/buổi | Xem phản hồi dành cho mình | Chưa có API quản lý đánh giá |
+| Thanh toán/doanh thu | Không | Xem trạng thái gói của mình | Không | Xác nhận thủ công, xem báo cáo |
+| Profile/đổi mật khẩu | Không | Của mình | Của mình và phần mở rộng PT | Của mình |
 
-Backend dùng `member`, `trainer`, `admin`; frontend hiện dùng vai trò demo viết hoa. API cần mapping rõ ràng. Ẩn menu không thay thế phân quyền backend.
+Backend và frontend dùng role member/trainer/admin thống nhất. Mỗi request bảo vệ lấy quyền từ User trong database; ẩn menu không thay thế kiểm tra backend.
 
 ## 3. Yêu cầu chức năng và tiêu chí nghiệm thu
 
 | ID | Yêu cầu | Tiêu chí nghiệm thu | Trạng thái hiện tại |
 | --- | --- | --- | --- |
-| FR-01 | Đăng ký tài khoản hội viên | Email duy nhất; mật khẩu hash; không cho tự đặt role admin/PT | UI và User model; chưa API |
-| FR-02 | Đăng nhập/đăng xuất | Sai thông tin bị từ chối; tài khoản khóa không đăng nhập; phiên hết hạn bị từ chối | Đăng nhập demo |
-| FR-03 | Xem danh sách gói/PT | Chỉ danh mục hoạt động; tìm PT theo tên/chuyên môn | UI dữ liệu mẫu |
-| FR-04 | Admin quản lý gói | Giá >= 0, thời hạn >= 1; khóa gói không mất lịch sử | UI và model |
-| FR-05 | Admin quản lý PT/hội viên | Tạo/cập nhật/khóa; một TrainerProfile cho một User trainer | UI và model |
-| FR-06 | Đăng ký gói | Lưu member/package/ngày/amount; khởi tạo pending/unpaid | UI và model |
-| FR-07 | Xác nhận thanh toán | Chỉ admin chuyển paid; kích hoạt gói khi đủ điều kiện | Model; API chưa có |
-| FR-08 | Đặt lịch PT | Gói hợp lệ, PT hoạt động, thời gian tương lai và không xung đột | UI và model |
-| FR-09 | Xem/hủy lịch | Kiểm tra chủ sở hữu; hủy cập nhật cancelled và giữ lịch sử | UI hiện xóa khỏi state |
-| FR-10 | Hoàn thành/no-show | PT liên quan hoặc admin cập nhật; không lặp trừ số buổi | UI/model; chưa nghiệp vụ |
-| FR-11 | Tạo và xem giáo án | PT liên quan tạo; hội viên chỉ xem giáo án của mình | UI và model |
-| FR-12 | Cập nhật tiến độ | Kiểm tra quyền; kg/cm/% và ngày ghi nhận hợp lệ | UI và model |
-| FR-13 | Đánh giá PT | Booking completed, thuộc hội viên; mỗi booking tối đa một đánh giá; điểm nguyên 1–5 | UI/model; chưa kiểm tra nghiệp vụ |
-| FR-14 | Báo cáo doanh thu | Tổng amount của đăng ký đã paid theo kỳ; không đếm unpaid | UI mẫu |
-| FR-15 | Xem dashboard theo vai trò | Chỉ số lấy từ dữ liệu có quyền truy cập | UI mẫu |
-| FR-16 | Kiểm tra kết nối | API ping database; UI phân biệt kết nối lỗi và thành công | Có health API và health UI |
-| FR-17 | Xem/cập nhật profile cá nhân cho Member, PT, Admin | Mọi role sửa trường chung của mình; PT sửa mở rộng theo quyền; không tự sửa role/isActive/rating | Model có; API chưa có |
+| FR-01 | Đăng ký tài khoản hội viên | Email duy nhất; mật khẩu hash; không cho tự đặt role admin/PT | API/UI thật; kiểm tra role public |
+| FR-02 | Đăng nhập/đăng xuất | Sai thông tin bị từ chối; tài khoản khóa không đăng nhập; phiên hết hạn bị từ chối | JWT và phiên UI thật; đăng xuất xóa token phía client |
+| FR-03 | Xem danh sách gói/PT | Chỉ danh mục hoạt động; tìm PT theo tên/chuyên môn | Gói công khai; danh mục PT dành Member, tìm tên/chuyên môn |
+| FR-04 | Admin quản lý gói | Giá >= 0, thời hạn >= 1; khóa gói không mất lịch sử | API/UI thật; soft lock |
+| FR-05 | Admin quản lý PT/hội viên | Tạo/cập nhật/khóa; một TrainerProfile cho một User trainer | API/UI thật; User/PT profile hợp lệ |
+| FR-06 | Đăng ký gói | Lưu member/package/ngày/amount; khởi tạo pending/unpaid | API/UI thật; amount và quyền lợi chốt tại đăng ký |
+| FR-07 | Xác nhận thanh toán | Chỉ admin chuyển paid; kích hoạt gói khi đủ điều kiện | API/UI thật; paidAt và lặp xác nhận an toàn |
+| FR-08 | Đặt lịch PT | Gói hợp lệ, PT hoạt động, thời gian tương lai và không xung đột | API/UI thật; slot cố định và giữ quota nguyên tử |
+| FR-09 | Xem/hủy lịch | Kiểm tra chủ sở hữu; hủy cập nhật cancelled và giữ lịch sử | API/UI thật; giữ cancelled và hoàn quota |
+| FR-10 | Hoàn thành/no-show | PT liên quan hoặc admin cập nhật; không lặp trừ số buổi | API/UI thật; PT/Admin, kiểm tra giờ và trạng thái |
+| FR-11 | Tạo và xem giáo án | PT liên quan tạo; hội viên chỉ xem giáo án của mình | API/UI thật; sửa có expectedVersion trên giao diện |
+| FR-12 | Cập nhật tiến độ | Kiểm tra quyền; kg/cm/% và ngày ghi nhận hợp lệ | API/UI thật; PT liên quan ghi, Member xem |
+| FR-13 | Đánh giá PT | Booking completed, thuộc hội viên; mỗi booking tối đa một đánh giá; điểm nguyên 1–5 | API/UI thật; unique booking và kiểm tra chủ sở hữu |
+| FR-14 | Báo cáo doanh thu | Tổng amount của đăng ký đã paid theo kỳ; không đếm unpaid | API/UI thật; lọc paidAt theo ngày Việt Nam |
+| FR-15 | Xem dashboard theo vai trò | Chỉ số lấy từ dữ liệu có quyền truy cập | API thật cho ba role, không dùng số liệu mẫu |
+| FR-16 | Kiểm tra kết nối | API ping database; UI phân biệt kết nối lỗi và thành công | Health API ping MongoDB và UI |
+| FR-17 | Xem/cập nhật profile cá nhân cho Member, PT, Admin | Mọi role sửa trường chung của mình; PT sửa mở rộng theo quyền; không tự sửa role/isActive/rating | API/UI thật cho cả ba role |
 
 ## 4. Quy tắc nghiệp vụ
 
 | ID | Quy tắc | Mức triển khai |
 | --- | --- | --- |
-| BR-01 | Email chuẩn hóa lowercase/trim và duy nhất | Schema hiện có |
-| BR-02 | Tài khoản public đăng ký chỉ là member; role thay đổi bởi admin | Yêu cầu |
-| BR-03 | TrainerProfile.user phải trỏ đến User có role trainer | Unique ref có; kiểm tra role chưa có |
-| BR-04 | Subscription có endDate > startDate; amount là giá tại lúc đăng ký | amount có; ràng buộc ngày chưa có |
-| BR-05 | Gói sử dụng phải active, paid và startDate <= ngày buổi tập <= endDate | isValid đã kiểm tra active/paid/startDate/endDate; service vẫn cần kiểm tra ngày buổi tập |
-| BR-06 | Booking.subscription thuộc đúng member; PT đang hoạt động | Yêu cầu |
-| BR-07 | Hai khoảng [start,end) giao nhau nếu startA < endB và startB < endA; kiểm tra cả PT và hội viên | Partial unique hiện chống cùng startTime của PT/hội viên; chưa chống mọi khoảng chồng giờ |
-| BR-08 | Không đặt vượt sessionLimit; null nghĩa là không giới hạn | Yêu cầu; chưa có bộ đếm tiêu thụ đáng tin cậy |
-| BR-09 | Hủy trước giờ bắt đầu; không xóa booking; lịch cancelled không giữ chỗ | Partial index đã bỏ cancelled khỏi chỗ giữ; API hủy chưa có |
-| BR-10 | Chỉ completed mới được đánh giá; booking, member và trainer phải khớp | Yêu cầu; schema chỉ có ref/unique |
-| BR-11 | Một Review trên một Booking; rating nguyên từ 1 đến 5 | Unique/min/max và integer hiện có; chưa kiểm tra quyền/buổi hoàn thành |
-| BR-12 | PT chỉ sửa dữ liệu của hội viên có booking/subscription liên quan được cho phép | Yêu cầu |
-| BR-13 | Không xóa cứng User/PT/gói đã có tham chiếu | Chính sách đề xuất |
-| BR-14 | Doanh thu là dữ liệu gói đã paid; cần thêm paidAt để lọc đúng ngày thu | Đã có paidAt; chưa có API xác nhận hoặc model giao dịch |
+| BR-01 | Email lowercase/trim, unique | Schema và index |
+| BR-02 | Public chỉ tạo member; không tự đổi role | API Auth và whitelist profile; Admin tạo Member/PT, không đổi role tài khoản đã có |
+| BR-03 | TrainerProfile thuộc User trainer | Admin service kiểm tra; unique user |
+| BR-04 | endDate > startDate; amount và quyền lợi tại lúc đăng ký | Schema validation; server chốt amount/includesPT/sessionLimit |
+| BR-05 | Gói active/paid, toàn bộ buổi nằm trong hạn | Booking service; startDate <= giờ bắt đầu, endDate >= giờ kết thúc |
+| BR-06 | Subscription đúng chủ; PT/User hoạt động | API kiểm tra ref và role |
+| BR-07 | Ca mới 60 phút, giờ tròn 08:00–21:00; không chồng lịch PT/Member | Precheck giao khoảng giờ và hai partial unique indexes; legacy giờ lẻ được kiểm tra khi đọc |
+| BR-08 | sessionLimit null không giới hạn; booked/completed/no_show tính buổi | Bộ đếm giữ chỗ có điều kiện nguyên tử; lịch cũ đếm riêng; bù khi tạo thất bại |
+| BR-09 | Chỉ hủy booked trước giờ bắt đầu, giữ lịch sử | Member/Admin API; optimistic concurrency và hoàn quota |
+| BR-10 | Chỉ đánh giá completed đã kết thúc, đúng chủ | API Review suy ra Member/PT từ Booking |
+| BR-11 | Một Review/Booking; số sao nguyên 1–5 | Unique index, schema và API |
+| BR-12 | PT thao tác tài nguyên mình sở hữu, học viên liên quan | Queries có scope, kiểm thử truy cập chéo; hồ sơ PT khóa không tạo/sửa giáo án/tiến độ/kết quả |
+| BR-13 | Không xóa cứng danh mục/tài khoản qua UI quản trị | Soft lock isActive; không có endpoint xóa |
+| BR-14 | Doanh thu chỉ paid, phân kỳ theo paidAt | Admin aggregation; ngày Việt Nam |
 
-Các quy tắc về no-show có tính buổi hay không, hoàn tiền, thời hạn hủy và một hội viên được có bao nhiêu gói active cần nhóm/phòng tập xác nhận. Phiên bản thiết kế tạm chọn hủy trước giờ bắt đầu, completed tính buổi, no-show chờ quyết định; chưa triển khai trừ buổi.
+MongoDB local standalone không có transaction nhiều document. Giữ quota và ghi Booking có bù lỗi nhưng không nguyên tử qua lỗi kết nối/dừng tiến trình; sau sự cố cần đối soát theo [hướng dẫn quota](12-member-booking.md). Cho phép nhiều gói active; Member chọn subscription cụ thể khi đặt. Không có hoàn tiền tự động, cổng thanh toán hoặc tác vụ tự chuyển status expired; API vẫn từ chối đặt ngoài thời hạn.
 
 ## 5. Use case chi tiết
 
@@ -75,7 +77,7 @@ Tác nhân: khách. Tiền điều kiện: chưa có tài khoản với email n�
 
 ### UC-02 — Đăng nhập (FR-02)
 
-Tác nhân: mọi tài khoản. Nhập email/mật khẩu → tìm User và kiểm tra isActive → so sánh hash → tạo phiên/token → frontend mở trang đúng vai trò. Sai thông tin trả lỗi chung; phiên không hợp lệ không truy cập tài nguyên bảo vệ. Hậu điều kiện: có phiên hợp lệ. Cơ chế phiên chưa được triển khai.
+Tác nhân: mọi tài khoản. Nhập email/mật khẩu → tìm User và kiểm tra isActive → so sánh hash → tạo phiên/token → frontend mở trang đúng vai trò. Sai thông tin trả lỗi chung; phiên không hợp lệ không truy cập tài nguyên bảo vệ. Hậu điều kiện: có phiên hợp lệ. JWT bearer đã triển khai; mỗi request kiểm tra User còn hoạt động. Đăng xuất xóa token phía client, chưa có denylist thu hồi token.
 
 ### UC-03 — Đăng ký gói và thanh toán (FR-06, FR-07)
 
@@ -111,7 +113,7 @@ Admin chọn khoảng thời gian → backend validate khoảng ngày và tổng
 
 ### UC-11 — Profile cá nhân (FR-17)
 
-Tác nhân: Member, PT, Admin. Đăng nhập → xem User của mình → cập nhật fullName/phone/gender/dateOfBirth/avatar qua whitelist → validate và save → trả profile an toàn. PT có thêm TrainerProfile; giá PT, trạng thái hoạt động và điểm tổng hợp không tự sửa nếu chưa được chính sách cấp quyền. Email thay đổi cần kiểm tra unique và chính sách xác minh; đổi password qua luồng riêng để hash đúng. Không nhận role/isActive từ API profile public. Hậu điều kiện: profile còn sau tải lại trang, không đổi quyền truy cập.
+Tác nhân: Member, PT, Admin. Đăng nhập → xem User của mình → cập nhật fullName/phone/gender/dateOfBirth/avatar qua whitelist → validate và save → trả profile an toàn. PT sửa specialties/experienceYears/bio/certificates/pricePerSession của TrainerProfile; không tự sửa trạng thái hoạt động hoặc điểm tổng hợp. Email hiện chỉ đọc qua profile; đổi password qua luồng riêng để hash đúng. Không nhận role/isActive từ API profile public. Hậu điều kiện: profile còn sau tải lại trang, không đổi quyền truy cập.
 
 ## 6. Yêu cầu phi chức năng
 
@@ -130,7 +132,7 @@ Tác nhân: Member, PT, Admin. Đăng nhập → xem User của mình → cập 
 
 ## 7. Giao diện ngoài
 
-Trình duyệt gọi REST JSON qua HTTP(S). Frontend local tại localhost:3000; backend tại localhost:5000; MongoDB local tại 127.0.0.1:27017/fitmanager. Không cho trình duyệt truy cập MongoDB trực tiếp. Endpoint hiện có: GET / và GET /api/health. Các endpoint nghiệp vụ trong tài liệu thiết kế là đề xuất.
+Trình duyệt gọi REST JSON qua HTTP(S). Frontend local tại localhost:3000; backend tại localhost:5000; MongoDB local tại 127.0.0.1:27017/fitmanager. Không cho trình duyệt truy cập MongoDB trực tiếp. Danh mục endpoint hiện tại nằm trong [thiết kế hệ thống](03-system-design.md). GET /api/health ping MongoDB; các endpoint nghiệp vụ đã nối frontend và kiểm thử database tạm.
 
 ## 8. Truy vết
 

@@ -1,32 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Modal, Form } from 'react-bootstrap';
-import { FaUserCheck, FaAward } from 'react-icons/fa';
+import { FaUserCheck } from 'react-icons/fa';
 
-const ManageTrainerModal = ({ show, onHide, trainerToEdit, onSaveTrainer }) => {
-  const [name, setName] = useState('');
-  const [title, setTitle] = useState('');
-  const [experience, setExperience] = useState('');
-  const [phone, setPhone] = useState('');
-  const [specialtiesStr, setSpecialtiesStr] = useState('');
-  const [bio, setBio] = useState('');
-
-  useEffect(() => {
-    if (trainerToEdit) {
-      setName(trainerToEdit.name || '');
-      setTitle(trainerToEdit.title || '');
-      setExperience(trainerToEdit.experience || '');
-      setPhone(trainerToEdit.phone || '');
-      setSpecialtiesStr(trainerToEdit.specialties ? trainerToEdit.specialties.join(', ') : '');
-      setBio(trainerToEdit.bio || '');
-    } else {
-      setName('');
-      setTitle('Chuyên Gia Thể Lực & Posture');
-      setExperience('5 năm kinh nghiệm');
-      setPhone('0912345678');
-      setSpecialtiesStr('Tăng cơ, Giảm mỡ');
-      setBio('Huấn luyện viên tận tâm, đồng hành cùng học viên.');
-    }
-  }, [trainerToEdit, show]);
+const ManageTrainerModalForm = ({ show, onHide, trainerToEdit, onSaveTrainer }) => {
+  const [name, setName] = useState(trainerToEdit?.name || '');
+  const [title, setTitle] = useState(trainerToEdit ? (trainerToEdit.title || '') : 'Chuyên Gia Thể Lực & Posture');
+  const [experience, setExperience] = useState(trainerToEdit ? (trainerToEdit.experience || '') : '5 năm kinh nghiệm');
+  const [phone, setPhone] = useState(trainerToEdit ? (trainerToEdit.phone || '') : '0912345678');
+  const [specialtiesStr, setSpecialtiesStr] = useState(trainerToEdit ? (trainerToEdit.specialties || []).join(', ') : 'Tăng cơ, Giảm mỡ');
+  const [bio, setBio] = useState(trainerToEdit ? (trainerToEdit.bio || '') : 'Huấn luyện viên tận tâm, đồng hành cùng học viên.');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -145,4 +127,7 @@ const ManageTrainerModal = ({ show, onHide, trainerToEdit, onSaveTrainer }) => {
   );
 };
 
-export default ManageTrainerModal;
+export default function ManageTrainerModal(props) {
+  if (!props.show) return null;
+  return <ManageTrainerModalForm key={props.trainerToEdit?.id || 'new'} {...props} />;
+}

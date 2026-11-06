@@ -1,21 +1,8 @@
 const jwt = require('jsonwebtoken');
-const env = require('../config/environment');
-
-/**
- * Tạo JWT token cho user
- * @param {Object} payload - { id, role }
- */
-function signToken(payload) {
-  return jwt.sign(payload, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN });
+function secret() {
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must contain at least 32 characters.');
+  return process.env.JWT_SECRET;
 }
-
-/**
- * Xác thực JWT token
- * @param {string} token
- * @returns {Object} decoded payload
- */
-function verifyToken(token) {
-  return jwt.verify(token, env.JWT_SECRET);
-}
-
+function signToken(payload) { return jwt.sign(payload, secret(), { expiresIn: process.env.JWT_EXPIRES_IN || '7d', algorithm: 'HS256' }); }
+function verifyToken(token) { return jwt.verify(token, secret(), { algorithms: ['HS256'] }); }
 module.exports = { signToken, verifyToken };

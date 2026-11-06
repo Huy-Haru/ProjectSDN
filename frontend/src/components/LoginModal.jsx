@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Modal, Form, Spinner } from 'react-bootstrap';
 import { FaDumbbell, FaEnvelope, FaLock, FaExclamationCircle } from 'react-icons/fa';
 

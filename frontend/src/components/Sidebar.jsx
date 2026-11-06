@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   FaDumbbell,
   FaChartPie,
@@ -50,6 +49,7 @@ const Sidebar = ({ user, activeMenu, setActiveMenu }) => {
     { id: 'admin-trainers', label: 'Quản lý PT', icon: <FaUserFriends /> },
     { id: 'admin-students', label: 'Quản lý Học viên', icon: <FaUsers /> },
     { id: 'admin-schedules', label: 'Quản lý Lịch tập', icon: <FaCalendarCheck /> },
+    { id: 'admin-payments', label: 'Xác nhận Thanh toán', icon: <FaCreditCard /> },
     { id: 'admin-revenue', label: 'Thống kê Doanh thu', icon: <FaDollarSign /> },
   ];
 
@@ -80,10 +80,11 @@ const Sidebar = ({ user, activeMenu, setActiveMenu }) => {
 
       {/* Menu Section Label */}
       <div className="menu-section-label">{roleLabel}</div>
-      <nav className="nav-menu">
+      <nav className="nav-menu" aria-label="Điều hướng chính">
         {currentMenuList.map((item) => (
           <button
             key={item.id}
+            aria-current={activeMenu === item.id ? 'page' : undefined}
             className={`nav-item-btn ${activeMenu === item.id ? 'active' : ''}`}
             onClick={() => setActiveMenu(item.id)}
           >
@@ -97,10 +98,11 @@ const Sidebar = ({ user, activeMenu, setActiveMenu }) => {
       {profileMenu.length > 0 && (
         <>
           <div className="menu-section-label mt-3">TÀI KHOẢN</div>
-          <nav className="nav-menu">
+          <nav className="nav-menu" aria-label="Tài khoản">
             {profileMenu.map((item) => (
               <button
                 key={item.id}
+                aria-current={activeMenu === item.id ? 'page' : undefined}
                 className={`nav-item-btn ${activeMenu === item.id ? 'active' : ''}`}
                 onClick={() => setActiveMenu(item.id)}
               >

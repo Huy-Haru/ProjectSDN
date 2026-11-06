@@ -24,17 +24,22 @@ async function getTrainerSchedule(req, res) {
   const filter = { trainer: trainerProfile._id };
 
   // Lọc theo status nếu có
-  if (req.query.status && Object.values(BOOKING_STATUS).includes(req.query.status)) {
+  if (req.query.status && !Object.values(BOOKING_STATUS).includes(req.query.status)) {
+    throw new AppError('Trạng thái lịch tập không hợp lệ.', 400);
+  }
+  if (req.query.status) {
     filter.status = req.query.status;
   }
 
   // Lọc theo ngày nếu có
   if (req.query.date) {
-    const startOfDay = new Date(req.query.date);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(req.query.date);
-    endOfDay.setHours(23, 59, 59, 999);
-    filter.date = { $gte: startOfDay, $lte: endOfDay };
+    const date = req.query.date;
+    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+        Number.isNaN(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date) {
+      throw new AppError('Ngày phải hợp lệ và có định dạng YYYY-MM-DD.', 400);
+    }
+    // Booking stores a calendar date at UTC midnight, independent of server timezone.
+    filter.date = new Date(date + 'T00:00:00.000Z');
   }
 
   const bookings = await Booking.find(filter)
@@ -50,45 +55,35 @@ async function getTrainerSchedule(req, res) {
  * PT xem danh sách hội viên liên quan (đã từng/đang có booking với mình)
  */
 async function getTrainerMembers(req, res) {
-  const user = req.user;
-
-  const trainerProfile = await TrainerProfile.findOne({ user: user._id });
-  if (!trainerProfile) {
-    throw new AppError('Hồ sơ huấn luyện viên không tồn tại.', 404);
-  }
-
-  // Lấy distinct members từ bookings của trainer này
-  const memberIds = await Booking.distinct('member', { trainer: trainerProfile._id });
-
-  const members = await User.find({ _id: { $in: memberIds }, role: ROLES.MEMBER })
-    .select('fullName email phone avatar createdAt');
-
-  // Với mỗi member, đếm số buổi và lấy lịch gần nhất
-  const membersWithStats = await Promise.all(members.map(async (member) => {
-    const totalBookings = await Booking.countDocuments({ trainer: trainerProfile._id, member: member._id });
-    const completedBookings = await Booking.countDocuments({
-      trainer: trainerProfile._id,
-      member: member._id,
-      status: BOOKING_STATUS.COMPLETED
-    });
-    const latestBooking = await Booking.findOne({
-      trainer: trainerProfile._id,
-      member: member._id
-    }).sort({ date: -1 }).select('date startTime status');
-
-    return {
-      _id: member._id,
-      fullName: member.fullName,
-      email: member.email,
-      phone: member.phone || null,
-      avatar: member.avatar || null,
-      totalBookings,
-      completedBookings,
-      latestBooking: latestBooking || null
-    };
-  }));
-
-  return sendSuccess(res, { members: membersWithStats, trainerProfileId: trainerProfile._id });
+  const { page, limit, skip } = require('../utils/pagination')(req.query);
+  const trainerProfile = await TrainerProfile.findOne({ user: req.user._id });
+  if (!trainerProfile) throw new AppError('Hồ sơ huấn luyện viên không tồn tại.', 404);
+  const search = req.query.search ?? '';
+  if (typeof search !== 'string' || search.length > 120) throw new AppError('Tìm kiếm không hợp lệ.', 400);
+  const escaped = [...search.trim()].map(c => '.*+?^${}()|[]\\'.includes(c) ? '\\' + c : c).join('');
+  const pipeline = [
+    { $match: { trainer: trainerProfile._id } },
+    { $sort: { date: -1, startTime: -1, _id: -1 } },
+    { $group: {
+      _id: '$member', totalBookings: { $sum: 1 },
+      completedBookings: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
+      latestBooking: { $first: { date: '$date', startTime: '$startTime', status: '$status' } }
+    } },
+    { $lookup: { from: User.collection.name, localField: '_id', foreignField: '_id', as: 'user' } },
+    { $unwind: '$user' },
+    { $match: { 'user.role': ROLES.MEMBER } }
+  ];
+  if (escaped) pipeline.push({ $match: { $or: ['fullName', 'email'].map(field => ({ ['user.' + field]: { $regex: escaped, $options: 'i' } })) } });
+  pipeline.push({ $sort: { 'user.fullName': 1, _id: 1 } }, { $facet: {
+    members: [{ $skip: skip }, { $limit: limit }, { $project: {
+      _id: 1, fullName: '$user.fullName', email: '$user.email', phone: { $ifNull: ['$user.phone', null] },
+      avatar: { $ifNull: ['$user.avatar', null] }, createdAt: '$user.createdAt', totalBookings: 1, completedBookings: 1, latestBooking: 1
+    } }],
+    count: [{ $count: 'total' }]
+  } });
+  const [result] = await Booking.aggregate(pipeline);
+  const total = result.count[0]?.total || 0;
+  return sendSuccess(res, { members: result.members, total, page, limit, pages: Math.ceil(total / limit), trainerProfileId: trainerProfile._id });
 }
 
 /**
@@ -100,7 +95,7 @@ async function createWorkoutPlan(req, res) {
   const user = req.user;
 
   const trainerProfile = await TrainerProfile.findOne({ user: user._id });
-  if (!trainerProfile) {
+  if (!trainerProfile || !trainerProfile.isActive) {
     throw new AppError('Hồ sơ huấn luyện viên không tồn tại.', 404);
   }
 
@@ -108,6 +103,10 @@ async function createWorkoutPlan(req, res) {
 
   if (!memberId || !title || !startDate || !endDate) {
     throw new AppError('memberId, title, startDate và endDate là bắt buộc.', 400);
+  }
+
+  if (typeof title !== 'string' || (goal !== undefined && typeof goal !== 'string')) {
+    throw new AppError('Tiêu đề và mục tiêu phải là văn bản.', 400);
   }
 
   // Kiểm tra member có booking với trainer này không (tránh tạo giáo án cho người không liên quan)
@@ -141,6 +140,13 @@ async function createWorkoutPlan(req, res) {
  */
 async function getWorkoutPlans(req, res) {
   const user = req.user;
+  const { page, limit, skip } = require('../utils/pagination')(req.query);
+  if (req.query.status !== undefined && !['active', 'completed', 'cancelled'].includes(req.query.status)) {
+    throw new AppError('Trạng thái giáo án không hợp lệ.', 400);
+  }
+  if (req.query.memberId !== undefined && (typeof req.query.memberId !== 'string' || !require('mongoose').isObjectIdOrHexString(req.query.memberId))) {
+    throw new AppError('ID học viên không hợp lệ.', 400);
+  }
 
   const trainerProfile = await TrainerProfile.findOne({ user: user._id });
   if (!trainerProfile) {
@@ -151,11 +157,13 @@ async function getWorkoutPlans(req, res) {
   if (req.query.memberId) filter.member = req.query.memberId;
   if (req.query.status) filter.status = req.query.status;
 
-  const plans = await WorkoutPlan.find(filter)
-    .populate('member', 'fullName email phone avatar')
-    .sort({ createdAt: -1 });
+  const [plans, total] = await Promise.all([
+    WorkoutPlan.find(filter).populate('member', 'fullName email phone avatar')
+      .sort({ createdAt: -1, _id: -1 }).skip(skip).limit(limit),
+    WorkoutPlan.countDocuments(filter)
+  ]);
 
-  return sendSuccess(res, { plans });
+  return sendSuccess(res, { plans, total, page, limit, pages: Math.ceil(total / limit) });
 }
 
 /**
@@ -188,7 +196,7 @@ async function updateWorkoutPlan(req, res) {
   const user = req.user;
 
   const trainerProfile = await TrainerProfile.findOne({ user: user._id });
-  if (!trainerProfile) {
+  if (!trainerProfile || !trainerProfile.isActive) {
     throw new AppError('Hồ sơ huấn luyện viên không tồn tại.', 404);
   }
 
@@ -202,16 +210,22 @@ async function updateWorkoutPlan(req, res) {
     throw new AppError('Không có trường hợp lệ để cập nhật.', 400);
   }
 
-  const plan = await WorkoutPlan.findOneAndUpdate(
-    { _id: req.params.planId, trainer: trainerProfile._id },
-    { $set: updateData },
-    { new: true, runValidators: true }
-  ).populate('member', 'fullName email phone avatar');
+  const plan = await WorkoutPlan.findOne({
+    _id: req.params.planId, trainer: trainerProfile._id
+  });
 
   if (!plan) {
     throw new AppError('Giáo án không tồn tại hoặc bạn không có quyền chỉnh sửa.', 404);
   }
 
+  if (req.body.expectedVersion !== undefined &&
+      (!Number.isInteger(req.body.expectedVersion) || req.body.expectedVersion !== plan.__v)) {
+    throw new AppError('Giáo án đã được cập nhật. Hãy tải lại trước khi sửa.', 409);
+  }
+
+  Object.assign(plan, updateData);
+  await plan.save(); // Document validation checks both dates and optimistic concurrency.
+  await plan.populate('member', 'fullName email phone avatar');
   return sendSuccess(res, { plan }, 'Cập nhật giáo án thành công!');
 }
 
@@ -223,17 +237,15 @@ async function getMemberWorkoutPlans(req, res) {
   const user = req.user;
 
   const plans = await WorkoutPlan.find({ member: user._id })
-    .populate('trainer', 'specialties bio pricePerSession ratingAverage')
+    .populate({
+      path: 'trainer',
+      select: 'user specialties bio pricePerSession ratingAverage',
+      populate: { path: 'user', select: 'fullName avatar email' }
+    })
     .sort({ createdAt: -1 });
 
-  // Populate thêm thông tin user của trainer
-  const plansWithTrainerUser = await Promise.all(plans.map(async (plan) => {
-    const planObj = plan.toObject();
-    if (plan.trainer) {
-      const trainerUser = await User.findById(plan.trainer.user).select('fullName avatar email');
-      planObj.trainerUser = trainerUser || null;
-    }
-    return planObj;
+  const plansWithTrainerUser = plans.map(plan => ({
+    ...plan.toObject(), trainerUser: plan.trainer?.user || null
   }));
 
   return sendSuccess(res, { plans: plansWithTrainerUser });

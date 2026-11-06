@@ -1,41 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { FaUserFriends, FaDumbbell, FaPlus, FaSearch, FaExclamationCircle, FaSyncAlt, FaBookOpen } from 'react-icons/fa';
+import { useState, useCallback } from 'react';
+import { FaUserFriends, FaDumbbell, FaSearch, FaExclamationCircle, FaSyncAlt } from 'react-icons/fa';
 import { trainerApi } from '../api/apiClient';
+import { useApiResource } from '../hooks/useApiResource';
 import CreatePlanModal from '../components/CreatePlanModal';
+import TrainerProgressPanel from '../components/TrainerProgressPanel';
+import TrainerPlansPanel from '../components/TrainerPlansPanel';
 
 /**
  * A2.2 — TrainerStudentsPage: PT chỉ thấy hội viên liên quan (có booking với mình), dùng API thật.
  * Cho phép tạo giáo án qua modal kết nối API.
  */
-const TrainerStudentsPage = ({ user }) => {
-  const [members, setMembers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+const TrainerStudentsPage = () => {
+  const [plansMember, setPlansMember] = useState(null);
+  const [progressMember, setProgressMember] = useState(null);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+
+
   const [searchTerm, setSearchTerm] = useState('');
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
 
-  useEffect(() => {
+  const load = useCallback(() => trainerApi.getMembers({page,limit:10,search}).then(res=>res.data), [page,search]);
+  const {data,loading,error,reload:fetchMembers} = useApiResource(load,JSON.stringify([page,search]));
+  const filtered = data.members || [];
+  function applySearch(e) {
+    e.preventDefault(); setPage(1); setSearch(searchTerm.trim());
+    setPlansMember(null);setProgressMember(null);
     fetchMembers();
-  }, []);
-
-  async function fetchMembers() {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await trainerApi.getMembers();
-      setMembers(res.data.members || []);
-    } catch (err) {
-      setError(err.message || 'Không thể tải danh sách học viên.');
-    } finally {
-      setLoading(false);
-    }
   }
-
-  const filtered = members.filter(m =>
-    m.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const handleOpenPlanModal = (member) => {
     setSelectedMember(member);
@@ -64,22 +57,22 @@ const TrainerStudentsPage = ({ user }) => {
         </button>
       </div>
 
-      {/* Search Bar */}
-      <div className="p-3 mb-4 rounded-3 d-flex justify-content-between align-items-center flex-wrap gap-3" style={{ background: '#0F172A', border: '1px solid #1E293B' }}>
-        <div className="search-box position-relative" style={{ width: '320px' }}>
-          <FaSearch className="search-icon" />
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Tìm kiếm học viên..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
+      <form onSubmit={applySearch} className="p-3 mb-4 rounded-3 d-flex flex-wrap gap-3 align-items-end" style={{background:'#0F172A',border:'1px solid #1E293B'}}>
+        <div style={{width:320,maxWidth:'100%'}}>
+          <label htmlFor="trainer-member-search">Tìm học viên theo tên/email</label>
+          <div className="search-box position-relative" style={{width:'100%'}}>
+            <FaSearch className="search-icon" />
+            <input id="trainer-member-search" className="search-input" maxLength={120} value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} placeholder="Tìm kiếm học viên..." />
+          </div>
         </div>
-        <div className="text-muted small">
-          Tổng số học viên: <strong style={{ color: '#00E676' }}>{filtered.length} học viên</strong>
-        </div>
-      </div>
+        <button className="btn btn-success" disabled={loading}>Tìm học viên</button>
+        <p className="text-muted mb-0">Tổng số học viên: <strong style={{color:'#00E676'}}>{loading ? '—' : data.total || 0}</strong></p>
+      </form>
+      {!error && <nav aria-label="Phân trang học viên" className="d-flex flex-wrap gap-3 align-items-center mb-3">
+        <button className="btn btn-secondary" disabled={loading || page<=1} onClick={()=>{setPage(n=>n-1);setPlansMember(null);setProgressMember(null);}}>Trang học viên trước</button>
+        <span>{loading ? 'Đang tải trang...' : `Trang ${page}/${Math.max(1,data.pages || 0)}`}</span>
+        <button className="btn btn-secondary" disabled={loading || page>=Math.max(1,data.pages || 0)} onClick={()=>{setPage(n=>n+1);setPlansMember(null);setProgressMember(null);}}>Trang học viên sau</button>
+      </nav>}
 
       {/* Error */}
       {error && (
@@ -95,7 +88,7 @@ const TrainerStudentsPage = ({ user }) => {
       ) : filtered.length === 0 ? (
         <div className="text-center py-5 text-muted">
           <FaUserFriends style={{ fontSize: '2.5rem', marginBottom: 12, opacity: 0.4 }} />
-          <p>Chưa có học viên nào. Học viên sẽ xuất hiện khi họ đặt lịch với bạn.</p>
+          <p>Không có học viên phù hợp ở trang này. Học viên xuất hiện sau khi đặt lịch với bạn.</p>
         </div>
       ) : (
         <div className="row g-4">
@@ -159,7 +152,7 @@ const TrainerStudentsPage = ({ user }) => {
                 </div>
 
                 {/* Actions */}
-                <div className="d-flex gap-2 pt-3 mt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="student-actions d-flex gap-2 pt-3 mt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                   <button
                     className="btn-card-action flex-grow-1 py-2"
                     style={{ background: '#1E293B', fontSize: '0.82rem' }}
@@ -167,6 +160,8 @@ const TrainerStudentsPage = ({ user }) => {
                   >
                     <FaDumbbell className="me-1" /> Tạo Giáo Án
                   </button>
+                  <button className="btn btn-success" onClick={() => {setPlansMember(null);setProgressMember(member);}}>Ghi nhận tiến độ</button>
+                  <button className="btn btn-secondary" onClick={() => {setProgressMember(null);setPlansMember(member);}}>Xem giáo án</button>
                 </div>
               </div>
             </div>
@@ -174,14 +169,19 @@ const TrainerStudentsPage = ({ user }) => {
         </div>
       )}
 
+      {progressMember && <TrainerProgressPanel key={progressMember._id} member={progressMember} onClose={() => setProgressMember(null)} />}
+
+      {plansMember && <TrainerPlansPanel key={plansMember._id} member={plansMember} onClose={() => setPlansMember(null)} />}
+
       {/* Create Workout Plan Modal */}
-      <CreatePlanModal
+      {showPlanModal && <CreatePlanModal
+        key={selectedMember?._id}
         show={showPlanModal}
         onHide={() => setShowPlanModal(false)}
         student={selectedMember}
         onSubmitPlan={handlePlanCreated}
         useApi={true}
-      />
+      />}
     </div>
   );
 };
