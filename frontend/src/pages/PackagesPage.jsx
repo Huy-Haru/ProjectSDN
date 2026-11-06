@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { memberApi } from '../api/apiClient';
 import { useApiResource } from '../hooks/useApiResource';
+import { PageIntro } from '../components/DashboardPrimitives';
+import { FaCheckCircle, FaCrown } from 'react-icons/fa';
 const load = () => memberApi.packages().then(r => r.data.packages);
 const money = n => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
 export default function PackagesPage({ user, onLogin, onRegistered }) {
@@ -16,23 +18,20 @@ export default function PackagesPage({ user, onLogin, onRegistered }) {
     catch (err) { setFailure(err.message); }
     finally { setSaving(false); }
   }
-  return <section>
-    <h2>Gói tập FitManager</h2>
-    <p>Chọn gói và gửi đăng ký. Thanh toán tại quầy để Admin xác nhận kích hoạt.</p>
+  return <section className="dashboard-page">
+    <PageIntro eyebrow="MEMBERSHIP" title="Chọn nhịp tập phù hợp" description="Đăng ký gói theo tháng, quý hoặc năm. Thanh toán tại quầy để Admin xác nhận kích hoạt." />
     {loading && <p role="status">Đang tải gói tập...</p>}
     {error && <div role="alert">{error} <button onClick={reload}>Thử lại</button></div>}
     {!loading && !error && !data.length && <p>Chưa có gói tập đang mở đăng ký.</p>}
-    <div className="row g-3">{data.map(pkg => <div className="col-md-4" key={pkg._id}>
-      <article className="p-4 border rounded-3 h-100">
-        <h3>{pkg.name}</h3><p>{pkg.description}</p><h4>{money(pkg.price)}</h4>
-        <p>{pkg.durationDays} ngày · {pkg.includesPT ? 'Có PT' : 'Không kèm PT'}</p>
-        <p>Giới hạn: {pkg.sessionLimit == null ? 'Không giới hạn' : `${pkg.sessionLimit} buổi`}</p>
-        <button className="btn btn-success" disabled={saving} onClick={() => {
+    <div className="pricing-grid">{data.map((pkg, index) => <article className={`pricing-card ${index === 1 ? 'featured' : ''}`} key={pkg._id}>
+        {index === 1 && <div className="popular-badge"><FaCrown className="me-1" /> ĐƯỢC CHỌN NHIỀU</div>}
+        <div><div className="card-category">FITMANAGER {index + 1}</div><h3 className="card-title">{pkg.name}</h3><p className="card-description">{pkg.description || 'Quyền sử dụng thiết bị và không gian tập luyện.'}</p><div className="card-price-box"><strong className="card-price">{money(pkg.price)}</strong><span className="card-price-period">/ gói</span></div><p className="card-price-note">Hiệu lực {pkg.durationDays} ngày</p><div className="divider" /><ul className="feature-list"><li className="feature-item"><FaCheckCircle className="check-icon" />{pkg.includesPT ? 'Có PT đồng hành' : 'Tự do sử dụng thiết bị'}</li><li className="feature-item"><FaCheckCircle className="check-icon" />{pkg.sessionLimit == null ? 'Không giới hạn buổi' : `${pkg.sessionLimit} buổi trong gói`}</li><li className="feature-item"><FaCheckCircle className="check-icon" />Hỗ trợ check in bằng QR</li></ul></div>
+        <button className={`btn-card-action ${index === 1 ? 'btn-green' : ''}`} disabled={saving} onClick={() => {
           if (!user) { onLogin(); return; }
           setSelected(pkg); setDate(today); setFailure('');
-        }}>Đăng ký {pkg.name}</button>
-      </article></div>)}</div>
-    {selected && <form className="p-4 border rounded-3 mt-4" onSubmit={submit}>
+        }}>Đăng ký gói này</button>
+      </article>)}</div>
+    {selected && <form className="section-card" onSubmit={submit}>
       <h3>Xác nhận đăng ký {selected.name}</h3>
       <p>Số tiền: {money(selected.price)}. Gói sẽ chờ xác nhận thanh toán.</p>
       <label htmlFor="subscription-date">Ngày bắt đầu</label>
