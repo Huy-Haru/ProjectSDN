@@ -19,12 +19,12 @@ export function AdminShell({ title, description, children, action }) {
   return (
     <section className="admin-live">
       <div className="d-flex flex-wrap justify-content-between gap-3 mb-4">
-        <div>
-          <div className="text-success small fw-bold mb-2">
+        <div className="admin-shell-heading">
+          <div className="eyebrow">
             FITMANAGER · QUẢN TRỊ
           </div>
-          <h1 className="h3 text-white">{title}</h1>
-          <p className="text-secondary mb-0">{description}</p>
+          <h1>{title}</h1>
+          <p>{description}</p>
         </div>
         {action}
       </div>

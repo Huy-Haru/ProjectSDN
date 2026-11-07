@@ -3,6 +3,7 @@ import { Modal } from "react-bootstrap";
 import { adminRequest, queryString } from "../../api/adminApi";
 import { AdminShell, DataState, Feedback, Field, Pager } from "./AdminUI";
 import { money, useAdminData } from "./adminHooks";
+import { FaAward, FaDumbbell, FaEnvelope, FaPhone, FaStar, FaTimes, FaUser } from "react-icons/fa";
 const blankPackage = {
   name: "",
   description: "",
@@ -217,6 +218,7 @@ function Editor({ kind, item, onClose, onSaved }) {
 }
 export default function AdminCatalog({ kind }) {
   const isPackage = kind === "packages",
+    isTrainer = kind === "trainer",
     title = isPackage
       ? "Quản lý gói tập"
       : kind === "trainer"
@@ -227,6 +229,7 @@ export default function AdminCatalog({ kind }) {
     [draft, setDraft] = useState(""),
     [isActive, setIsActive] = useState("");
   const [editor, setEditor] = useState(null),
+    [detail, setDetail] = useState(null),
     [error, setError] = useState(""),
     [success, setSuccess] = useState(""),
     [busy, setBusy] = useState(false);
@@ -247,6 +250,16 @@ export default function AdminCatalog({ kind }) {
         item: isPackage ? item : await adminRequest("/users/" + item._id),
       });
     } catch (err) {
+      setError(err.message);
+    }
+  };
+  const showDetail = async (item) => {
+    setError("");
+    try {
+      setDetail({ loading: true });
+      setDetail(await adminRequest("/users/" + item._id));
+    } catch (err) {
+      setDetail(null);
       setError(err.message);
     }
   };
@@ -290,7 +303,7 @@ export default function AdminCatalog({ kind }) {
     >
       <Feedback error={error} success={success} />
       <form
-        className="d-flex flex-wrap gap-2 mb-4"
+        className="admin-filter-bar mb-4"
         onSubmit={(e) => {
           e.preventDefault();
           setPage(1);
@@ -298,7 +311,7 @@ export default function AdminCatalog({ kind }) {
         }}
       >
         <input
-          className="form-control w-auto"
+          className="admin-filter-input"
           aria-label="Tìm kiếm"
           placeholder={
             isPackage ? "Tìm tên gói…" : "Tìm tên, email, điện thoại…"
@@ -307,7 +320,7 @@ export default function AdminCatalog({ kind }) {
           onChange={(e) => setDraft(e.target.value)}
         />
         <select
-          className="form-select w-auto"
+          className="admin-filter-select"
           aria-label="Trạng thái"
           value={isActive}
           onChange={(e) => {
@@ -319,11 +332,11 @@ export default function AdminCatalog({ kind }) {
           <option value="true">Hoạt động</option>
           <option value="false">Đã khóa</option>
         </select>
-        <button className="btn btn-outline-success">Tìm kiếm</button>
+        <button className="btn btn-filter-primary">Tìm kiếm</button>
       </form>
       <DataState state={state}>
         <div className="table-responsive">
-          <table className="table table-dark table-hover align-middle">
+          <table className="admin-data-table">
             <thead>
               <tr>
                 <th>{isPackage ? "Tên gói" : "Họ tên"}</th>
@@ -356,7 +369,8 @@ export default function AdminCatalog({ kind }) {
                   </td>
                   <td>{item.isActive ? "Hoạt động" : "Đã khóa"}</td>
                   <td>
-                    <div className="d-flex gap-2">
+                    <div className="admin-table-actions">
+                      {isTrainer && <button className="btn btn-sm btn-detail" onClick={() => showDetail(item)}>Chi tiết</button>}
                       <button
                         className="btn btn-sm btn-outline-light"
                         onClick={() => edit(item)}
@@ -399,6 +413,7 @@ export default function AdminCatalog({ kind }) {
           }}
         />
       )}
+      {detail && <div className="admin-detail-backdrop" role="presentation" onClick={() => setDetail(null)}>{detail.loading ? <div className="admin-detail-loading">Đang tải hồ sơ…</div> : <article className="admin-detail-panel" role="dialog" aria-modal="true" aria-label={`Chi tiết ${detail.user?.fullName || 'huấn luyện viên'}`} onClick={event => event.stopPropagation()}><button className="admin-detail-close" onClick={() => setDetail(null)} aria-label="Đóng"><FaTimes /></button><div className="admin-detail-cover"><div className="admin-detail-avatar">{detail.user?.avatar ? <img src={detail.user.avatar} alt={detail.user.fullName} /> : <FaUser />}</div><div><span className="eyebrow">TRAINER PROFILE</span><h2>{detail.user?.fullName}</h2><p>{detail.trainerProfile?.bio || 'Chưa có phần giới thiệu.'}</p></div></div><div className="admin-detail-contact"><span><FaEnvelope /> {detail.user?.email}</span><span><FaPhone /> {detail.user?.phone || 'Chưa cập nhật số điện thoại'}</span></div><div className="admin-detail-metrics"><div><FaStar /><strong>{detail.trainerProfile?.ratingAverage || '—'}</strong><small>{detail.trainerProfile?.ratingCount || 0} đánh giá</small></div><div><FaAward /><strong>{detail.trainerProfile?.experienceYears || 0}+</strong><small>năm kinh nghiệm</small></div><div><FaDumbbell /><strong>{money(detail.trainerProfile?.pricePerSession || 0)}</strong><small>mỗi buổi</small></div></div><div className="admin-detail-section"><h3>Chuyên môn & chứng chỉ</h3><div className="admin-detail-tags">{(detail.trainerProfile?.specialties || []).map(value => <span key={value}>{value}</span>)}{(detail.trainerProfile?.certificates || []).map(value => <span key={value}><FaAward /> {value}</span>)}</div></div><div className="admin-detail-status"><span className={`status-dot ${detail.user?.isActive && detail.trainerProfile?.isActive ? 'is-active' : ''}`} />{detail.user?.isActive && detail.trainerProfile?.isActive ? 'Đang hoạt động và nhận lịch' : 'Đang tạm khóa'}</div></article>}</div>}
     </AdminShell>
   );
 }

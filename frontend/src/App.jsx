@@ -27,10 +27,24 @@ function App() {
   const chooseMenu = menu => navigate(menuPaths[menu] || '/');
   const handleLogout = async () => { await logout(); navigate('/'); };
   const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
+  useEffect(() => {
+    if (!user || !['/', '/login', '/register'].includes(path)) return undefined;
+    const target = user.role === 'admin' ? '/admin' : user.role === 'trainer' ? '/trainer' : '/member';
+    if (window.location.pathname === target) return undefined;
+    const redirect = window.setTimeout(() => {
+      window.history.replaceState({}, '', target);
+      setPath(target);
+      setActiveMenu(menuFromPath(target));
+    }, 0);
+    return () => window.clearTimeout(redirect);
+  }, [user, path]);
   const publicPath = ['/', '/about', '/context', '/login', '/register', '/packages'].includes(path);
+  const authPublicPath = ['/', '/login', '/register'].includes(path);
   if (loading) return <div className="boot-screen"><span className="brand-mark">FM</span><strong>FitManager</strong><span>Đang khởi động workspace...</span></div>;
   if (!user && workspacePath(path)) return <div className="site-frame"><Header isPublic theme={theme} onToggleTheme={toggleTheme} onNavigate={navigate} onOpenLogin={() => navigate('/login')} onOpenSignUp={() => navigate('/register')} /><main className="public-main"><AccessGate onNavigate={navigate} /></main><Footer onNavigate={navigate} /></div>;
-  if (publicPath && !workspacePath(path)) {
+  // Authenticated users stay in their role workspace when a stale public URL is restored.
+  // Marketing pages remain available through About, Context and Packages.
+  if (publicPath && !workspacePath(path) && !(user && authPublicPath)) {
     let page = <HomePage onNavigate={navigate} />;
     if (path === '/about') page = <AboutPage onNavigate={navigate} />;
     if (path === '/context') page = <ContextPage />;
