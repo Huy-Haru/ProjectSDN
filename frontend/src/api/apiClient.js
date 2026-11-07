@@ -119,7 +119,14 @@ export const bookingApi = {
   cancel: id => request('POST', `/member/bookings/${id}/cancel`),
   // A3.1 result workflow (the legacy trainer endpoint remains available above).
   confirmResult: (bookingId, data) => request('PATCH', `/bookings/${bookingId}/result`, data),
-  getById: bookingId => request('GET', `/bookings/${bookingId}`)
+  getById: bookingId => request('GET', `/bookings/${bookingId}`),
+  // Canonical booking routes added by the member booking branch.
+  createBooking: data => request('POST', '/bookings', data),
+  getMyBookings: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request('GET', `/bookings/my${qs ? '?' + qs : ''}`);
+  },
+  cancelBooking: (bookingId, reason) => request('PATCH', `/bookings/${bookingId}/cancel`, { reason })
 };
 export const progressApi = {
   mine: () => request('GET', '/member/progress'),
@@ -144,4 +151,10 @@ export const reviewApi = {
   getMyTrainerReviews: () => request('GET', '/reviews/my-trainer-reviews'),
   getBookingReview: bookingId => request('GET', `/reviews/booking/${bookingId}`),
   getTrainerReviews: trainerId => request('GET', `/reviews/trainer/${trainerId}`)
+};
+export const subscriptionApi = {
+  subscribe: (packageId, startDate) => request('POST', '/subscriptions', { packageId, startDate }),
+  getMySubscriptions: () => request('GET', '/subscriptions/my'),
+  getActiveSubscription: () => request('GET', '/subscriptions/active'),
+  getMyUsage: () => request('GET', '/subscriptions/usage')
 };

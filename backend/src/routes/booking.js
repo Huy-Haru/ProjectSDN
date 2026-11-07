@@ -1,0 +1,59 @@
+const express = require('express');
+const router = express.Router();
+const bookingController = require('../controllers/bookingController');
+const { authenticate, authorize } = require('../middlewares/auth');
+const asyncHandler = require('../utils/asyncHandler');
+const { ROLES } = require('../constants/roles');
+
+/**
+ * POST /api/bookings
+ * Member đặt lịch tập với PT
+ */
+router.post(
+  '/',
+  authenticate,
+  authorize(ROLES.MEMBER),
+  asyncHandler(bookingController.createBooking)
+);
+
+/**
+ * GET /api/bookings và GET /api/bookings/my
+ * Xem danh sách lịch tập của Member
+ */
+router.get(
+  '/',
+  authenticate,
+  authorize(ROLES.MEMBER),
+  asyncHandler(bookingController.getMyBookings)
+);
+
+router.get(
+  '/my',
+  authenticate,
+  authorize(ROLES.MEMBER),
+  asyncHandler(bookingController.getMyBookings)
+);
+
+/**
+ * GET /api/bookings/:id
+ * Xem chi tiết 1 buổi tập
+ */
+router.get(
+  '/:id',
+  authenticate,
+  authorize(ROLES.MEMBER),
+  asyncHandler(bookingController.getBookingById)
+);
+
+/**
+ * PATCH /api/bookings/:id/cancel
+ * Member hủy lịch tập đã đặt
+ */
+router.patch(
+  '/:id/cancel',
+  authenticate,
+  authorize(ROLES.MEMBER),
+  asyncHandler(bookingController.cancelBooking)
+);
+
+module.exports = router;
