@@ -16,7 +16,7 @@ router.patch(
 
 // GET /api/bookings/:bookingId — Chi tiết một booking (PT/Member/Admin)
 router.get(
-  '/:bookingId',
+  '/:bookingId([0-9a-fA-F]{24})',
   authenticate,
   asyncHandler(bookingResultController.getBookingById)
 );

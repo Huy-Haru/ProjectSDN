@@ -33,11 +33,11 @@ router.use('/reviews', reviewsRoutes);
 // Subscription routes: /api/subscriptions/*
 router.use('/subscriptions', subscriptionRoutes);
 
-// Member booking routes are mounted first so /my and /:id/cancel are resolved
-// before the generic booking result/detail routes.
-router.use('/bookings', bookingRoutes);
-// Booking result & cross-role detail routes: /api/bookings/* (A3.1)
+// Booking result/detail routes are mounted first. The detail route is limited
+// to ObjectId-shaped params so member paths such as /my remain available.
 router.use('/bookings', bookingsRoutes);
+// Member booking create/list/cancel routes.
+router.use('/bookings', bookingRoutes);
 
 module.exports = router;
 

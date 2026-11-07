@@ -21,6 +21,10 @@ const asyncHandler = require('../src/utils/asyncHandler');
 const AppError = require('../src/utils/AppError');
 const { signToken, verifyToken } = require('../src/utils/jwt');
 
+// Keep unit tests deterministic while production still requires a configured
+// 32+ character JWT_SECRET through the runtime configuration.
+process.env.JWT_SECRET ||= 'fitmanager_test_secret_32_chars_minimum_123456';
+
 // ─── Helper: start/stop a throwaway Express server ──────────────────────────
 
 async function withServer(app, run) {
@@ -118,7 +122,7 @@ test('Middleware: Authorization Bearer sai format → 401', async () => {
 
 test('Middleware: JWT hết hạn → 401 với thông báo rõ ràng', async () => {
   const jwt = require('jsonwebtoken');
-  const secret = process.env.JWT_SECRET || 'fitmanager_jwt_secret_dev';
+  const secret = process.env.JWT_SECRET;
   // Tạo token đã hết hạn ngay lập tức
   const expiredToken = jwt.sign({ id: 'abc', role: 'member' }, secret, { expiresIn: -1 });
 
