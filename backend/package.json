@@ -22,6 +22,7 @@
     "test:member": "node scripts/verify-member.js",
     "test:booking": "node scripts/verify-booking.js",
     "db:quota": "node scripts/reconcile-booking-quota.js",
+    "db:seed:demo": "node scripts/seed-demo.js",
     "test:progress": "node scripts/verify-progress.js",
     "test:review": "node scripts/verify-review.js",
     "test:attendance": "node scripts/verify-attendance.js"

@@ -36,6 +36,26 @@ Trước khi chạy backend, cấu hình JWT_SECRET riêng tối thiểu 32 ký 
 
 Backend: http://localhost:5000. Frontend: http://localhost:3000. Database: mongodb://127.0.0.1:27017/fitmanager. Backend dùng MONGODB_URI (hỗ trợ MONGO_URI cũ), CORS_ORIGIN=http://localhost:3000. Frontend dùng VITE_API_URL=http://localhost:5000/api. Không commit .env.
 
+### Dữ liệu demo và tài khoản kiểm thử
+
+Chạy sau khi MongoDB và `backend/.env` đã sẵn sàng:
+
+```powershell
+cd backend
+npm run db:seed:demo
+```
+
+Lệnh tạo 1 admin, 10 huấn luyện viên, 100 hội viên, 7 gói tập, subscription, lịch PT, giáo án, tiến độ, đánh giá và bằng chứng luyện tập. Script có thể chạy lại; các bản ghi demo cũ được thay thế.
+
+| Vai trò | Email | Mật khẩu |
+| --- | --- | --- |
+| Admin | `admin@fitmanager.test` | `FitManager123!` |
+| Trainer 1 | `trainer01@fitmanager.test` | `FitManager123!` |
+| Trainer 2 | `trainer02@fitmanager.test` | `FitManager123!` |
+| Member 1 | `member001@fitmanager.test` | `FitManager123!` |
+| Member 2 | `member002@fitmanager.test` | `FitManager123!` |
+| Member 3 | `member003@fitmanager.test` | `FitManager123!` |
+
 ## Hiện trạng
 
 Các trang chính Member/PT/Admin dùng MongoDB thật: Auth/profile, danh mục, đăng ký/thanh toán thủ công, đặt/hủy lịch, PT chốt kết quả, giáo án xem/sửa, tiến độ, đánh giá và tổng quan. Role database là member/trainer/admin; trainer là PT. Xem [tạo Admin](docs/08-admin-implementation.md), [bảng đối chiếu kế hoạch](docs/17-mvp-acceptance.md) và [API hiện tại](docs/03-system-design.md).
