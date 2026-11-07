@@ -123,8 +123,8 @@ async function changePassword(req, res) {
     throw new AppError('Mật khẩu hiện tại và mật khẩu mới là bắt buộc.', 400);
   }
 
-  if (newPassword.length < 6) {
-    throw new AppError('Mật khẩu mới phải có ít nhất 6 ký tự.', 400);
+  if (newPassword.length < 8) {
+    throw new AppError('Mật khẩu mới phải có ít nhất 8 ký tự.', 400);
   }
 
   // Lấy lại user kèm password (select: false)

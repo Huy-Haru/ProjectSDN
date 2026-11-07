@@ -24,12 +24,12 @@ export default function AdminDashboardPage() {
       }
     >
       <DataState state={state}>
+        <div className="admin-command-banner"><div><span className="eyebrow">CONTROL ROOM</span><h2>Phòng tập đang vận hành ổn định</h2><p>Theo dõi hội viên, PT, doanh thu và các khoản cần xác nhận trong cùng một màn hình.</p></div><div className="admin-command-mark">FM<span>+</span></div></div>
         <div className="row g-4">
           {cards.map(([label, value]) => (
             <div className="col-sm-6 col-xl-4" key={label}>
               <div
-                className="p-4 rounded-4 h-100"
-                style={{ background: "#0F172A", border: "1px solid #1E293B" }}
+                className="admin-stat-tile"
               >
                 <div className="text-secondary mb-3">{label}</div>
                 <strong className="h2 text-success">{value ?? 0}</strong>

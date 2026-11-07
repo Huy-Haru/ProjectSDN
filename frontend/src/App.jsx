@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import ConnectionStatus from './components/ConnectionStatus';
 import { useAuth } from './hooks/useAuth';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -46,7 +45,7 @@ function App() {
     if (user.role === 'trainer') { switch (activeMenu) { case 'trainer-schedule': return <TrainerSchedulePage user={user} />; case 'trainer-students': return <TrainerStudentsPage user={user} />; case 'trainer-reviews': return <ReviewsPage key="trainer-reviews" role="trainer" />; default: return <TrainerDashboardPage user={user} />; } }
     switch (activeMenu) { case 'packages': return <PackagesPage user={user} onLogin={() => navigate('/login')} onRegistered={() => chooseMenu('my-packages')} />; case 'my-packages': return <MyPackagePage onNavigateToPackages={() => chooseMenu('packages')} />; case 'booking': return <BookingPage preSelectedTrainerId={selectedTrainerId} onBooked={() => chooseMenu('schedule')} />; case 'trainers': return <TrainersPage onSelectPtForBooking={id => { setSelectedTrainerId(id); chooseMenu('booking'); }} />; case 'schedule': return <SchedulePage />; case 'progress': return <ProgressPage />; case 'reviews': return <ReviewsPage key="member-reviews" />; default: return <StudentDashboardPage user={user} onNavigate={chooseMenu} />; }
   };
-  return <div className={`app-container workspace-layout ${collapsed ? 'sidebar-collapsed' : ''}`}><Sidebar user={user} activeMenu={activeMenu} setActiveMenu={chooseMenu} collapsed={collapsed} onToggle={() => setCollapsed(value => !value)} onLogout={handleLogout} /><div className="main-content"><Header user={user} theme={theme} onToggleTheme={toggleTheme} onToggleSidebar={() => setCollapsed(false)} onNavigate={navigate} onLogout={handleLogout} /><ConnectionStatus /><main className="page-body">{renderPage()}</main></div></div>;
+  return <div className={`app-container workspace-layout ${collapsed ? 'sidebar-collapsed' : ''}`}><Sidebar user={user} activeMenu={activeMenu} setActiveMenu={chooseMenu} collapsed={collapsed} onToggle={() => setCollapsed(value => !value)} onLogout={handleLogout} /><div className="main-content"><Header user={user} theme={theme} onToggleTheme={toggleTheme} onToggleSidebar={() => setCollapsed(false)} onNavigate={navigate} onLogout={handleLogout} /><main className="page-body">{renderPage()}</main></div></div>;
 }
 
 export default App;

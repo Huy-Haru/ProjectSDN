@@ -110,6 +110,7 @@ export const memberApi = {
   packages: () => request('GET', '/member/packages'),
   subscriptions: () => request('GET', '/member/subscriptions'),
   subscribe: (packageId, startDate) => request('POST', '/member/subscriptions', { packageId, startDate })
+  ,checkInQr: () => request('GET', '/member/check-in-qr')
 };
 export const bookingApi = {
   trainers: () => request('GET', '/member/trainers'),

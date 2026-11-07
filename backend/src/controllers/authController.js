@@ -28,14 +28,14 @@ function formatUser(user) {
  * Đăng ký tài khoản member mới (public chỉ tạo được member)
  */
 async function register(req, res) {
-  const { fullName, email, password, phone, gender, dateOfBirth } = req.body;
+  const { fullName, email, password, phone, gender, dateOfBirth, avatar } = req.body;
 
   if (!fullName || !email || !password) {
     throw new AppError('Họ tên, email và mật khẩu là bắt buộc.', 400);
   }
 
-  if (password.length < 6) {
-    throw new AppError('Mật khẩu phải có ít nhất 6 ký tự.', 400);
+  if (password.length < 8) {
+    throw new AppError('Mật khẩu phải có ít nhất 8 ký tự.', 400);
   }
 
   // Kiểm tra email đã tồn tại
@@ -52,6 +52,7 @@ async function register(req, res) {
     phone: phone?.trim(),
     gender,
     dateOfBirth,
+    avatar: typeof avatar === 'string' && /^https?:\/\//i.test(avatar.trim()) ? avatar.trim() : undefined,
     role: ROLES.MEMBER // Public luôn tạo member
   });
 

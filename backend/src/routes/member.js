@@ -20,6 +20,13 @@ router.get('/subscriptions', asyncHandler(async (req, res) => {
   return sendSuccess(res, { subscriptions });
 }));
 
+router.get('/check-in-qr', asyncHandler(async (req, res) => {
+  const active = await Subscription.findActiveByMember(req.user._id).populate('package', 'name includesPT');
+  if (!active) return sendSuccess(res, { available: false, qrData: null, subscription: null });
+  const qrData = JSON.stringify({ type: 'FITMANAGER_CHECK_IN', memberId: String(req.user._id), subscriptionId: String(active._id), validUntil: active.endDate.toISOString() });
+  return sendSuccess(res, { available: true, qrData, subscription: active });
+}));
+
 router.post('/subscriptions', asyncHandler(async (req, res) => {
   if (typeof req.body.packageId !== 'string' || !mongoose.isObjectIdOrHexString(req.body.packageId)) {
     throw new AppError('Vui lòng chọn gói tập hợp lệ.', 400);

@@ -16,7 +16,7 @@ const ProfilePage = () => {
   const [alert, setAlert] = useState({ type: '', msg: '' });
 
   // Form state cho thông tin cá nhân
-  const [form, setForm] = useState({ fullName: '', phone: '', gender: '', dateOfBirth: '' });
+  const [form, setForm] = useState({ fullName: '', phone: '', gender: '', dateOfBirth: '', avatar: '' });
 
   // Form state cho TrainerProfile
   const [trainerForm, setTrainerForm] = useState({
@@ -36,7 +36,7 @@ const ProfilePage = () => {
       if (!active) return;
       const data = res.data;
       setProfile(data);
-      setForm({ fullName: data.fullName || '', phone: data.phone || '', gender: data.gender || '', dateOfBirth: data.dateOfBirth ? data.dateOfBirth.split('T')[0] : '' });
+      setForm({ fullName: data.fullName || '', phone: data.phone || '', gender: data.gender || '', dateOfBirth: data.dateOfBirth ? data.dateOfBirth.split('T')[0] : '', avatar: data.avatar || '' });
       if (data.trainerProfile) {
         const tp = data.trainerProfile;
         setTrainerForm({ specialties: (tp.specialties || []).join(', '), experienceYears: tp.experienceYears ?? '', bio: tp.bio || '', certificates: (tp.certificates || []).join(', '), pricePerSession: tp.pricePerSession ?? '' });
@@ -60,6 +60,7 @@ const ProfilePage = () => {
         phone: form.phone || undefined,
         gender: form.gender || undefined,
         dateOfBirth: form.dateOfBirth || undefined
+        ,avatar: form.avatar || undefined
       };
       await profileApi.updateMyProfile(payload);
       showAlert('success', 'Cập nhật hồ sơ thành công!');
@@ -96,8 +97,8 @@ const ProfilePage = () => {
       showAlert('error', 'Mật khẩu xác nhận không khớp.');
       return;
     }
-    if (pwForm.newPassword.length < 6) {
-      showAlert('error', 'Mật khẩu mới phải có ít nhất 6 ký tự.');
+    if (pwForm.newPassword.length < 8) {
+      showAlert('error', 'Mật khẩu mới phải có ít nhất 8 ký tự.');
       return;
     }
     setSaving(true);
@@ -155,7 +156,7 @@ const ProfilePage = () => {
           width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg, #00E676, #00B0FF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', color: '#0A0F1E', fontWeight: 700, flexShrink: 0
         }}>
-          {profile?.fullName?.charAt(0)?.toUpperCase()}
+          {profile?.avatar ? <img className="profile-avatar-image" src={profile.avatar} alt={profile.fullName} onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.textContent = profile?.fullName?.charAt(0)?.toUpperCase(); }} /> : profile?.fullName?.charAt(0)?.toUpperCase()}
         </div>
         <div>
           <h4 className="text-white fw-bold mb-1">{profile?.fullName}</h4>
@@ -198,6 +199,11 @@ const ProfilePage = () => {
                   onChange={e => setForm(p => ({ ...p, fullName: e.target.value }))}
                   required
                 />
+              </div>
+              <div className="col-12">
+                <label className="form-label-dark">Ảnh đại diện (URL)</label>
+                <input className="form-control form-control-dark" type="url" value={form.avatar} onChange={e => setForm(p => ({ ...p, avatar: e.target.value }))} placeholder="https://images.example/avatar.jpg" />
+                <div className="text-muted small mt-1">Dùng đường dẫn ảnh công khai. Nếu ảnh lỗi, hệ thống sẽ hiển thị chữ cái đầu.</div>
               </div>
               <div className="col-md-6">
                 <label className="form-label-dark"><FaEnvelope className="me-1" style={{ color: '#00E676' }} /> Email</label>
@@ -351,7 +357,7 @@ const ProfilePage = () => {
               />
             </div>
             <div className="mb-3">
-              <label className="form-label-dark"><FaLock className="me-1" style={{ color: '#00E676' }} /> Mật khẩu mới * (ít nhất 6 ký tự)</label>
+              <label className="form-label-dark"><FaLock className="me-1" style={{ color: '#00E676' }} /> Mật khẩu mới * (ít nhất 8 ký tự)</label>
               <input
                 type="password"
                 className="form-control form-control-dark"
