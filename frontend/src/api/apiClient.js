@@ -109,19 +109,28 @@ export const trainerApi = {
 export const memberApi = {
   packages: () => request('GET', '/member/packages'),
   subscriptions: () => request('GET', '/member/subscriptions'),
-  subscribe: (packageId, startDate) => request('POST', '/member/subscriptions', { packageId, startDate })
-  ,checkInQr: () => request('GET', '/member/check-in-qr')
+  subscribe: (packageId, startDate) => request('POST', '/member/subscriptions', { packageId, startDate }),
+  checkInQr: () => request('GET', '/member/check-in-qr')
 };
 export const bookingApi = {
   trainers: () => request('GET', '/member/trainers'),
   bookings: () => request('GET', '/member/bookings'),
   create: data => request('POST', '/member/bookings', data),
-  cancel: id => request('POST', `/member/bookings/${id}/cancel`)
+  cancel: id => request('POST', `/member/bookings/${id}/cancel`),
+  // A3.1 result workflow (the legacy trainer endpoint remains available above).
+  confirmResult: (bookingId, data) => request('PATCH', `/bookings/${bookingId}/result`, data),
+  getById: bookingId => request('GET', `/bookings/${bookingId}`)
 };
 export const progressApi = {
   mine: () => request('GET', '/member/progress'),
   forMember: id => request('GET', `/trainer/members/${id}/progress`),
-  create: (id, data) => request('POST', `/trainer/members/${id}/progress`, data)
+  create: (id, data) => request('POST', `/trainer/members/${id}/progress`, data),
+  // A3.1 generic endpoint used by the merged backend routes.
+  getLogs: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request('GET', `/progress${qs ? '?' + qs : ''}`);
+  },
+  createLog: data => request('POST', '/progress', data)
 };
 export const workoutApi = {
   submissions: () => request('GET', '/member/workout-submissions'),
@@ -130,5 +139,9 @@ export const workoutApi = {
 export const reviewApi = {
   mine: () => request('GET', '/member/reviews'),
   create: data => request('POST', '/member/reviews', data),
-  forTrainer: () => request('GET', '/trainer/reviews')
+  forTrainer: () => request('GET', '/trainer/reviews'),
+  // A3.2 generic endpoints from the merged backend routes.
+  getMyTrainerReviews: () => request('GET', '/reviews/my-trainer-reviews'),
+  getBookingReview: bookingId => request('GET', `/reviews/booking/${bookingId}`),
+  getTrainerReviews: trainerId => request('GET', `/reviews/trainer/${trainerId}`)
 };
