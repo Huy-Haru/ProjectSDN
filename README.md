@@ -1,67 +1,132 @@
 # FitManager — ProjectSDN
 
-Website quản lý phòng tập và huấn luyện viên. Frontend React + Vite; backend Node.js + Express + Mongoose; MongoDB local database fitmanager.
+Website quản lý phòng tập và huấn luyện viên cho một cơ sở gym.
 
-## Tài liệu
+- Frontend: React 19 + Vite
+- Backend: Node.js + Express MVC
+- Database: MongoDB + Mongoose
+- Authentication: JWT bearer + bcrypt
+- Roles: Member, Trainer/PT, Admin
 
-Xem [hồ sơ dự án](docs/README.md): báo cáo, SRS, thiết kế hệ thống, thiết kế database, hướng dẫn kiểm thử và tối ưu MongoDB. [Sơ đồ draw.io](docs/diagram/README.md) gồm context, use case cho các role, workflow, ERD và database diagram.
+## Cấu trúc repository
 
-Bộ token giao diện, typography, trạng thái, bảng và quy tắc dark/light nằm ở [FitManager Design System](docs/fitmanager-design-system.md).
+```text
+ProjectSDN/
+├─ backend/
+│  ├─ src/
+│  │  ├─ config/          # environment, database, runtime
+│  │  ├─ constants/       # role và status constants
+│  │  ├─ controllers/     # điều phối request
+│  │  ├─ middlewares/     # authenticate, authorize, error handler
+│  │  ├─ models/          # Mongoose schemas và indexes
+│  │  ├─ routes/          # auth, member, trainer, admin, booking
+│  │  ├─ services/        # nghiệp vụ domain và quota
+│  │  ├─ scripts/         # seed và maintenance scripts
+│  │  └─ utils/           # response, JWT, pagination, archive
+│  ├─ scripts/            # verify, seed, backup, migration
+│  └─ test/               # test runtime, model và security
+├─ frontend/
+│  ├─ src/
+│  │  ├─ api/             # API clients dùng chung
+│  │  ├─ auth/            # login/register
+│  │  ├─ components/      # UI và admin components
+│  │  ├─ hooks/           # auth và resource hooks
+│  │  ├─ pages/           # page implementations
+│  │  ├─ public/           # public pages
+│  │  ├─ roles/           # export pages theo role
+│  │  ├─ services/        # health/API compatibility helpers
+│  │  └─ shared/           # layout, navigation, theme
+│  └─ scripts/            # browser UAT helpers
+├─ docs/
+│  ├─ FitManager-SRS.docx # SRS có diagram nhúng theo thứ tự mẫu
+│  ├─ FitManager-SDS.docx # SDS có diagram nhúng theo thứ tự mẫu
+│  ├─ diagram/            # drawio, SVG và PNG
+│  └─ *.md                # thiết kế, API, database, kiểm thử
+└─ README.md
+```
 
-Tài liệu theo cấu trúc template: [SRS](docs/srs-fitmanager.md), [SDS](docs/sds-fitmanager.md). Slide nhóm: [FitManager-3-member-presentation.pptx](docs/FitManager-3-member-presentation.pptx).
+## Chức năng chính
+
+- Guest xem trang giới thiệu và package đang hoạt động.
+- Member đăng ký package, xem trạng thái gói, đặt/hủy lịch PT, xem giáo án/tiến độ, gửi proof URL và review.
+- Trainer xem lịch dạy, học viên liên quan, quản lý workout plan/progress, chốt kết quả và xem proof/review.
+- Admin quản lý package, tài khoản, trainer, lịch, xác nhận thanh toán thủ công và doanh thu.
+- Mock check-in trả payload cục bộ; chưa có QR scan thật hoặc payment gateway.
+
+## Tài liệu và diagram
+
+- [SRS FitManager](docs/FitManager-SRS.docx)
+- [SDS FitManager](docs/FitManager-SDS.docx)
+- [SRS Markdown](docs/02-srs.md)
+- [SDS Markdown](docs/sds-fitmanager.md)
+- [Thiết kế hệ thống và API](docs/03-system-design.md)
+- [Thiết kế database](docs/04-database-design.md)
+- [Danh mục diagram](docs/diagram/README.md)
+- [Design system](docs/fitmanager-design-system.md)
+
+Thứ tự diagram trong tài liệu:
+
+- SRS: Context → Screen flow → ERD → Use case → Workflow → yêu cầu/use case chi tiết.
+- SDS: Package → Database schema/ERD → Architecture → UI → module/class/sequence/query theo nghiệp vụ.
+
+File `.drawio` là nguồn chỉnh sửa; `.svg` dùng để phóng to; `.png` được nhúng trực tiếp trong DOCX.
 
 ## Chạy local
 
-Yêu cầu Node.js >= 22.12.0 và MongoDB server tại 127.0.0.1:27017.
+Yêu cầu Node.js `>=22.12.0` và MongoDB tại `127.0.0.1:27017`.
 
-Terminal backend:
+### Backend
 
 ```powershell
 cd backend
 npm ci
-# Khi chưa có .env:
 Copy-Item .env.example .env
+# đặt JWT_SECRET tối thiểu 32 ký tự trong backend/.env
+npm run check:config
 npm run dev
 ```
 
-Terminal frontend:
+Backend chạy tại `http://localhost:5000`.
+
+### Frontend
 
 ```powershell
 cd frontend
 npm install
-# Khi chưa có .env:
 Copy-Item .env.example .env
 npm run dev
 ```
 
-Trước khi chạy backend, cấu hình JWT_SECRET riêng tối thiểu 32 ký tự trong backend/.env (xem gợi ý tạo secret trong .env.example), rồi chạy npm run check:config. Không dùng secret mẫu hoặc commit secret.
+Frontend chạy tại `http://localhost:3000` và dùng `VITE_API_URL=http://localhost:5000/api`.
 
-Backend: http://localhost:5000. Frontend: http://localhost:3000. Database: mongodb://127.0.0.1:27017/fitmanager. Backend dùng MONGODB_URI (hỗ trợ MONGO_URI cũ), CORS_ORIGIN=http://localhost:3000. Frontend dùng VITE_API_URL=http://localhost:5000/api. Không commit .env.
+## Dữ liệu demo
 
-### Dữ liệu demo và tài khoản kiểm thử
-
-Chạy sau khi MongoDB và `backend/.env` đã sẵn sàng:
+Sau khi MongoDB và `backend/.env` sẵn sàng:
 
 ```powershell
 cd backend
 npm run db:seed:demo
 ```
 
-Lệnh tạo 1 admin, 10 huấn luyện viên, 100 hội viên, 7 gói tập, subscription, lịch PT, giáo án, tiến độ, đánh giá và bằng chứng luyện tập. Script có thể chạy lại; các bản ghi demo cũ được thay thế.
-
-| Vai trò | Email | Mật khẩu |
-| --- | --- | --- |
-| Admin | `admin@fitmanager.test` | `FitManager123!` |
-| Trainer 1 | `trainer01@fitmanager.test` | `FitManager123!` |
-| Trainer 2 | `trainer02@fitmanager.test` | `FitManager123!` |
-| Member 1 | `member001@fitmanager.test` | `FitManager123!` |
-| Member 2 | `member002@fitmanager.test` | `FitManager123!` |
-| Member 3 | `member003@fitmanager.test` | `FitManager123!` |
-
-## Hiện trạng
-
-Các trang chính Member/PT/Admin dùng MongoDB thật: Auth/profile, danh mục, đăng ký/thanh toán thủ công, đặt/hủy lịch, PT chốt kết quả, giáo án xem/sửa, tiến độ, đánh giá và tổng quan. Role database là member/trainer/admin; trainer là PT. Xem [tạo Admin](docs/08-admin-implementation.md), [bảng đối chiếu kế hoạch](docs/17-mvp-acceptance.md) và [API hiện tại](docs/03-system-design.md).
+Seed tạo dữ liệu demo cho Admin, Trainer, Member, package, subscription, booking, workout plan, progress, review và workout submission. Không dùng tài khoản demo trong môi trường production.
 
 ## Kiểm tra
 
-Backend: npm test; npm run test:integration; npm run test:member; npm run test:booking; npm run test:trainer; npm run test:progress; npm run test:review; npm run test:attendance; npm run test:archive. Các integration suite dùng database tạm riêng. Frontend: npm run lint, npm run build và npm run test:admin:ui (cần MongoDB + Chromium/Edge; xem docs/10). Xem [biên bản xác minh](docs/verification.md) để biết kết quả thực tế và giới hạn.
+```powershell
+# frontend
+cd frontend
+npm run lint
+npm run build
+
+# backend
+cd ../backend
+npm test
+```
+
+Sinh lại diagram:
+
+```powershell
+node docs/diagram/generate.cjs
+```
+
+Các kiểm thử tích hợp cần MongoDB riêng; UAT trình duyệt cần Chromium/Edge. Payment gateway, QR scan thật, realtime, binary upload và JWT denylist chưa nằm trong MVP.

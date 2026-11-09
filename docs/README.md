@@ -1,37 +1,40 @@
-# FitManager documentation update
+# FitManager documentation
 
-Website quản lý phòng tập và huấn luyện viên cho phòng tập sắp mở. Frontend dùng React/Vite, backend dùng Express MVC, Mongoose và MongoDB.
+Website quản lý phòng tập và huấn luyện viên cho một cơ sở gym. Frontend dùng React/Vite, backend dùng Express MVC, Mongoose và MongoDB.
 
 ## Tài liệu bàn giao
 
-- [FitManager-SRS.docx](FitManager-SRS.docx): SRS theo mẫu, gồm context diagram, screen flow, phân quyền, ERD và yêu cầu chức năng.
-- [FitManager-SDS.docx](FitManager-SDS.docx): SDS theo mẫu, gồm package diagram, database schema, table descriptions, class specifications, sequence và queries.
-- [FitManager-3-member-presentation.pptx](FitManager-3-member-presentation.pptx): slide phân công thuyết trình cho ba thành viên.
-- [diagram/README.md](diagram/README.md): các sơ đồ draw.io, SVG và PNG gồm context, use case, workflow, ERD và database schema.
+- [FitManager-SRS.docx](FitManager-SRS.docx): tài liệu SRS theo bố cục mẫu, có diagram nhúng trực tiếp theo thứ tự Context → Screen flow → ERD → Use case → Workflow.
+- [FitManager-SDS.docx](FitManager-SDS.docx): tài liệu SDS theo bố cục mẫu, có diagram nhúng theo thứ tự Package → Database/ERD → Architecture → UI → thiết kế module.
+- [02-srs.md](02-srs.md): SRS chi tiết dạng Markdown.
+- [sds-fitmanager.md](sds-fitmanager.md): SDS tóm tắt dạng Markdown.
+- [03-system-design.md](03-system-design.md): architecture, API và quy tắc cạnh tranh.
+- [04-database-design.md](04-database-design.md): data dictionary, cardinality và index.
+- [diagram/README.md](diagram/README.md): nguồn draw.io, SVG và PNG của toàn bộ sơ đồ.
+- [verification.md](verification.md): các kiểm tra đã chạy và giới hạn môi trường.
 
-## Cấu trúc frontend
+## Diagram
 
-- `frontend/src/public`: Home, About, Context và Footer cho khách chưa đăng nhập.
-- `frontend/src/auth`: Login và Register là trang riêng, không dùng modal.
-- `frontend/src/shared`: layout, điều hướng role và preference theme/sidebar.
-- `frontend/src/roles/member`: workspace hội viên.
-- `frontend/src/roles/trainer`: workspace huấn luyện viên.
-- `frontend/src/roles/admin`: workspace quản trị.
-- `frontend/src/api`, `frontend/src/hooks`: kết nối API thật và phục hồi phiên.
+Nguồn chỉnh sửa nằm trong `docs/diagram/*.drawio`. Bản SVG dùng để phóng to khi báo cáo; bản PNG được nhúng trong SRS/SDS. Diagram dùng phong cách đơn sắc học thuật giống tài liệu mẫu.
+
+Danh mục gồm context, architecture, screen flow, use case Guest/Member/Trainer/Admin, workflow subscription/booking/training/cancellation, ERD và database schema.
 
 ## Nghiệp vụ chính
 
-- Chủ phòng tập quản lý catalog gói tháng/quý/năm, PT, hội viên, lịch, thanh toán và doanh thu.
-- PT quản lý lịch dạy, học viên, giáo án theo ngày và chỉ số tiến độ.
-- Member đặt gói, đặt lịch PT, xem QR check in mô phỏng và gửi URL ảnh/video làm bằng chứng sau bài tập.
-- URL bằng chứng được lưu trong `WorkoutSubmission`; release hiện tại không lưu file nhị phân và không kết nối cổng thanh toán thật.
+- Admin quản lý package, trainer, member, booking, thanh toán xác nhận thủ công và doanh thu.
+- Trainer quản lý lịch dạy, học viên liên quan, workout plan, progress, kết quả và review.
+- Member đăng ký package, đặt/hủy lịch PT, xem giáo án/tiến độ, gửi proof URL và review.
+- QR check-in chỉ là payload mô phỏng hiển thị cục bộ; không kết nối payment gateway hoặc QR service bên ngoài.
 
 ## Kiểm tra local
 
-```bash
+```powershell
 cd frontend
 npm run lint
 npm run build
+
+cd ../backend
+npm test
 ```
 
-Backend kiểm tra cú pháp bằng `node --check`; các test cần MongoDB và môi trường process đầy đủ.
+Các integration/UAT cần MongoDB và trình duyệt Chromium/Edge. Xem [README.md](../README.md) để biết cấu trúc và lệnh chạy đầy đủ.

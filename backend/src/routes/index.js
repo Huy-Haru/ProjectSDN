@@ -8,7 +8,7 @@ const bookingsRoutes = require('./bookings');
 const progressRoutes = require('./progress');
 const reviewsRoutes = require('./reviews');
 const subscriptionRoutes = require('./subscription');
-const bookingRoutes = require('./booking');
+const memberBookingRoutes = require('./memberBookings');
 
 const router = express.Router();
 router.get('/health', asyncHandler(healthController.getHealth));
@@ -36,8 +36,8 @@ router.use('/subscriptions', subscriptionRoutes);
 // Booking result/detail routes are mounted first. The detail route is limited
 // to ObjectId-shaped params so member paths such as /my remain available.
 router.use('/bookings', bookingsRoutes);
-// Member booking create/list/cancel routes.
-router.use('/bookings', bookingRoutes);
+// Member booking create/list/cancel routes. Kept separate from booking result/detail routes.
+router.use('/bookings', memberBookingRoutes);
 
 module.exports = router;
 

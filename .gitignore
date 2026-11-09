@@ -5,6 +5,10 @@ dist/
 build/
 coverage/
 .vite/
+.chrome-temp/
+docs/presentation-output/
+docs/reference-srs-render/
+~$*.docx
 
 # Local environment and secrets
 .env
