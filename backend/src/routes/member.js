@@ -65,17 +65,26 @@ router.get('/workout-submissions', asyncHandler(async (req, res) => {
 router.post('/workout-submissions', asyncHandler(async (req, res) => {
   const { planId, exerciseName, completedOn, proofUrl, note } = req.body;
   if (!planId || !exerciseName || !completedOn || !proofUrl) throw new AppError('Vui lòng chọn bài tập, ngày hoàn thành và đường dẫn bằng chứng.', 400);
-  if (!/^https?:\/\//i.test(proofUrl)) throw new AppError('Đường dẫn bằng chứng phải bắt đầu bằng http:// hoặc https://.', 400);
+  if (typeof proofUrl !== 'string' || proofUrl.length > 1000) throw new AppError('Đường dẫn bằng chứng không hợp lệ.', 400);
+  let parsedProofUrl;
+  try { parsedProofUrl = new URL(proofUrl); } catch { throw new AppError('Đường dẫn bằng chứng không hợp lệ.', 400); }
+  if (!['http:', 'https:'].includes(parsedProofUrl.protocol)) throw new AppError('Đường dẫn bằng chứng phải bắt đầu bằng http:// hoặc https://.', 400);
+  if (typeof exerciseName !== 'string' || exerciseName.trim().length > 160) throw new AppError('Tên bài tập không hợp lệ.', 400);
+  if (typeof completedOn !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(completedOn) || Number.isNaN(Date.parse(completedOn)) || new Date(completedOn).toISOString().slice(0, 10) !== completedOn) throw new AppError('Ngày hoàn thành không hợp lệ.', 400);
+  if (completedOn > new Date(Date.now() + 7 * 3600000).toISOString().slice(0, 10)) throw new AppError('Ngày hoàn thành không được ở tương lai.', 400);
+  if (note !== undefined && (typeof note !== 'string' || note.length > 500)) throw new AppError('Ghi chú tối đa 500 ký tự.', 400);
   const plan = await WorkoutPlan.findOne({ _id: planId, member: req.user._id });
   if (!plan) throw new AppError('Giáo án không tồn tại hoặc không thuộc về bạn.', 404);
-  const item = plan.items.find(entry => entry.exerciseName === exerciseName);
+  if (plan.status !== 'active' || completedOn < new Date(plan.startDate).toISOString().slice(0, 10) || completedOn > new Date(plan.endDate).toISOString().slice(0, 10)) throw new AppError('Ngày gửi bằng chứng phải nằm trong thời gian giáo án đang áp dụng.', 409);
+  const normalizedExerciseName = exerciseName.trim();
+  const item = plan.items.find(entry => entry.exerciseName === normalizedExerciseName);
   if (!item) throw new AppError('Bài tập không thuộc giáo án đã chọn.', 400);
-  const submission = await WorkoutSubmission.create({ plan: plan._id, member: req.user._id, exerciseName, completedOn: new Date(completedOn), proofUrl: proofUrl.trim(), note: note?.trim() });
+  const submission = await WorkoutSubmission.create({ plan: plan._id, member: req.user._id, exerciseName: normalizedExerciseName, completedOn: new Date(completedOn + 'T00:00:00+07:00'), proofUrl: parsedProofUrl.href, note: note?.trim() });
   return sendSuccess(res, { submission }, 'Đã gửi bằng chứng buổi tập.', 201);
 }));
 router.get('/trainers', asyncHandler(async (req, res) => sendSuccess(res, { trainers: await bookingService.trainers() })));
-router.get('/bookings', asyncHandler(async (req, res) => sendSuccess(res, { bookings: await bookingService.bookings(req.user._id) })));
+router.get('/bookings', asyncHandler(async (req, res) => sendSuccess(res, await bookingService.bookings(req.user._id, req.query))));
 router.post('/bookings', asyncHandler(async (req, res) => sendSuccess(res, { booking: await bookingService.create(req.user._id, req.body) }, 'Đặt lịch thành công.', 201)));
-router.post('/bookings/:id/cancel', asyncHandler(async (req, res) => sendSuccess(res, { booking: await bookingService.cancel(req.user._id, req.params.id) })));
+router.post('/bookings/:id/cancel', asyncHandler(async (req, res) => sendSuccess(res, { booking: await bookingService.cancel(req.user._id, req.params.id, req.body?.reason) })));
 
 module.exports = router;

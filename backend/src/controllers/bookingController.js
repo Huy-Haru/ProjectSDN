@@ -1,77 +1,24 @@
-const bookingService = require('../services/bookingService');
+const bookingService = require('../services/memberBookingService');
 const { sendSuccess } = require('../utils/response');
 
-/**
- * POST /api/bookings
- * Đặt lịch tập mới với PT
- */
 async function createBooking(req, res) {
-  const memberId = req.user._id;
-  const { trainerId, date, startTime, endTime, note } = req.body;
-
-  const result = await bookingService.createBooking({
-    memberId,
-    trainerId,
-    date,
-    startTime,
-    endTime,
-    note
-  });
-
-  return sendSuccess(
-    res,
-    result,
-    'Đặt lịch tập thành công!',
-    201
-  );
+  const booking = await bookingService.create(req.user._id, req.body);
+  return sendSuccess(res, { booking }, 'Đặt lịch thành công.', 201);
 }
 
-/**
- * GET /api/bookings/my
- * Xem danh sách lịch tập của Member
- */
 async function getMyBookings(req, res) {
-  const memberId = req.user._id;
-  const { status, from, to } = req.query;
-
-  const bookings = await bookingService.getMyBookings(memberId, { status, from, to });
-
-  return sendSuccess(res, bookings, 'Lấy danh sách lịch tập thành công.');
+  const bookings = await bookingService.bookings(req.user._id, req.query);
+  return sendSuccess(res, { bookings });
 }
 
-/**
- * PATCH /api/bookings/:id/cancel
- * Member hủy lịch tập đã đặt
- */
 async function cancelBooking(req, res) {
-  const memberId = req.user._id;
-  const bookingId = req.params.id;
-  const { reason } = req.body;
-
-  const result = await bookingService.cancelBooking({
-    memberId,
-    bookingId,
-    reason
-  });
-
-  return sendSuccess(res, result, 'Hủy lịch tập thành công.');
+  const reason = req.body?.reason;
+  if (reason !== undefined && typeof reason !== 'string') {
+    const AppError = require('../utils/AppError');
+    throw new AppError('Lý do hủy phải là chuỗi ký tự.', 400);
+  }
+  const booking = await bookingService.cancel(req.user._id, req.params.id, reason);
+  return sendSuccess(res, { booking }, 'Đã hủy lịch tập.');
 }
 
-/**
- * GET /api/bookings/:id
- * Xem chi tiết 1 buổi tập
- */
-async function getBookingById(req, res) {
-  const memberId = req.user._id;
-  const bookingId = req.params.id;
-
-  const booking = await bookingService.getBookingById(memberId, bookingId);
-  return sendSuccess(res, booking, 'Lấy thông tin lịch tập thành công.');
-}
-
-module.exports = {
-  createBooking,
-  getBookingById,
-  getMyBookings,
-  cancelBooking
-};
+module.exports = { createBooking, getMyBookings, cancelBooking };

@@ -9,19 +9,19 @@ function vertical(d,a,b,text='',opts={}){const af=opts.sf??.5,bf=opts.tf??.5,fro
 
 // DFD level 0: external entities are rectangles; the entire system is one process.
 {
- const d=new Diagram('Context diagram — FitManager',1640,1020);title(d,'CONTEXT DIAGRAM · FITMANAGER');subtitle(d,'DFD mức 0 · Mỗi mũi tên là một luồng dữ liệu có hướng · Thanh toán xác nhận thủ công');
+ const d=new Diagram('Context diagram — FitManager',1640,1020);title(d,'SƠ ĐỒ NGỮ CẢNH · FITMANAGER');subtitle(d,'DFD mức 0 · Website, REST API và MongoDB nội bộ · Admin xác nhận thanh toán thủ công');
  d.node('system','0\nFITMANAGER\nQuản lý phòng tập\nvà huấn luyện viên',670,330,360,360,'process',{bold:true,font:23});
  for(const [id,label,x,y] of [['guest','Khách',70,180],['member','Member / Hội viên',70,730],['trainer','PT / Huấn luyện viên',1330,180],['admin','Admin / Quản trị viên',1330,730]])d.node(id,label,x,y,230,110,'external',{color:'gray',bold:true,font:19});
  function flow(a,b,text,from,to,sf,tf,x,label){const p=P(d,a,from,sf),q=P(d,b,to,tf);d.edge(a,b,text,{from,to,sf,tf,via:[[x,p[1]],[x,q[1]]],label,backing:false});}
- flow('guest','system','Tiêu chí tra cứu; thông tin\nđăng ký / đăng nhập','right','left',.35,.25,540,[420,176]);
- flow('system','guest','Thông tin gói tập;\nkết quả đăng ký / xác thực','left','right',.12,.85,600,[415,302]);
- flow('member','system','Yêu cầu gói / đặt, hủy lịch;\nprofile và đánh giá','right','left',.35,.70,540,[425,708]);
+ flow('guest','system','Yêu cầu xem gói;\ndữ liệu đăng ký / đăng nhập','right','left',.35,.25,540,[420,176]);
+ flow('system','guest','Danh mục gói;\nkết quả xác thực tài khoản','left','right',.12,.85,600,[415,302]);
+ flow('member','system','Đăng ký gói; đặt / hủy lịch;\nhồ sơ, đánh giá, bằng chứng tập','right','left',.35,.70,540,[425,708]);
  flow('system','member','Trạng thái gói / lịch;\ngiáo án, tiến độ và kết quả xử lý','left','right',.85,.85,600,[460,855]);
- flow('trainer','system','Profile PT; giáo án / tiến độ;\nkết quả buổi tập','left','right',.35,.25,1170,[1210,165]);
- flow('system','trainer','Lịch và hội viên;\nđánh giá / thống kê','right','left',.12,.85,1110,[1280,312]);
- flow('admin','system','Dữ liệu quản lý;\ntrạng thái lịch;\nxác nhận thanh toán','left','right',.35,.70,1170,[1270,670]);
- flow('system','admin','Danh sách quản lý; doanh thu;\ntrạng thái vận hành','right','left',.85,.85,1110,[1210,855]);
- d.node('legend','Phạm vi: website + API + lưu trữ nội bộ. MongoDB không phải tác nhân ngoài hệ thống.\nGuest chưa đăng nhập; ba role tài khoản: member, trainer (PT), admin.',100,935,1440,65,'note',{font:16});d.write('context');
+ flow('trainer','system','Hồ sơ PT; lịch dạy;\ngiáo án, tiến độ và kết quả buổi','left','right',.35,.25,1170,[1210,165]);
+ flow('system','trainer','Danh sách học viên liên quan;\nlịch, bài nộp và đánh giá','right','left',.12,.85,1110,[1280,312]);
+ flow('admin','system','Quản lý tài khoản / gói / lịch;\nxác nhận thanh toán thủ công','left','right',.35,.70,1170,[1270,670]);
+ flow('system','admin','Danh sách quản trị; doanh thu;\ntrạng thái vận hành','right','left',.85,.85,1110,[1210,855]);
+ d.node('legend','Phạm vi: React/Vite → REST API Express/Mongoose → MongoDB. Không có payment gateway.\nQR chỉ là mã minh họa; phiên bản hiện tại không có API quét/xác thực check-in.',100,935,1440,65,'note',{font:16});d.write('context');
 }
 
 // UML use cases: plain actor associations; mandatory include and conditional extend.
@@ -45,14 +45,53 @@ usecases('usecase-guest','Khách',[
  ['packages','Xem danh sách / chi tiết gói tập'],['register','UC-01 · Đăng ký tài khoản Member'],['login','UC-02 · Đăng nhập']
 ],[{base:'register',text:'Kiểm tra email / mật khẩu\nGán role member'},{base:'login',text:'Kiểm tra tài khoản hoạt động\nvà mật khẩu'}]);
 usecases('usecase-member','Member / Hội viên',[
- ['auth','UC-02 · Đăng nhập'],['profile','UC-11 · Xem / cập nhật profile'],['catalog','FR-03 · Xem gói tập và tìm PT'],['subscribe','UC-03 · Đăng ký gói tập'],['my-package','Xem gói / trạng thái thanh toán'],['book','UC-04 · Đặt lịch với PT'],['schedule','UC-05 · Xem lịch của mình'],['plan','UC-07 · Xem giáo án'],['progress','UC-07 · Xem tiến độ tập luyện'],['review','UC-08 · Đánh giá PT'],['dashboard','FR-15 · Xem dashboard cá nhân']
-],[{base:'subscribe',text:'Kiểm tra gói hoạt động\nChốt giá / thời hạn'}, {base:'book',text:'Kiểm tra gói paid / active\nNgày hiệu lực và hạn mức buổi',y:795}, {base:'book',text:'Kiểm tra thời gian / xung đột\nPT và hội viên',y:900,x:1040}, {base:'schedule',text:'Hủy lịch của mình',kind:'extend',guard:'[trước giờ bắt đầu]',y:1040}, {base:'review',text:'Kiểm tra booking completed\nĐúng chủ và chưa đánh giá'}]);
+ ['profile','Xem / cập nhật hồ sơ'],['catalog','Xem gói tập và danh mục PT'],['subscribe','Đăng ký gói / xem trạng thái'],['book','Đặt lịch PT'],['schedule','Xem / hủy lịch của mình'],['qr','Xem QR check-in mô phỏng'],['plan','Xem giáo án và tiến độ'],['proof','Gửi link bằng chứng tập'],['review','Đánh giá buổi đã hoàn thành'],['dashboard','Xem tổng quan hội viên']
+],[{base:'subscribe',text:'Server chốt giá và quyền lợi\nTrạng thái pending / unpaid'}, {base:'book',text:'Kiểm tra gói, quota và\nxung đột slot tại server',y:795}, {base:'schedule',text:'Hủy lịch của mình',kind:'extend',guard:'[trước giờ bắt đầu]',y:1170}, {base:'review',text:'Kiểm tra booking completed\nĐúng chủ, chưa được đánh giá'}, {base:'qr',text:'Chỉ hiển thị payload mô phỏng\nKhông xác thực lượt vào'}]);
 usecases('usecase-trainer','PT / Huấn luyện viên',[
- ['auth','UC-02 · Đăng nhập'],['profile','UC-11 · Xem / cập nhật profile PT'],['schedule','FR-09 · Xem lịch của mình'],['result','UC-06 · Xác nhận kết quả buổi tập'],['students','Xem hội viên liên quan'],['plan','UC-07 · Tạo / cập nhật giáo án'],['progress','UC-07 · Cập nhật tiến độ hội viên'],['reviews','Xem đánh giá của hội viên'],['dashboard','FR-15 · Xem dashboard PT']
-],[{base:'result',text:'Kiểm tra quyền / giờ kết thúc\nLưu completed hoặc no_show'}, {base:'plan',text:'Kiểm tra hội viên liên quan\nValidate giáo án và khoảng ngày'}, {base:'progress',text:'Kiểm tra quyền cập nhật\nValidate chỉ số cơ thể'}]);
+ ['profile','Xem / cập nhật hồ sơ PT'],['schedule','Xem lịch dạy'],['students','Tìm học viên liên quan'],['result','Chốt completed / no_show'],['plan','Tạo / sửa giáo án'],['progress','Ghi nhận tiến độ'],['proofs','Xem bằng chứng học viên'],['reviews','Xem đánh giá và điểm PT'],['dashboard','Xem tổng quan PT']
+],[{base:'result',text:'Chỉ PT liên quan; sau giờ kết thúc'}, {base:'plan',text:'Học viên phải có quan hệ lịch\nexpectedVersion bảo vệ bản sửa'}, {base:'progress',text:'PT hoạt động, học viên liên quan\nRequest ID chống gửi lặp'}]);
 usecases('usecase-admin','Admin / Quản trị viên',[
- ['auth','UC-02 · Đăng nhập'],['profile','UC-11 · Xem / cập nhật profile'],['packages','UC-09 · Quản lý gói tập'],['trainers','UC-09 · Quản lý PT'],['members','UC-09 · Quản lý hội viên'],['schedule','Quản lý lịch và kết quả buổi tập'],['payment','UC-03 · Xác nhận thanh toán'],['revenue','UC-10 · Xem báo cáo doanh thu'],['dashboard','FR-15 · Xem dashboard quản trị']
+ ['profile','Xem / cập nhật hồ sơ'],['packages','Quản lý / khóa gói tập'],['trainers','Quản lý PT'],['members','Quản lý hội viên'],['schedule','Quản lý lịch / kết quả buổi'],['payment','Xác nhận thanh toán tại quầy'],['revenue','Xem báo cáo doanh thu'],['dashboard','Xem tổng quan quản trị']
 ],[{base:'packages',text:'Vô hiệu hóa gói tập',kind:'extend',guard:'[chọn khóa gói]'}, {base:'trainers',text:'Khóa tài khoản / hồ sơ PT',kind:'extend',guard:'[chọn khóa PT]'}, {base:'members',text:'Khóa tài khoản hội viên',kind:'extend',guard:'[chọn khóa hội viên]'}, {base:'payment',text:'Lưu paid / paidAt\nKích hoạt khi đủ điều kiện'}, {base:'revenue',text:'Lọc paid theo paidAt\nTổng hợp amount theo kỳ'}]);
+
+// Implementation architecture: React/Vite -> Express/Mongoose -> MongoDB.
+{
+ const d=new Diagram('Architecture — FitManager',1860,910);title(d,'KIẾN TRÚC TRIỂN KHAI · FITMANAGER');subtitle(d,'Luồng thực thi hiện có · Trình duyệt không kết nối trực tiếp MongoDB');
+ d.node('ui','React / Vite\nPublic pages, Member, PT, Admin',70,330,300,150,'activity',{font:19,bold:true});
+ d.node('client','API client\nBearer JWT · JSON',430,330,260,150,'activity',{font:19});
+ d.node('express','Express app\nCORS · JSON 1 MB · /api',750,330,280,150,'activity',{font:19});
+ d.node('policy','Routes + middleware\nAuth · role · ownership',1090,190,310,150,'activity',{font:18});
+ d.node('logic','Controllers + services\nValidation · domain rules',1090,470,310,150,'activity',{font:18});
+ d.node('models','Mongoose models\nSchema · indexes · refs',1460,330,300,150,'activity',{font:18});
+ d.node('mongo','MongoDB\nfitmanager collections',1460,650,300,125,'external',{color:'gray',font:18});
+ horizontal(d,'ui','client','fetch JSON',{label:[400,430]});horizontal(d,'client','express','HTTP /api',{label:[720,430]});
+ vertical(d,'express','policy','route dispatch',{from:'top',to:'left',sf:.7,tf:.55,x:1070,label:[1020,260]});
+ vertical(d,'policy','logic','authorized request',{from:'bottom',to:'top',label:[1250,420]});
+ horizontal(d,'logic','models','query / update',{from:'right',to:'left',label:[1435,570]});
+ vertical(d,'models','mongo','Mongoose driver',{label:[1610,600]});
+ d.node('note','JWT xác thực lại User hiện hành trên mỗi request. Role và chủ sở hữu được kiểm tra ở backend; UI ẩn menu chỉ là UX. MongoDB standalone chưa bảo đảm transaction nhiều document.',70,790,1690,70,'note',{font:16});
+ d.write('architecture');
+}
+
+// The screen-flow focuses on navigation destinations, not implementation modules.
+{
+ const d=new Diagram('Screen flow — FitManager',1660,1060);title(d,'LUỒNG MÀN HÌNH THEO VAI TRÒ · FITMANAGER');subtitle(d,'Màn hình hiện có trong React Router tối giản bằng pathname/history');
+ d.node('guest','Khách\nTrang chủ · Về chúng tôi\nCách hoạt động · Gói tập',70,360,300,150,'external',{color:'gray',font:17,bold:true});
+ d.node('auth','Xác thực\nĐăng nhập · Đăng ký',470,360,280,150,'activity',{font:18});
+ d.node('member','Member\nTổng quan · Gói tập\nĐặt lịch · Lịch tập · Tiến độ',880,110,330,170,'activity',{font:17});
+ d.node('trainer','PT\nTổng quan · Lịch dạy\nHọc viên · Giáo án · Đánh giá',880,410,330,170,'activity',{font:17});
+ d.node('admin','Admin\nTổng quan · Gói / tài khoản\nLịch · Thanh toán · Doanh thu',880,710,330,170,'activity',{font:17});
+ d.node('profile','Hồ sơ\nThông tin cá nhân\nĐổi mật khẩu',1330,410,260,145,'activity',{font:17});
+ horizontal(d,'guest','auth','Đăng ký / đăng nhập',{label:[420,430]});
+ d.edge('auth','member','role = member',{from:'right',to:'left',via:[[805,435],[805,195]],label:[800,320]});
+ horizontal(d,'auth','trainer','role = trainer',{label:[820,485]});
+ d.edge('auth','admin','role = admin',{from:'right',to:'left',via:[[835,435],[835,795]],label:[820,715]});
+ horizontal(d,'member','profile','Hồ sơ',{from:'right',to:'left',label:[1260,215]});
+ horizontal(d,'trainer','profile','Hồ sơ',{from:'right',to:'left',label:[1260,485]});
+ horizontal(d,'admin','profile','Hồ sơ',{from:'right',to:'left',label:[1260,795]});
+ d.node('note','Khách không có route danh mục PT công khai. Danh mục PT và các màn nghiệp vụ yêu cầu tài khoản Member; endpoint Admin/PT kiểm tra role ở server.',70,960,1500,60,'note',{font:15});
+ d.write('screen-flow');
+}
 
 function swim(titleText,roles,height){
  const d=new Diagram(titleText,1490,height);title(d,titleText.toUpperCase());subtitle(d,'Activity workflow · Trách nhiệm theo lane · Luồng đã nối API / MongoDB');
@@ -122,12 +161,13 @@ const entityFields={
  plan:['WorkoutPlan / workoutplans','_id: ObjectId [PK]','member: ref User; trainer: ref TrainerProfile','title, goal, startDate, endDate, status','items[]: embedded exercises / sets / reps'],
  progress:['ProgressLog / progresslogs','_id: ObjectId [PK]','member: ref User; trainer?: ref TrainerProfile','date, weight, bodyFat, height','attendedSessions, note','requestId [idempotency], requestHash [hidden]'],
  review:['Review / reviews','_id: ObjectId [PK]','member: ref User; trainer: ref TrainerProfile','booking: ref Booking [unique]','rating: integer 1–5; comment'],
+ submission:['WorkoutSubmission / workoutsubmissions','_id: ObjectId [PK]','plan: ObjectId → WorkoutPlan','member: ObjectId → User','exerciseName, completedOn, proofUrl','note; status: submitted | reviewed','indexes: member/date; plan/member/date'],
 };
 function erd(physical){
- const d=new Diagram(physical?'Database diagram — MongoDB':'ERD — FitManager',2200,2320);title(d,physical?'DATABASE DIAGRAM · MONGODB':'ENTITY RELATIONSHIP DIAGRAM · FITMANAGER');
+ const d=new Diagram(physical?'Database diagram — MongoDB':'ERD — FitManager',2200,2500);title(d,physical?'DATABASE DIAGRAM · MONGODB':'SƠ ĐỒ QUAN HỆ THỰC THỂ · FITMANAGER');
  subtitle(d,'Một entity xuất hiện một lần · Crow’s foot: || = 1; O| = 0..1; O< = 0..N · Ref MongoDB không phải khóa ngoại');
- const positions={user:[880,170],trainer:[100,610],pkg:[1610,170],sub:[1610,770],booking:[880,1060],plan:[100,1510],progress:[880,1890],review:[1610,1510]};
- const short={user:['Thông tin chung của Member / PT / Admin','email duy nhất; role kiểm soát quyền'],trainer:['Profile mở rộng riêng của PT','Mỗi User tối đa một TrainerProfile'],pkg:['Danh mục gói tập','Giá / thời hạn / quyền lợi'],sub:['Một lần đăng ký gói của hội viên','Giá chốt, thời hạn, trạng thái thanh toán'],booking:['Một buổi hẹn PT của hội viên','Gắn một Subscription'],plan:['Giáo án cho một hội viên','items[] nhúng trong document'],progress:['Nhật ký chỉ số theo ngày','PT ghi nhận có thể để trống'],review:['Đánh giá một buổi hoàn thành','Mỗi Booking tối đa một Review']};
+ const positions={user:[880,170],trainer:[100,610],pkg:[1610,170],sub:[1610,770],booking:[880,1060],plan:[100,1510],progress:[880,1890],review:[1610,1510],submission:[100,1890]};
+ const short={user:['Thông tin chung của Member / PT / Admin','email duy nhất; role kiểm soát quyền'],trainer:['Profile mở rộng riêng của PT','Mỗi User tối đa một TrainerProfile'],pkg:['Danh mục gói tập','Giá / thời hạn / quyền lợi'],sub:['Một lần đăng ký gói của hội viên','Giá chốt, thời hạn, trạng thái thanh toán'],booking:['Một buổi hẹn PT của hội viên','Gắn một Subscription'],plan:['Giáo án cho một hội viên','items[] nhúng trong document'],progress:['Nhật ký chỉ số theo ngày','PT ghi nhận có thể để trống'],review:['Đánh giá một buổi hoàn thành','Mỗi Booking tối đa một Review'],submission:['Bằng chứng hội viên nộp theo giáo án','Chỉ lưu URL; không upload file nhị phân']};
  for(const [id,fields] of Object.entries(entityFields)){
   const lines=physical?fields:[fields[0].split(' / ')[0],'_id: ObjectId',...short[id]];
   const [x,y]=positions[id];d.node(id,lines.join('\n'),x,y,470,physical?280:225,'entity',{color:'amber',font:physical?17:19});
@@ -142,13 +182,15 @@ function erd(physical){
  a=P(d,'sub','left',.75);b=P(d,'booking','right',.35);relation('sub','booking','Sử dụng gói','one-many','left','right',[[1460,a[1]],[1460,b[1]]],[1460,1070],.75,.35);
  a=P(d,'user','left',.8);b=P(d,'plan','left',.7);relation('user','plan','Nhận giáo án','one-many','left','left',[[45,a[1]],[45,b[1]]],[130,1210],.8,.7);
  vertical(d,'trainer','plan','Tạo giáo án',{kind:'one-many',sf:.35,tf:.35,label:[290,1170]});
+ vertical(d,'plan','submission','Có bằng chứng',{kind:'one-many',label:[330,1830]});
+ a=P(d,'user','left',.9);b=P(d,'submission','right',.5);relation('user','submission','Nộp bằng chứng','one-many','left','right',[[650,a[1]],[650,b[1]]],[620,1150],.9,.5);
  a=P(d,'user','bottom',.2);b=P(d,'progress','left',.65);relation('user','progress','Có nhật ký tiến độ','one-many','bottom','left',[[a[0],470],[820,470],[820,b[1]]],[810,1750],.2,.65);
  a=P(d,'trainer','bottom',.8);b=P(d,'progress','left',.25);relation('trainer','progress','Ghi nhận (PT tùy chọn)','optional-many','bottom','left',[[a[0],1430],[750,1430],[750,b[1]]],[655,1790],.8,.25);
  a=P(d,'booking','right',.8);b=P(d,'review','left',.4);relation('booking','review','Có đánh giá','one-optional','right','left',[[1500,a[1]],[1500,b[1]]],[1485,1410],.8,.4);
  a=P(d,'user','top',.85);b=P(d,'review','right',.7);relation('user','review','Viết đánh giá','one-many','top','right',[[a[0],135],[2145,135],[2145,b[1]]],[2060,1260],.85,.7);
  a=P(d,'trainer','right',.8);b=P(d,'review','top',.5);relation('trainer','review','Được đánh giá','one-many','right','top',[[650,a[1]],[650,1460],[b[0],1460]],[1640,1437],.8,.5);
- d.node('notes','User là profile chung cho ba role; TrainerProfile chỉ mở rộng cho PT. ProgressLog.trainer tùy chọn.\nBooking → Review là 1 → 0..1; User → TrainerProfile là 1 → 0..1. Các quan hệ còn lại có thể chưa có bản ghi con.\n'+(physical?'Tất cả collection có createdAt / updatedAt / __v. Index và validation chi tiết: docs/04-database-design.md và docs/06-mongodb-optimization.md.':'WorkoutPlan.items là embedded array, không phải entity/collection độc lập. Chi tiết thuộc tính xem database.drawio.'),70,2225,2050,90,'note',{font:16});
+ d.node('notes','User là profile chung cho ba role; TrainerProfile chỉ mở rộng cho PT. ProgressLog.trainer tùy chọn.\nBooking → Review là 1 → 0..1; User → TrainerProfile là 1 → 0..1. Mỗi WorkoutSubmission gắn bắt buộc một User và một WorkoutPlan.\n'+(physical?'Tất cả collection có createdAt / updatedAt / __v. Index và validation chi tiết: docs/04-database-design.md và docs/06-mongodb-optimization.md.':'WorkoutPlan.items là embedded array, không phải entity/collection độc lập. Ref MongoDB do ứng dụng kiểm tra, không phải khóa ngoại.'),70,2390,2050,90,'note',{font:16});
  d.write(physical?'database':'erd');
 }
 erd(false);erd(true);
-console.log('Generated 11 editable draw.io diagrams and matching SVG previews.');
+console.log('Generated editable draw.io diagrams and matching SVG previews.');

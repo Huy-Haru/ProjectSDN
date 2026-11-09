@@ -4,7 +4,7 @@ Phiên bản 2.0 — FitManager — cập nhật 23/10/2026 theo mã nguồn tr�
 
 ## 1. Mục đích và thuật ngữ
 
-Tài liệu xác định phạm vi, tác nhân, yêu cầu chức năng, quy tắc nghiệp vụ và tiêu chí nghiệm thu. Hội viên (member) là người sử dụng gói tập; PT (trainer) là huấn luyện viên; admin là quản trị viên; Subscription là đăng ký một gói; Booking là một buổi hẹn; WorkoutPlan là giáo án.
+Tài liệu xác định phạm vi, tác nhân, yêu cầu chức năng, quy tắc nghiệp vụ và tiêu chí nghiệm thu. Hội viên (member) là người sử dụng gói tập; PT (trainer) là huấn luyện viên; admin là quản trị viên; Subscription là đăng ký một gói; Booking là một buổi hẹn; WorkoutPlan là giáo án; WorkoutSubmission là URL bằng chứng bài tập do hội viên gửi.
 
 Hệ thống phục vụ một phòng tập, sử dụng tiền VND và múi giờ Asia/Ho_Chi_Minh cho nghiệp vụ lịch. MongoDB lưu Date theo UTC; backend phải chuyển đổi và chuẩn hóa ngày khi xử lý lịch. Khách chưa đăng nhập là tác nhân ngoài hệ thống, không phải giá trị `User.role`.
 
@@ -47,6 +47,7 @@ Backend và frontend dùng role member/trainer/admin thống nhất. Mỗi reque
 | FR-15 | Xem dashboard theo vai trò | Chỉ số lấy từ dữ liệu có quyền truy cập | API thật cho ba role, không dùng số liệu mẫu |
 | FR-16 | Kiểm tra kết nối | API ping database; UI phân biệt kết nối lỗi và thành công | Health API ping MongoDB và UI |
 | FR-17 | Xem/cập nhật profile cá nhân cho Member, PT, Admin | Mọi role sửa trường chung của mình; PT sửa mở rộng theo quyền; không tự sửa role/isActive/rating | API/UI thật cho cả ba role |
+| FR-18 | Gửi bằng chứng bài tập | Member chọn bài tập trong giáo án active, ngày hoàn thành và URL http/https; PT xem các submission thuộc học viên liên quan | API thật; không lưu file nhị phân |
 
 ## 4. Quy tắc nghiệp vụ
 
@@ -67,7 +68,7 @@ Backend và frontend dùng role member/trainer/admin thống nhất. Mỗi reque
 | BR-13 | Không xóa cứng danh mục/tài khoản qua UI quản trị | Soft lock isActive; không có endpoint xóa |
 | BR-14 | Doanh thu chỉ paid, phân kỳ theo paidAt | Admin aggregation; ngày Việt Nam |
 
-MongoDB local standalone không có transaction nhiều document. Giữ quota và ghi Booking có bù lỗi nhưng không nguyên tử qua lỗi kết nối/dừng tiến trình; sau sự cố cần đối soát theo [hướng dẫn quota](12-member-booking.md). Cho phép nhiều gói active; Member chọn subscription cụ thể khi đặt. Không có hoàn tiền tự động, cổng thanh toán hoặc tác vụ tự chuyển status expired; API vẫn từ chối đặt ngoài thời hạn.
+MongoDB local standalone không có transaction nhiều document. Giữ quota và ghi Booking có bù lỗi nhưng không nguyên tử qua lỗi kết nối/dừng tiến trình; sau sự cố cần đối soát theo [hướng dẫn quota](12-member-booking.md). Cho phép nhiều gói active; Member chọn subscription cụ thể khi đặt. Không có hoàn tiền tự động, cổng thanh toán, quét QR thật hoặc tác vụ tự chuyển status expired; API vẫn từ chối đặt ngoài thời hạn.
 
 ## 5. Use case chi tiết
 
@@ -115,6 +116,10 @@ Admin chọn khoảng thời gian → backend validate khoảng ngày và tổng
 
 Tác nhân: Member, PT, Admin. Đăng nhập → xem User của mình → cập nhật fullName/phone/gender/dateOfBirth/avatar qua whitelist → validate và save → trả profile an toàn. PT sửa specialties/experienceYears/bio/certificates/pricePerSession của TrainerProfile; không tự sửa trạng thái hoạt động hoặc điểm tổng hợp. Email hiện chỉ đọc qua profile; đổi password qua luồng riêng để hash đúng. Không nhận role/isActive từ API profile public. Hậu điều kiện: profile còn sau tải lại trang, không đổi quyền truy cập.
 
+### UC-12 — Gửi bằng chứng bài tập (FR-18)
+
+Hội viên chọn giáo án active, bài tập và ngày đã hoàn thành → nhập URL http/https và ghi chú tùy chọn → backend kiểm tra giáo án thuộc đúng hội viên, bài tập tồn tại, ngày không ở tương lai và nằm trong thời gian giáo án → lưu `WorkoutSubmission`. URL sai giao thức, bài tập ngoài giáo án hoặc ngày không hợp lệ bị từ chối. PT chỉ xem submission của học viên có quan hệ.
+
 ## 6. Yêu cầu phi chức năng
 
 | ID | Yêu cầu mục tiêu | Cách kiểm chứng |
@@ -145,6 +150,7 @@ Trình duyệt gọi REST JSON qua HTTP(S). Frontend local tại localhost:3000;
 | UC-08 | FR-13 | Review, Booking, TrainerProfile | workflow-training |
 | UC-09 | FR-04/05 | User, MembershipPackage, TrainerProfile | usecase-admin |
 | UC-10 | FR-14 | Subscription | usecase-admin |
+| UC-12 | FR-18 | WorkoutSubmission, WorkoutPlan, User | usecase-trainer, workflow-training |
 
 ## 9. Điều kiện nghiệm thu
 

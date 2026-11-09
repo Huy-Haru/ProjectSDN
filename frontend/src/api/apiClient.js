@@ -3,7 +3,7 @@
  * Base URL đọc từ env hoặc mặc định localhost:5000
  */
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
 
 /**
  * Lưu/xóa token trong localStorage
@@ -17,25 +17,37 @@ export const tokenStorage = {
 /**
  * Hàm fetch chung, tự gắn Authorization header nếu có token
  */
-async function request(method, path, body = null) {
+export async function apiRequest(path, { method = 'GET', body, signal, timeoutMs = 15000 } = {}) {
   const token = tokenStorage.get();
-  const headers = { 'Content-Type': 'application/json' };
+  const headers = {};
+  if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const options = { method, headers };
-  if (body) options.body = JSON.stringify(body);
+  const options = {
+    method,
+    headers,
+    signal: signal || AbortSignal.timeout(timeoutMs),
+  };
+  if (body !== undefined) options.body = JSON.stringify(body);
 
   const res = await fetch(`${BASE_URL}${path}`, options);
-  const data = await res.json();
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    data = null;
+  }
 
-  if (!res.ok) {
-    const err = new Error(data.message || 'Lỗi không xác định');
+  if (!res.ok || data?.success === false) {
+    const err = new Error(data?.message || 'Không thể xử lý yêu cầu.');
     err.status = res.status;
     throw err;
   }
 
   return data;
 }
+
+const request = (method, path, body, options) => apiRequest(path, { method, body, ...options });
 
 /**
  * Auth API
@@ -102,8 +114,8 @@ export const trainerApi = {
   updateWorkoutPlan: (planId, data) => request('PATCH', `/trainer/workout-plans/${planId}`, data),
 
   /** Member xem giáo án của mình */
-  getMemberWorkoutPlans: () => request('GET', '/trainer/member/workout-plans')
-  ,getMemberWorkoutSubmissions: (memberId) => request('GET', `/trainer/members/${memberId}/workout-submissions`)
+  getMemberWorkoutPlans: () => request('GET', '/trainer/member/workout-plans'),
+  getMemberWorkoutSubmissions: (memberId) => request('GET', `/trainer/members/${memberId}/workout-submissions`)
 };
 
 export const memberApi = {
@@ -114,19 +126,12 @@ export const memberApi = {
 };
 export const bookingApi = {
   trainers: () => request('GET', '/member/trainers'),
-  bookings: () => request('GET', '/member/bookings'),
+  bookings: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request('GET', `/member/bookings${qs ? '?' + qs : ''}`);
+  },
   create: data => request('POST', '/member/bookings', data),
   cancel: id => request('POST', `/member/bookings/${id}/cancel`),
-  // A3.1 result workflow (the legacy trainer endpoint remains available above).
-  confirmResult: (bookingId, data) => request('PATCH', `/bookings/${bookingId}/result`, data),
-  getById: bookingId => request('GET', `/bookings/${bookingId}`),
-  // Canonical booking routes added by the member booking branch.
-  createBooking: data => request('POST', '/bookings', data),
-  getMyBookings: (params = {}) => {
-    const qs = new URLSearchParams(params).toString();
-    return request('GET', `/bookings/my${qs ? '?' + qs : ''}`);
-  },
-  cancelBooking: (bookingId, reason) => request('PATCH', `/bookings/${bookingId}/cancel`, { reason })
 };
 export const progressApi = {
   mine: () => request('GET', '/member/progress'),
@@ -151,10 +156,4 @@ export const reviewApi = {
   getMyTrainerReviews: () => request('GET', '/reviews/my-trainer-reviews'),
   getBookingReview: bookingId => request('GET', `/reviews/booking/${bookingId}`),
   getTrainerReviews: trainerId => request('GET', `/reviews/trainer/${trainerId}`)
-};
-export const subscriptionApi = {
-  subscribe: (packageId, startDate) => request('POST', '/subscriptions', { packageId, startDate }),
-  getMySubscriptions: () => request('GET', '/subscriptions/my'),
-  getActiveSubscription: () => request('GET', '/subscriptions/active'),
-  getMyUsage: () => request('GET', '/subscriptions/usage')
 };

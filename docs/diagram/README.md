@@ -5,6 +5,8 @@ Các file là XML mxfile không nén, mở và chỉnh sửa được trong [dra
 | File | Loại | Phạm vi |
 | --- | --- | --- |
 | context.drawio | Context diagram | Hệ thống mục tiêu và 4 tác nhân |
+| architecture.drawio | Architecture | React/Vite → Express/Mongoose → MongoDB |
+| screen-flow.drawio | Screen flow | Luồng màn hình theo role |
 | usecase-guest.drawio | Use case | Khách |
 | usecase-member.drawio | Use case | Hội viên |
 | usecase-trainer.drawio | Use case | Huấn luyện viên |
@@ -13,7 +15,7 @@ Các file là XML mxfile không nén, mở và chỉnh sửa được trong [dra
 | workflow-booking.drawio | Swimlane workflow | Member → Hệ thống → PT: đặt lịch và kiểm tra lỗi |
 | workflow-training.drawio | Swimlane workflow | PT → Hệ thống → Member: giáo án, tiến độ, review |
 | workflow-cancellation.drawio | Swimlane workflow | Member → Hệ thống → PT: hủy lịch/giữ lịch sử |
-| erd.drawio | ERD logic | Cardinality giữa 8 entity |
+| erd.drawio | ERD logic | Cardinality giữa 9 entity/collection |
 | database.drawio | Database diagram | Collection, trường, index và ref hiện có |
 
 Context dùng một process tròn đại diện toàn bộ FitManager và bốn external entity hình chữ nhật. Tám mũi tên vào/ra riêng biệt có tên luồng dữ liệu, không dùng actor UML hoặc hai mũi tên đè lên một đường.
@@ -22,7 +24,7 @@ Use case dùng actor UML ngoài biên hệ thống và ellipse bên trong. Assoc
 
 Bốn workflow có **swimlane thực trong draw.io**, các node con nằm trong lane tương ứng: Member/PT/Admin hoặc Hệ thống. Luồng điều khiển dùng mũi tên liền; hình thoi có nhãn điều kiện, initial/final có ký hiệu bắt đầu/kết thúc. Đường nét đứt sang lane PT trong đặt/hủy lịch biểu diễn dữ liệu được tra cứu sau khi lưu, không phải yêu cầu PT duyệt booking hoặc gửi thông báo bên ngoài.
 
-ERD và database diagram dùng **8 entity duy nhất trên cùng một mạng liên kết**, đủ 13 quan hệ. Crow's foot thể hiện 1, 0..1 và 0..N. Trường trainer của ProgressLog tùy chọn; User có 0..1 TrainerProfile; Booking có 0..1 Review. WorkoutPlan.items là dữ liệu nhúng, không phải collection.
+ERD và database diagram dùng **9 entity/collection duy nhất trên cùng một mạng liên kết**, bổ sung WorkoutSubmission cho URL bằng chứng bài tập. Crow's foot thể hiện 1, 0..1 và 0..N. Trường trainer của ProgressLog tùy chọn; User có 0..1 TrainerProfile; Booking có 0..1 Review. WorkoutPlan.items là dữ liệu nhúng, không phải collection.
 
 Cập nhật 23/10: context/use case/workflow đối chiếu các luồng đã nối API; Guest chỉ đọc gói, danh mục PT yêu cầu Member. ERD/database mô tả schema hiện có, gồm snapshot quyền lợi và bộ đếm quota; ref không phải khóa ngoại MongoDB. Không đưa cổng thanh toán ngoài vào sơ đồ vì phiên bản đầu xác nhận thủ công.
 

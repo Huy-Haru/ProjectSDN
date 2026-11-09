@@ -28,7 +28,7 @@ Các path bắt đầu /api. Danh sách dưới đây ghi phương thức đầy
 | Danh mục gói | GET /member/packages | Công khai; chỉ gói hoạt động |
 | Đăng ký gói | GET /member/subscriptions; POST /member/subscriptions | Member, đúng chủ; server chốt amount/quyền lợi |
 | Danh mục PT | GET /member/trainers | Member; User và TrainerProfile hoạt động |
-| Lịch Member | GET /member/bookings; POST /member/bookings; POST /member/bookings/:id/cancel | Member, đúng chủ |
+| Lịch Member | GET/POST /member/bookings; POST /member/bookings/:id/cancel; GET/POST /bookings; PATCH /bookings/:id/cancel | Member, đúng chủ; prefix /bookings giữ tương thích client cũ |
 | Tiến độ Member | GET /member/progress | Member, chỉ log của mình |
 | Đánh giá Member | GET /member/reviews; POST /member/reviews | Member, completed đã kết thúc, một Review/buổi |
 | Lịch và học viên PT | GET /trainer/schedule; GET /trainer/members | PT, tài nguyên liên quan |
@@ -37,6 +37,7 @@ Các path bắt đầu /api. Danh sách dưới đây ghi phương thức đầy
 | Giáo án Member | GET /trainer/member/workout-plans | Member, chỉ giáo án giao cho mình |
 | Tiến độ PT | GET /trainer/members/:memberId/progress; POST /trainer/members/:memberId/progress | PT hoạt động, quan hệ lịch chưa hủy; chỉ xem log của mình |
 | Đánh giá PT | GET /trainer/reviews | PT, phản hồi dành cho mình và tổng điểm |
+| Bằng chứng bài tập | GET/POST /member/workout-submissions; GET /trainer/members/:memberId/workout-submissions | Member gửi URL http/https cho giáo án của mình; PT xem học viên liên quan |
 | Danh mục Admin | GET /admin/packages; POST /admin/packages; PATCH /admin/packages/:id | Admin; tạo/sửa/khóa |
 | Tài khoản Admin | GET /admin/users; GET /admin/users/:id; POST /admin/users; PATCH /admin/users/:id | Admin; Member/PT và soft lock, không tự đổi role qua profile |
 | Lịch Admin | GET /admin/bookings; PATCH /admin/bookings/:id/status | Admin; lọc và chốt kết quả/hủy theo quy tắc |
@@ -44,6 +45,8 @@ Các path bắt đầu /api. Danh sách dưới đây ghi phương thức đầy
 | Báo cáo Admin | GET /admin/reports/revenue; GET /admin/dashboard | Admin; tổng hợp paid theo paidAt |
 
 Dashboard Member/PT hiện tổng hợp các API có scope của tài khoản, không có endpoint dashboard riêng cho hai role này.
+
+QR check-in chỉ là payload mô phỏng từ `GET /member/check-in-qr`; giao diện hiển thị cục bộ, không gọi dịch vụ tạo QR bên ngoài và chưa có endpoint quét/ghi nhận lượt vào.
 
 ## 4. Quy tắc dữ liệu và cạnh tranh
 

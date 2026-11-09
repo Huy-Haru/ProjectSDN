@@ -45,6 +45,7 @@ Tên file dùng PascalCase cho model/component; camelCase cho service/controller
 | `workoutplans` | trainer, member, title, date range, items, status, version | trainer/member/status/date |
 | `progresslogs` | member, trainer, booking, measurements, clientRequestId | scoped idempotency key |
 | `reviews` | booking, member, trainer, rating, comment | unique booking |
+| `workoutsubmissions` | plan, member, exerciseName, completedOn, proofUrl, note, status | member/completedOn; plan/member/completedOn |
 
 MongoDB ObjectId refs are application relationships, not SQL foreign keys. WorkoutPlan.items is embedded data. Database backup/restore and quota reconciliation are maintenance operations documented in `docs/06-mongodb-optimization.md`.
 
@@ -94,7 +95,7 @@ User.findById(req.user._id); // /auth/me
 | `memberBookingService` | `createBooking` | Check member, trainer, active paid subscription, quota and conflicting slots. |
 | `bookingStatusService` | `setBookingStatus` | Enforce ownership, time boundary, terminal status and quota adjustment. |
 | `adminService` | `confirmPayment` | Mark paid, set paidAt, activate subscription idempotently. |
-| `bookingApi` | `create/cancel` | Serialize UI input and send bearer request. |
+| `bookingApi` | `create/cancel` | Serialize UI input and send bearer request. `/bookings` remains a compatibility prefix. |
 
 #### Sequence
 
@@ -140,4 +141,4 @@ Admin routes gọi `adminService`, dùng aggregation `$match` paid + `paidAt`, `
 - **Known limits:** chưa có payment gateway, realtime, rate limit, JWT denylist, scheduler expire subscription hay audit log bất biến.
 
 ## WorkoutSubmission design
-WorkoutSubmission stores plan, member, exerciseName, completedOn, proofUrl, note and status. The member route validates ownership and only accepts http/https proof URLs. Binary uploads remain a future storage integration.
+WorkoutSubmission stores plan, member, exerciseName, completedOn, proofUrl, note and status. The member route validates ownership, active plan range and exercise membership, and only accepts http/https proof URLs. Binary uploads remain a future storage integration.

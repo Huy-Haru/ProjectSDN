@@ -35,17 +35,6 @@ router.get(
 );
 
 /**
- * GET /api/bookings/:id
- * Xem chi tiết 1 buổi tập
- */
-router.get(
-  '/:id',
-  authenticate,
-  authorize(ROLES.MEMBER),
-  asyncHandler(bookingController.getBookingById)
-);
-
-/**
  * PATCH /api/bookings/:id/cancel
  * Member hủy lịch tập đã đặt
  */

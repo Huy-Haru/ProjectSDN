@@ -2,7 +2,7 @@
 
 ## 1. Tổng quan
 
-Database local: `fitmanager`. Model được đăng ký qua `backend/src/models/index.js`. Mongoose dùng tên collection mặc định: users, trainerprofiles, membershippackages, subscriptions, bookings, workoutplans, progresslogs, reviews. `_id` là ObjectId. Tất cả model bật timestamps nên có createdAt và updatedAt; `__v` là version key mặc định.
+Database local: `fitmanager`. Model được đăng ký qua `backend/src/models/index.js`. Mongoose dùng tên collection mặc định: users, trainerprofiles, membershippackages, subscriptions, bookings, workoutplans, progresslogs, reviews và workoutsubmissions. `_id` là ObjectId. Tất cả model bật timestamps nên có createdAt và updatedAt; `__v` là version key mặc định.
 
 MongoDB không thực thi khóa ngoại. `ref` hỗ trợ populate nhưng không tự kiểm tra document đích tồn tại, đúng vai trò hay thuộc đúng người. Unique là index database, không phải validator Mongoose; chỉ có hiệu lực sau khi index được tạo thành công.
 
@@ -128,6 +128,20 @@ ProgressLog bổ sung requestId (String, bất biến) và requestHash (String, 
 
 Aggregate cast trainerId ObjectId và tính ratingAverage/ratingCount về TrainerProfile. Hook save được await; hook findOneAndUpdate/findOneAndDelete và document.deleteOne cũng tính lại. member/trainer/booking immutable. Bulk update/delete và direct driver không đi qua các hook này; ghi đồng thời vẫn cần đối soát.
 
+### WorkoutSubmission → workoutsubmissions
+
+| Trường | Kiểu | Ràng buộc hiện có |
+| --- | --- | --- |
+| plan | ObjectId → WorkoutPlan | Bắt buộc |
+| member | ObjectId → User | Bắt buộc |
+| exerciseName | String | Bắt buộc, trim |
+| completedOn | Date | Bắt buộc; API không cho ngày tương lai |
+| proofUrl | String | Bắt buộc, http/https, tối đa 1000 ký tự |
+| note | String | Tùy chọn, tối đa 500 ký tự |
+| status | String | submitted/reviewed; mặc định submitted |
+
+API chỉ nhận URL bằng chứng, chưa lưu file nhị phân. Member chỉ gửi được bài tập thuộc giáo án active của chính mình và ngày nằm trong khoảng giáo án. Index theo member/completedOn và plan/member/completedOn phục vụ danh sách lịch sử.
+
 ## 3. Quan hệ và cardinality
 
 | Quan hệ | Cardinality logic | Ràng buộc |
@@ -144,6 +158,8 @@ Aggregate cast trainerId ObjectId và tính ratingAverage/ratingCount về Train
 | Booking → Review | 1 → 0..1 | Review.booking required + unique |
 | User/TrainerProfile → Review | Mỗi bên 1 → 0..N | Hai ref required |
 | WorkoutPlan → items | 1 → 0..N embedded | Không phải collection riêng |
+| WorkoutPlan → WorkoutSubmission | 1 → 0..N | Submission.plan required |
+| User → WorkoutSubmission | 1 → 0..N | Submission.member required |
 
 Cardinality là mục tiêu dữ liệu; ngoại trừ unique index, MongoDB không tự bảo đảm các liên kết này. ERD thể hiện quan hệ logic, database diagram thể hiện collection/field/ref và items nhúng.
 
@@ -155,6 +171,6 @@ Các query index đã khai báo và áp dụng qua migration; cần đo explain/
 
 ## 5. Dữ liệu mẫu và migration
 
-Thứ tự tạo mẫu: User → TrainerProfile/MembershipPackage → Subscription → Booking → WorkoutPlan/ProgressLog/Review. Dùng ObjectId thật và hash password qua save. Không dùng trực tiếp id mock trong React. Seed phải idempotent và không tạo tài khoản admin với mật khẩu công khai cố định trong môi trường triển khai.
+Thứ tự tạo mẫu: User → TrainerProfile/MembershipPackage → Subscription → Booking → WorkoutPlan/ProgressLog/Review/WorkoutSubmission. Dùng ObjectId thật và hash password qua save. Không dùng trực tiếp id mock trong React. Seed phải idempotent và không tạo tài khoản admin với mật khẩu công khai cố định trong môi trường triển khai.
 
 Đã có paidAt. Đã có snapshot quyền lợi và bộ đếm buổi cho đăng ký mới. Lịch cũ chưa đánh dấu quota được đếm riêng; xem [quy tắc và khôi phục](12-member-booking.md). Chưa có Payment collection/reference ngân hàng, lịch rảnh PT hoặc collection phân công hội viên riêng. Mọi migration cần kiểm tra dữ liệu cũ, sao lưu và ghi lại thay đổi index.

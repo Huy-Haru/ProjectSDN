@@ -1,7 +1,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const xml = s => String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll('\n', '&#xa;');
-const palette = { blue: ['#eaf2fc', '#5479aa'], green: ['#eaf7ef', '#568a69'], amber: ['#fff5db', '#ac893f'], purple: ['#f2edfc', '#8970b0'], gray: ['#f4f6f8', '#66788a'] };
+// Project document diagrams follow the monochrome academic style selected from
+// the supplied SRS reference; color is reserved for meaning, not decoration.
+const palette = { blue: ['#ffffff', '#3f4852'], green: ['#f6f7f8', '#69737d'], amber: ['#f1f3f5', '#3f4852'], purple: ['#ffffff', '#69737d'], gray: ['#f4f5f6', '#505963'] };
 
 class Diagram {
   constructor(title, width, height) { Object.assign(this, { title, width, height, nodes: [], edges: [] }); }

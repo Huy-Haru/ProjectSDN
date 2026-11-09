@@ -1,8 +1,11 @@
-const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
-export async function request(path, options = {}) {
-  const response = await fetch(baseUrl + path, { ...options, signal: options.signal || AbortSignal.timeout(8000), headers: { 'Content-Type': 'application/json', ...options.headers } });
-  const result = await response.json();
-  if (!response.ok || !result.success) throw new Error(result.message || 'API request failed');
-  return result.data;
-}
+import { apiRequest } from '../api/apiClient';
+
+export const request = (path, options = {}) =>
+  apiRequest(path, {
+    method: options.method || 'GET',
+    body: options.body,
+    signal: options.signal,
+    timeoutMs: options.timeoutMs || 8000,
+  }).then((response) => response.data);
+
 export const checkConnection = () => request('/health');

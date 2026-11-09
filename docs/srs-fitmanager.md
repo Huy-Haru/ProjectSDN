@@ -12,7 +12,7 @@
 
 ### 1. Introduction
 
-FitManager là website quản lý phòng tập và huấn luyện viên cho một cơ sở gym. Hệ thống thay thế việc ghi lịch, quản lý gói và theo dõi học viên bằng quy trình web có phân quyền. Chủ phòng tập quản lý PT, hội viên, gói tháng/quý/năm, thanh toán xác nhận thủ công và báo cáo. PT quản lý lịch dạy, học viên, giáo án và tiến độ. Member đăng ký gói, đặt lịch PT, xem tiến độ, nạp tiền mô phỏng và tạo QR tượng trưng khi check in.
+FitManager là website quản lý phòng tập và huấn luyện viên cho một cơ sở gym. Hệ thống thay thế việc ghi lịch, quản lý gói và theo dõi học viên bằng quy trình web có phân quyền. Chủ phòng tập quản lý PT, hội viên, gói tháng/quý/năm, thanh toán xác nhận thủ công và báo cáo. PT quản lý lịch dạy, học viên, giáo án và tiến độ. Member đăng ký gói, đặt lịch PT, xem tiến độ và gửi URL bằng chứng sau bài tập.
 
 Sản phẩm chạy với React/Vite ở trình duyệt, Express REST API theo MVC ở backend và MongoDB. Tiền tệ là VND; lịch nghiệp vụ dùng Asia/Ho_Chi_Minh và Date lưu UTC. Phiên bản hiện tại không kết nối cổng thanh toán, không dùng QR để thu tiền thật và không cho khách tự đặt role PT/admin.
 
@@ -30,7 +30,7 @@ flowchart LR
   M --> B[Booking]
   M --> S[Schedule]
   M --> T[Trainer directory]
-  M --> Q[My packages / QR check in]
+  M --> Q[My packages / mock check in]
   M --> R[Progress and reviews]
   A --> PT[Trainer dashboard]
   PT --> PS[Teaching schedule]
@@ -49,7 +49,7 @@ flowchart LR
 | 3 | Member | Trainer directory | Tìm theo tên/chuyên môn và chọn PT để đặt lịch. |
 | 4 | Member | Booking | Chọn PT, ngày và ca 60 phút; server kiểm tra gói, quota và xung đột. |
 | 5 | Member | My packages | Xem pending/active/expired, thanh toán và ngày hiệu lực. |
-| 6 | Member | QR check in | Tạo QR tượng trưng theo tài khoản và mệnh giá nạp mô phỏng. |
+| 6 | Member | Mock check in | Xem payload check-in cục bộ của gói active; chưa có quét hoặc ghi nhận lượt vào thật. |
 | 7 | Trainer | Dashboard | Số học viên, buổi sắp dạy, rating và lịch gần nhất. |
 | 8 | Trainer | Students and plans | Tìm học viên, tạo/sửa giáo án và ghi ProgressLog. |
 | 9 | Admin | Management portal | Quản lý gói, PT, member, lịch, thanh toán và doanh thu. |
@@ -94,6 +94,7 @@ Backend luôn lấy role từ User trong database; ẩn menu chỉ là UX, khôn
 | WorkoutPlan | Giáo án của PT cho member, items nhúng và version. |
 | ProgressLog | Chỉ số thể trạng do PT ghi nhận. |
 | Review | Rating/comment duy nhất cho booking completed. |
+| WorkoutSubmission | URL bằng chứng http/https gắn với bài tập trong giáo án và ngày hoàn thành. |
 
 ## II. Functional Requirements
 
@@ -111,7 +112,7 @@ PT xem lịch của mình, tìm member liên quan, tạo/sửa WorkoutPlan với
 
 ### 4. QR check in mô phỏng
 
-QR được tạo ở giao diện Member từ định danh tài khoản và mệnh giá mô phỏng. QR không đại diện giao dịch ngân hàng, không thay thế xác nhận Subscription và không gửi dữ liệu nhạy cảm. Đây là chức năng demo cho quy trình quét tại quầy.
+API `GET /member/check-in-qr` trả payload JSON mô phỏng khi có gói active/paid. Giao diện hiển thị payload cục bộ; không gọi dịch vụ QR bên ngoài, không đại diện giao dịch ngân hàng, chưa có endpoint quét hoặc ghi nhận lượt vào.
 
 ### 5. Admin management
 

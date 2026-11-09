@@ -41,7 +41,16 @@ const TrainerStudentsPage = () => {
   const handlePlanCreated = () => {
     setShowPlanModal(false);
   };
-  const loadProofs = async member => { setProofMember(member); try { const response = await trainerApi.getMemberWorkoutSubmissions(member._id); setProofs(response.data.submissions || []); } catch (err) { setProofs([{ _id: 'error', exerciseName: err.message }]); } };
+  const loadProofs = async member => {
+    setProofMember(member);
+    setProofs(null);
+    try {
+      const response = await trainerApi.getMemberWorkoutSubmissions(member._id);
+      setProofs(response.data.submissions || []);
+    } catch (err) {
+      setProofs({ error: err.message });
+    }
+  };
 
   return (
     <div className="trainer-students-page">
@@ -177,7 +186,7 @@ const TrainerStudentsPage = () => {
 
       {plansMember && <TrainerPlansPanel key={plansMember._id} member={plansMember} onClose={() => setPlansMember(null)} />}
 
-      {proofMember && <section className="section-card mt-4"><div className="section-card-head"><div><h2>Bằng chứng của {proofMember.fullName}</h2><p>Link ảnh hoặc video hội viên gửi sau từng bài tập.</p></div><button className="btn btn-secondary" onClick={() => setProofMember(null)}>Đóng</button></div>{!proofs.length ? <p className="muted-copy">Chưa có bằng chứng nào.</p> : <div className="submission-list">{proofs.map(proof => <a className="submission-row" key={proof._id} href={proof.proofUrl} target="_blank" rel="noreferrer"><span><strong>{proof.exerciseName}</strong><small>{new Date(proof.completedOn).toLocaleDateString('vi-VN')}{proof.note ? ` · ${proof.note}` : ''}</small></span><FaExternalLinkAlt /></a>)}</div>}</section>}
+      {proofMember && <section className="section-card mt-4"><div className="section-card-head"><div><h2>Bằng chứng của {proofMember.fullName}</h2><p>Link ảnh hoặc video hội viên gửi sau từng bài tập.</p></div><button className="btn btn-secondary" onClick={() => setProofMember(null)}>Đóng</button></div>{proofs === null ? <p role="status">Đang tải bằng chứng...</p> : proofs.error ? <div role="alert">{proofs.error}<button className="btn btn-secondary ms-2" onClick={() => loadProofs(proofMember)}>Thử lại</button></div> : proofs.length === 0 ? <p className="muted-copy">Chưa có bằng chứng nào.</p> : <div className="submission-list">{proofs.map(proof => <a className="submission-row" key={proof._id} href={proof.proofUrl} target="_blank" rel="noreferrer"><span><strong>{proof.exerciseName}</strong><small>{new Date(proof.completedOn).toLocaleDateString('vi-VN')}{proof.note ? ` · ${proof.note}` : ''}</small></span><FaExternalLinkAlt /></a>)}</div>}</section>}
 
       {/* Create Workout Plan Modal */}
       {showPlanModal && <CreatePlanModal
